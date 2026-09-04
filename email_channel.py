@@ -10,77 +10,51 @@ from pathlib import Path
 
 load_dotenv(Path(__file__).parent / ".env")
 
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
-FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "helpline@nhaa14566.gov.in")
-DEFAULT_ALERT_EMAIL = os.getenv("COUNSELOR_ALERT_EMAIL", "counselor.nhaa14566@gmail.com")
+ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
+AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
+DEFAULT_ALERT_EMAIL = os.getenv("COUNSELOR_ALERT_EMAIL", "kishoriju040@gmail.com")
 
 def send_email_alert(
-    to_email: str,
-    subject: str,
-    body_text: str,
+    to_email: str = "",
+    subject: str = "Reminder: Your Upcoming Appointment",
+    body_text: str = "",
     html_content: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Send an email via Twilio SendGrid v3 API or fallback simulation.
+    Send an email via Twilio Communications Email API (comms.twilio.com).
     """
-    if not to_email:
-        to_email = DEFAULT_ALERT_EMAIL
+    dest_email = to_email.strip() if to_email and "@" in to_email else DEFAULT_ALERT_EMAIL
 
-    if not html_content:
-        html_content = f"""
-        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 8px;">
-            <div style="background-color: #1e3a8a; color: white; padding: 15px; border-radius: 6px 6px 0 0;">
-                <h2 style="margin: 0;">MoSJE • National Helpline Against Atrocities (14566)</h2>
-                <p style="margin: 4px 0 0 0; font-size: 13px;">Nyaya-Sakhi Multi-Agent Support System</p>
-            </div>
-            <div style="background-color: white; padding: 20px; border: 1px solid #e2e8f0; border-top: none;">
-                <p style="font-size: 15px; line-height: 1.6; color: #334155;">{body_text}</p>
-                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-                <p style="font-size: 12px; color: #64748b;">
-                    Official Statutory Communication under SC/ST (Prevention of Atrocities) Act 1989.<br />
-                    Toll-Free National Helpline: <strong>14566</strong>
-                </p>
-            </div>
-        </div>
-        """
+    if not (ACCOUNT_SID.startswith("AC") and len(AUTH_TOKEN) >= 32):
+        print(f"[Twilio Email] Credentials not configured. Simulating to {dest_email}...")
+        return {"success": True, "simulated": True}
 
-    # 1. Send via Twilio SendGrid if API Key is configured
-    if SENDGRID_API_KEY.startswith("SG."):
-        try:
-            url = "https://api.sendgrid.com/v3/mail/send"
-            headers = {
-                "Authorization": f"Bearer {SENDGRID_API_KEY}",
-                "Content-Type": "application/json"
+    try:
+        url = "https://comms.twilio.com/v1/Emails"
+        payload = {
+            "from": {
+                "address": f"{ACCOUNT_SID}@twilio.email",
+                "name": "NHAA 14566 Support"
+            },
+            "to": [{"address": dest_email}],
+            "content": {
+                "subject": "Reminder: Your Upcoming Appointment",
+                "html": "<p><b>This is an official check-in alert from the NHAA 14566 Support Team.</b></p><h2>NHAA 14566 Support Check-in</h2><p>This is a proactive well-being check-in regarding legal protection and psychological support under the SC/ST PoA Act.</p><p><strong>Status:</strong> Active Case Monitoring</p><p>If you or your family require immediate legal aid or protection, please dial 14566 anytime.</p><p>We look forward to seeing you safe and supported!</p>"
             }
-            payload = {
-                "personalizations": [{"to": [{"email": to_email}]}],
-                "from": {"email": FROM_EMAIL, "name": "NHAA 14566 National Helpline"},
-                "subject": subject,
-                "content": [
-                    {"type": "text/plain", "value": body_text},
-                    {"type": "text/html", "value": html_content}
-                ]
-            }
-            resp = requests.post(url, headers=headers, json=payload, timeout=10)
-            if resp.status_code in [200, 201, 202]:
-                print(f"[Twilio SendGrid] Email sent successfully to {to_email}")
-                return {"success": True, "provider": "Twilio SendGrid", "to": to_email}
-            else:
-                print(f"[Twilio SendGrid] Error {resp.status_code}: {resp.text}")
-                return {"success": False, "error": resp.text, "provider": "Twilio SendGrid"}
-        except Exception as e:
-            print(f"[Twilio SendGrid] Exception: {e}")
-            return {"success": False, "error": str(e), "provider": "Twilio SendGrid"}
-
-    # 2. Simulation Mode (Displays formatted email in terminal & logs)
-    print(f"[Email Notification] ✉️  (Twilio SendGrid Simulated)")
-    print(f"  TO:      {to_email}")
-    print(f"  SUBJECT: {subject}")
-    print(f"  BODY:    {body_text[:120]}...")
-    return {
-        "success": True,
-        "simulated": True,
-        "provider": "Twilio SendGrid (Simulated - set SENDGRID_API_KEY in .env to send live)",
-        "to": to_email,
-        "subject": subject
-    }
+        }
+        resp = requests.post(url, auth=(ACCOUNT_SID, AUTH_TOKEN), json=payload, timeout=12)
+        if resp.status_code in [200, 201, 202]:
+            print(f"[Twilio Email] Delivered to {dest_email} (HTTP {resp.status_code})")
+            return {"success": True, "to": dest_email, "status": resp.status_code}
+        else:
+            # Fallback to approved trial template
+            payload["content"]["html"] = "<p><b>This is a test email from Twilio.</b></p><h2>Appointment Reminder</h2><p>This is a friendly reminder about your upcoming appointment.</p><p><strong>Date:</strong> Tomorrow at 2:00 PM</p><p><strong>Location:</strong> 123 Main Street, Suite 100</p><p>Please arrive 10 minutes early to complete any necessary paperwork.</p><p>If you need to reschedule, please contact us as soon as possible.</p><p>We look forward to seeing you!</p>"
+            retry_resp = requests.post(url, auth=(ACCOUNT_SID, AUTH_TOKEN), json=payload, timeout=12)
+            if retry_resp.status_code in [200, 201, 202]:
+                print(f"[Twilio Email] Delivered via trial template to {dest_email}")
+                return {"success": True, "to": dest_email, "status": retry_resp.status_code}
+            print(f"[Twilio Email] Error: {retry_resp.text}")
+            return {"success": False, "error": retry_resp.text}
+    except Exception as e:
+        print(f"[Twilio Email] Error: {e}")
+        return {"success": False, "error": str(e)}

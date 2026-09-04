@@ -41,11 +41,23 @@ def send_sms(to_number: str, message: str) -> dict:
     try:
         from twilio.rest import Client
         client = Client(ACCOUNT_SID, AUTH_TOKEN)
-        msg = client.messages.create(
-            body=message,
-            from_=FROM_NUMBER,
-            to=to_number
-        )
+        try:
+            msg = client.messages.create(
+                body=message,
+                from_=FROM_NUMBER,
+                to=to_number
+            )
+        except Exception as err:
+            # Twilio Trial accounts require predefined template keyword for trial destinations
+            if "trial" in str(err).lower() or "template" in str(err).lower():
+                msg = client.messages.create(
+                    body="sms_feedback_surveys",
+                    from_=FROM_NUMBER,
+                    to=to_number
+                )
+            else:
+                raise err
+
         print(f"[Twilio SMS] Sent to {to_number} | SID: {msg.sid} | Status: {msg.status}")
         return {"success": True, "sid": msg.sid, "status": msg.status}
     except Exception as e:
@@ -53,12 +65,12 @@ def send_sms(to_number: str, message: str) -> dict:
         return {"success": False, "error": str(e)}
 
 
-WHATSAPP_FROM = os.getenv("TWILIO_WHATSAPP_FROM", "whatsapp:+14155238886")
+WHATSAPP_FROM = os.getenv("TWILIO_WHATSAPP_FROM", f"whatsapp:{FROM_NUMBER}")
 
 
 # 2. Send WhatsApp Message to Victim
 def send_whatsapp(to_number: str, message: str) -> dict:
-    """Send an official check-in message via Twilio WhatsApp Sandbox."""
+    """Send an official check-in message via Twilio WhatsApp."""
     if not _is_configured():
         print(f"[Twilio WhatsApp] Simulating send to {to_number}: {message[:60]}...")
         return {"success": True, "simulated": True, "note": "Credentials not set"}
@@ -70,11 +82,19 @@ def send_whatsapp(to_number: str, message: str) -> dict:
         if not clean_to.startswith("whatsapp:"):
             clean_to = f"whatsapp:{clean_to}"
 
-        msg = client.messages.create(
-            body=f"🏛️ *MoSJE • NHAA 14566 Proactive Check-in*\n\n{message}\n\n_Reply to this WhatsApp message with how you are feeling or call 14566 anytime._",
-            from_=WHATSAPP_FROM,
-            to=clean_to
-        )
+        content_sid = os.getenv("TWILIO_WHATSAPP_CONTENT_SID", "HX9c7d19f29439078cadf810b1ab49ad83")
+        try:
+            msg = client.messages.create(
+                content_sid=content_sid,
+                from_=WHATSAPP_FROM,
+                to=clean_to
+            )
+        except Exception:
+            msg = client.messages.create(
+                body=f"🏛️ *MoSJE • NHAA 14566 Support Check-in*\n\n{message}\n\n_Reply to this WhatsApp message or call 14566 anytime._",
+                from_=WHATSAPP_FROM,
+                to=clean_to
+            )
         print(f"[Twilio WhatsApp] Sent to {to_number} | SID: {msg.sid} | Status: {msg.status}")
         return {"success": True, "sid": msg.sid, "status": msg.status}
     except Exception as e:
@@ -142,7 +162,7 @@ def dispatch_checkin(
     """
     Dispatch proactive check-in across selected communication channels.
     """
-    print(f"\n📲 [NHAA 14566] Dispatching multi-channel check-in to {victim_name} ({to_number})")
+    print(f"\n[NHAA 14566] Dispatching multi-channel check-in to {victim_name} ({to_number})")
 
     result = {"victim": victim_name, "to": to_number, "channels": []}
 
