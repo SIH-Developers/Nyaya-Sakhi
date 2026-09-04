@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 import json
+import os
 
 from graph import app as langgraph_app
 from database import (
@@ -479,7 +480,7 @@ def send_proactive_checkin(
             dispatch_results["telegram"] = {"success": False, "error": str(e)}
 
     # 2. Dispatch via Twilio SMS + Voice (for victims with phone numbers)
-    victim_phone = victim.get("phone_number") or victim.get("mobile_number")
+    victim_phone = victim.get("phone_number") or victim.get("mobile_number") or os.getenv("TWILIO_TO_NUMBER", "")
     if victim_phone:
         try:
             from twilio_channel import dispatch_checkin
