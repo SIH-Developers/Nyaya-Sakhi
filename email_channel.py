@@ -16,10 +16,10 @@ load_dotenv(Path(__file__).parent / ".env")
 
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER = os.getenv("SMTP_USER", "")
-SMTP_PASS = os.getenv("SMTP_PASS", "")
+SMTP_USER = os.getenv("SMTP_USER", "").strip()
+SMTP_PASS = os.getenv("SMTP_PASS", "").replace(" ", "").strip()
 FROM_NAME = os.getenv("FROM_NAME", "MoSJE • NHAA 14566 Support")
-DEFAULT_ALERT_EMAIL = os.getenv("COUNSELOR_ALERT_EMAIL", "kishoriju040@gmail.com")
+DEFAULT_ALERT_EMAIL = os.getenv("COUNSELOR_ALERT_EMAIL", "kishoriju040@gmail.com").strip()
 
 ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
 AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
@@ -98,11 +98,16 @@ def send_email_alert(
     # ─────────────────────────────────────────────────────────────
     # Method 1: Direct SMTP (Gmail / Custom) - 100% Custom Content!
     # ─────────────────────────────────────────────────────────────
-    if SMTP_USER and SMTP_PASS:
+    active_user = (os.getenv("SMTP_USER") or SMTP_USER).strip()
+    active_pass = (os.getenv("SMTP_PASS") or SMTP_PASS).replace(" ", "").strip()
+    active_host = os.getenv("SMTP_HOST") or SMTP_HOST
+    active_port = int(os.getenv("SMTP_PORT") or SMTP_PORT)
+
+    if active_user and active_pass:
         try:
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
-            msg["From"] = f"{FROM_NAME} <{SMTP_USER}>"
+            msg["From"] = f"{FROM_NAME} <{active_user}>"
             msg["To"] = dest_email
 
             part_text = MIMEText(body_text, "plain", "utf-8")
@@ -110,11 +115,11 @@ def send_email_alert(
             msg.attach(part_text)
             msg.attach(part_html)
 
-            server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=12)
+            server = smtplib.SMTP(active_host, active_port, timeout=12)
             server.ehlo()
             server.starttls()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.sendmail(SMTP_USER, dest_email, msg.as_string())
+            server.login(active_user, active_pass)
+            server.sendmail(active_user, dest_email, msg.as_string())
             server.quit()
 
             print(f"[SMTP Email] Delivered 100% custom email to {dest_email}")
