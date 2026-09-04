@@ -2,7 +2,7 @@
 FastAPI Server for SIH 26094 Multi-Agent Distress Prediction System
 Exposes REST endpoints for Chatbot, IVRS, Mobile App, and Counselor Dashboard.
 """
-from fastapi import FastAPI, HTTPException, Body, Form, File, UploadFile
+from fastapi import FastAPI, HTTPException, Body, Form, File, UploadFile, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
@@ -340,53 +340,9 @@ async def handle_audio_file_upload(
 from fastapi.responses import Response as FastAPIResponse
 from fastapi import Request
 
-@api.api_route("/api/telephony/incoming-call", methods=["GET", "POST"])
-def telephony_incoming_call(request: Request):
-    """
-    Twilio/Exotel Webhook: Greets caller and records their voice message.
-    Accepts both GET and POST (Twilio uses POST; console tests may use GET).
-    """
-    xml_response = """<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say voice="alice" language="en-IN">Namaste. This is the National Helpline Against Atrocities 14566. This is a proactive well-being check-in call from your NHAA support counselor.</Say>
-    <Gather input="speech" timeout="5" action="/api/telephony/speech-response" method="POST">
-        <Say voice="alice" language="en-IN">How are you and your family feeling today? Please speak now.</Say>
-    </Gather>
-    <Say voice="alice" language="en-IN">Thank you. Our counselor will follow up with you shortly. Please call NHAA 14566 anytime you need support. Goodbye.</Say>
-</Response>"""
-    return FastAPIResponse(content=xml_response, media_type="application/xml")
-
-@api.api_route("/twiml", methods=["GET", "POST"])
-def twiml_simple(request: Request):
-    """
-    Simple TwiML endpoint - shorter URL for Twilio console custom TwiML URL field.
-    """
-    xml_response = """<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say voice="alice" language="en-IN">Namaste. This is the National Helpline Against Atrocities 14566. This is a proactive well-being check-in from your NHAA support counselor.</Say>
-    <Gather input="speech" timeout="5" action="/api/telephony/speech-response" method="POST">
-        <Say voice="alice" language="en-IN">How are you and your family feeling today? Please speak now.</Say>
-    </Gather>
-    <Say voice="alice" language="en-IN">Thank you. Our counselor will follow up with you shortly. Goodbye.</Say>
-</Response>"""
-    return FastAPIResponse(content=xml_response, media_type="application/xml")
-
-
-@api.api_route("/api/telephony/speech-response", methods=["GET", "POST"])
-async def telephony_speech_response(request: Request):
-    """
-    Receives transcribed speech from Twilio <Gather> after victim speaks.
-    Runs the text through our LangGraph multi-agent pipeline.
-    Works on Twilio trial accounts (no Record needed).
-    """
-    form_data = await request.form()
-    spoken_text = form_data.get("SpeechResult", "").strip()
-    caller_number = form_data.get("From", "unknown")
-
-    print(f"[Twilio Gather] Victim spoke: '{spoken_text}' | From: {caller_number}")
-
-    # Find matching victim by phone number if possible, else use unknown
-    victim_id = "VIC-2026-001"  # Default fallback
+def process_speech_pipeline(spoken_text: str, caller_number: str):
+    """Background task to run LangGraph AI pipeline without blocking Twilio's HTTP response."""
+    victim_id = "VIC-2026-001"
     try:
         all_victims = get_all_victims()
         for v in all_victims:
@@ -396,40 +352,91 @@ async def telephony_speech_response(request: Request):
     except Exception:
         pass
 
+    try:
+        history = get_victim_history(victim_id)
+        state_input = {
+            "victim_id": victim_id,
+            "turn_id": len(history) + 1,
+            "timestamp": datetime.now().isoformat(),
+            "channel": "ivrs_phone",
+            "message_text": spoken_text,
+            "audio_metadata": None,
+            "case_context": {
+                "case_stage": "Trial", "accused_bail_status": "Granted",
+                "threat_reported": False, "hearing_postponed": False,
+                "compensation_status": "Pending",
+                "engagement": {"consecutive_missed_checkins": 0,
+                               "response_latency_hours": 1.0,
+                               "baseline_latency_hours": 2.0,
+                               "days_since_last_checkin": 1}
+            },
+            "interaction_history": history
+        }
+        final_state = langgraph_app.invoke(state_input)
+        final_state["turn_id"] = state_input["turn_id"]
+        final_state["timestamp"] = state_input["timestamp"]
+        final_state["channel"] = "ivrs_phone"
+        save_victim_turn(final_state)
+        risk_tier = final_state.get("risk_tier", "Routine")
+        print(f"[Twilio Gather] Analysis complete -> Risk: {risk_tier}")
+    except Exception as e:
+        print(f"[Twilio Gather] Pipeline error: {e}")
+
+@api.api_route("/api/telephony/incoming-call", methods=["GET", "POST"])
+def telephony_incoming_call(request: Request):
+    """Twilio Webhook for incoming helpline calls."""
+    base_url = os.getenv("RENDER_EXTERNAL_URL", "https://nyaya-sakhi-tszb.onrender.com").rstrip("/")
+    action_url = f"{base_url}/api/telephony/speech-response"
+    xml_response = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Say voice="alice" language="en-IN">Namaste. This is the National Helpline Against Atrocities 14566. This is a proactive well-being check-in call from your NHAA support counselor.</Say>
+    <Gather input="speech" timeout="5" action="{action_url}" method="POST">
+        <Say voice="alice" language="en-IN">How are you and your family feeling today? Please speak now.</Say>
+    </Gather>
+    <Say voice="alice" language="en-IN">Thank you. Our counselor will follow up with you shortly. Please call NHAA 14566 anytime you need support. Goodbye.</Say>
+</Response>"""
+    return FastAPIResponse(content=xml_response.strip(), media_type="text/xml")
+
+@api.api_route("/twiml", methods=["GET", "POST"])
+def twiml_simple(request: Request):
+    """Simple TwiML endpoint with absolute action URL and text/xml."""
+    base_url = os.getenv("RENDER_EXTERNAL_URL", "https://nyaya-sakhi-tszb.onrender.com").rstrip("/")
+    action_url = f"{base_url}/api/telephony/speech-response"
+    xml_response = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Say voice="alice" language="en-IN">Namaste. This is the National Helpline Against Atrocities 14566. This is a proactive well-being check-in from your NHAA support counselor.</Say>
+    <Gather input="speech" timeout="5" action="{action_url}" method="POST">
+        <Say voice="alice" language="en-IN">How are you and your family feeling today? Please speak now.</Say>
+    </Gather>
+    <Say voice="alice" language="en-IN">Thank you. Our counselor will follow up with you shortly. Goodbye.</Say>
+</Response>"""
+    return FastAPIResponse(content=xml_response.strip(), media_type="text/xml")
+
+@api.api_route("/api/telephony/speech-response", methods=["GET", "POST"])
+async def telephony_speech_response(request: Request, background_tasks: BackgroundTasks):
+    """
+    Receives transcribed speech from Twilio <Gather>.
+    Responds with TwiML immediately in 10ms to prevent Twilio HTTP timeout,
+    and runs the LangGraph AI multi-agent analysis in the background.
+    """
+    try:
+        form_data = await request.form()
+        spoken_text = form_data.get("SpeechResult", "").strip()
+        caller_number = form_data.get("From", "unknown")
+    except Exception:
+        spoken_text = ""
+        caller_number = "unknown"
+
+    print(f"[Twilio Gather] Caller spoke: '{spoken_text}' | From: {caller_number}")
+
     if spoken_text:
-        try:
-            history = get_victim_history(victim_id)
-            state_input = {
-                "victim_id": victim_id,
-                "turn_id": len(history) + 1,
-                "timestamp": datetime.now().isoformat(),
-                "channel": "ivrs_phone",
-                "message_text": spoken_text,
-                "audio_metadata": None,
-                "case_context": {"case_stage": "Trial", "accused_bail_status": "Granted",
-                                 "threat_reported": False, "hearing_postponed": False,
-                                 "compensation_status": "Pending",
-                                 "engagement": {"consecutive_missed_checkins": 0,
-                                                "response_latency_hours": 1.0,
-                                                "baseline_latency_hours": 2.0,
-                                                "days_since_last_checkin": 1}},
-                "interaction_history": history
-            }
-            final_state = langgraph_app.invoke(state_input)
-            final_state["turn_id"] = state_input["turn_id"]
-            final_state["timestamp"] = state_input["timestamp"]
-            final_state["channel"] = "ivrs_phone"
-            save_victim_turn(final_state)
-            risk_tier = final_state.get("risk_tier", "Routine")
-            print(f"[Twilio Gather] Analysis complete -> Risk: {risk_tier}")
-        except Exception as e:
-            print(f"[Twilio Gather] Pipeline error: {e}")
+        background_tasks.add_task(process_speech_pipeline, spoken_text, caller_number)
 
     xml_response = """<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say voice="alice" language="en-IN">Thank you for sharing that. Our support counselor has been notified and will follow up with you shortly. Please remember you can call NHAA 14566 anytime. Take care. Goodbye.</Say>
+    <Say voice="alice" language="en-IN">Thank you for sharing that. Your response has been logged. Our support counselor has been notified and will follow up with you shortly. Please remember you can call NHAA 14566 anytime. Take care. Goodbye.</Say>
 </Response>"""
-    return FastAPIResponse(content=xml_response, media_type="application/xml")
+    return FastAPIResponse(content=xml_response.strip(), media_type="text/xml")
 
 @api.post("/api/victim/{victim_id}/send-checkin")
 def send_proactive_checkin(
