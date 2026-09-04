@@ -193,7 +193,7 @@ def dispatch_checkin(
             body_text=message_text
         )
         result["email"] = email_res
-        result["channels"].append("Email (SendGrid)")
+        result["channels"].append("Email (SMTP / Alert)")
 
     return result
 

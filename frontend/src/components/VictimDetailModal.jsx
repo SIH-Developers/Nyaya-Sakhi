@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   X, Activity, Scale, ShieldAlert, PhoneCall, HeartPulse, 
-  FileText, ShieldCheck, AlertTriangle, ArrowUpRight, Check, Send, MessageSquarePlus
+  FileText, ShieldCheck, AlertTriangle, ArrowUpRight, Check, Send, MessageSquarePlus, MessageCircle
 } from 'lucide-react';
 import { API_BASE } from '../config';
 
@@ -356,10 +356,10 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
               </span>
             </div>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '14px' }}>
-              Manually dispatch a clinically designed well-being check-in question to this victim's phone.
+              Dispatch a clinically designed well-being check-in to this victim's phone via Voice, SMS, Email, and 1-Click WhatsApp.
             </p>
 
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '14px' }}>
               <select
                 value={promptType}
                 onChange={(e) => setPromptType(e.target.value)}
@@ -392,8 +392,64 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                 className="btn btn-primary"
                 style={{ whiteSpace: 'nowrap' }}
               >
-                <Send size={16} /> {isSendingCheckin ? 'Sending...' : 'Send Proactive Check-in Prompt'}
+                <Send size={16} /> {isSendingCheckin ? 'Sending...' : 'Auto-Dispatch (Call + SMS + Email)'}
               </button>
+
+              {/* Method 1: Official WhatsApp 1-Click Deep Link */}
+              {(() => {
+                const rawDigits = (victim.phone_number || '918299248116').replace(/[^0-9]/g, '');
+                const waPhone = rawDigits.length === 10 ? `91${rawDigits}` : rawDigits;
+                const waMsg = promptType === 'safety_check'
+                  ? `🏛️ *MoSJE • NHAA 14566 Post-Hearing Safety Check*\n\nNamaste ${victim.name}, regarding your recent court hearing for case ${victim.fir_number || 'FIR-2026/894'}, our support counselor is checking in. Do you or your family feel safe in your locality? If you have received any threats or intimidation, reply to this message or call toll-free 14566.`
+                  : promptType === 'compensation_support'
+                  ? `🏛️ *MoSJE • NHAA 14566 Relief Compensation Follow-up*\n\nNamaste ${victim.name}, we are following up on your SC/ST PoA rehabilitation relief disbursement. Please let us know if your pending relief has arrived or reply with any difficulties.`
+                  : `🏛️ *MoSJE • NHAA 14566 Routine Well-Being Check*\n\nNamaste ${victim.name}, this is an official routine check-in from your NHAA support counselor. How are you and your family feeling today? Reply here or call 14566 anytime.`;
+
+                return (
+                  <a
+                    href={`https://wa.me/${waPhone}?text=${encodeURIComponent(waMsg)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn"
+                    style={{
+                      background: '#10b981',
+                      color: '#ffffff',
+                      border: 'none',
+                      whiteSpace: 'nowrap',
+                      textDecoration: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontWeight: 600
+                    }}
+                  >
+                    <MessageCircle size={16} /> Send via WhatsApp (wa.me)
+                  </a>
+                );
+              })()}
+            </div>
+
+            {/* Custom Message Preview */}
+            <div style={{
+              background: 'rgba(0, 0, 0, 0.25)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              fontSize: '0.8rem',
+              color: 'var(--text-secondary)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.72rem', color: '#94a3b8' }}>
+                <span style={{ fontWeight: 600 }}>Message Content Preview:</span>
+                <span>Channels: <strong style={{ color: '#10b981' }}>WhatsApp (1-Click)</strong> • <strong style={{ color: '#60a5fa' }}>Email (SMTP)</strong> • <strong style={{ color: '#a78bfa' }}>Voice / SMS</strong></span>
+              </div>
+              <span style={{ fontStyle: 'italic', color: '#e2e8f0' }}>
+                {promptType === 'safety_check'
+                  ? `\"Namaste ${victim.name}, regarding your recent court hearing for case ${victim.fir_number || 'FIR-2026/894'}, our support counselor is checking in. Do you or your family feel safe in your locality? If you have received any threats or intimidation, reply to this message or call toll-free 14566.\"`
+                  : promptType === 'compensation_support'
+                  ? `\"Namaste ${victim.name}, we are following up on your SC/ST PoA rehabilitation relief disbursement. Please let us know if your pending relief has arrived or reply with any difficulties.\"`
+                  : `\"Namaste ${victim.name}, this is an official routine check-in from your NHAA support counselor. How are you and your family feeling today? Reply here or call 14566 anytime.\"`
+                }
+              </span>
             </div>
           </div>
         </div>

@@ -19,3 +19,11 @@ services:
         sync: false
       - key: TWILIO_TO_NUMBER
         sync: false
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
