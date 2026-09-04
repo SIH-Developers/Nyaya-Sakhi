@@ -479,24 +479,30 @@ def send_proactive_checkin(
         except Exception as e:
             dispatch_results["telegram"] = {"success": False, "error": str(e)}
 
-    # 2. Dispatch via Twilio SMS + Voice (for victims with phone numbers)
+    # 2. Dispatch via Multi-Channel Engine (Voice + SMS + WhatsApp + SendGrid Email)
     victim_phone = victim.get("phone_number") or victim.get("mobile_number") or os.getenv("TWILIO_TO_NUMBER", "")
+    victim_email = victim.get("email") or os.getenv("COUNSELOR_ALERT_EMAIL", "")
+
     if victim_phone:
         try:
             from twilio_channel import dispatch_checkin
             also_call = (prompt_type == "safety_check")
-            twilio_result = dispatch_checkin(
+            multi_result = dispatch_checkin(
                 to_number=victim_phone,
                 victim_name=victim.get("name"),
                 message_text=message_text,
-                also_call=also_call
+                send_voice=also_call,
+                send_sms_flag=True,
+                send_whatsapp_flag=True,
+                send_email_flag=True,
+                to_email=victim_email
             )
-            dispatch_results["twilio"] = twilio_result
-            channels_used.extend(twilio_result.get("channels", []))
+            dispatch_results["multi_channel"] = multi_result
+            channels_used.extend(multi_result.get("channels", []))
         except Exception as e:
-            dispatch_results["twilio"] = {"success": False, "error": str(e)}
+            dispatch_results["multi_channel"] = {"success": False, "error": str(e)}
     else:
-        dispatch_results["twilio"] = {
+        dispatch_results["multi_channel"] = {
             "success": False,
             "note": "No phone number registered for this victim."
         }

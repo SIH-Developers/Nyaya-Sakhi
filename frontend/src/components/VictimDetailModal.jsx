@@ -22,8 +22,8 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
       });
       const data = await res.json();
       if (data.success) {
-        const msg = data.dispatched_message ? data.dispatched_message.slice(0, 55) : 'Dispatched to IVRS / SMS / Bot';
-        setActionSuccess(`Proactive Check-in Dispatched: "${msg}..."`);
+        const channels = (data.channels_used || []).join(' • ') || 'Voice + SMS + WhatsApp';
+        setActionSuccess(`Dispatched via ${channels}!`);
       } else {
         setActionSuccess('Check-in request processed.');
       }

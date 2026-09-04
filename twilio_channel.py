@@ -53,7 +53,36 @@ def send_sms(to_number: str, message: str) -> dict:
         return {"success": False, "error": str(e)}
 
 
-# 2. Outbound IVRS Voice Call
+WHATSAPP_FROM = os.getenv("TWILIO_WHATSAPP_FROM", "whatsapp:+14155238886")
+
+
+# 2. Send WhatsApp Message to Victim
+def send_whatsapp(to_number: str, message: str) -> dict:
+    """Send an official check-in message via Twilio WhatsApp Sandbox."""
+    if not _is_configured():
+        print(f"[Twilio WhatsApp] Simulating send to {to_number}: {message[:60]}...")
+        return {"success": True, "simulated": True, "note": "Credentials not set"}
+
+    try:
+        from twilio.rest import Client
+        client = Client(ACCOUNT_SID, AUTH_TOKEN)
+        clean_to = to_number.strip()
+        if not clean_to.startswith("whatsapp:"):
+            clean_to = f"whatsapp:{clean_to}"
+
+        msg = client.messages.create(
+            body=f"🏛️ *MoSJE • NHAA 14566 Proactive Check-in*\n\n{message}\n\n_Reply to this WhatsApp message with how you are feeling or call 14566 anytime._",
+            from_=WHATSAPP_FROM,
+            to=clean_to
+        )
+        print(f"[Twilio WhatsApp] Sent to {to_number} | SID: {msg.sid} | Status: {msg.status}")
+        return {"success": True, "sid": msg.sid, "status": msg.status}
+    except Exception as e:
+        print(f"[Twilio WhatsApp] Error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+# 3. Outbound IVRS Voice Call
 def make_voice_call(to_number: str, spoken_message: str) -> dict:
     """
     Make an automated outbound voice call to the victim.
@@ -99,39 +128,52 @@ def make_voice_call(to_number: str, spoken_message: str) -> dict:
         return {"success": False, "error": error_msg}
 
 
-# 3. Combined Dispatch (SMS + Optional Voice)
+# 4. Combined Multi-Channel Dispatch (Voice + SMS + WhatsApp + Email)
 def dispatch_checkin(
     to_number: str,
     victim_name: str,
     message_text: str,
-    also_call: bool = False
+    send_voice: bool = False,
+    send_sms_flag: bool = True,
+    send_whatsapp_flag: bool = True,
+    send_email_flag: bool = False,
+    to_email: str = ""
 ) -> dict:
     """
-    Dispatch proactive check-in via SMS (always) + Voice call (optional).
-
-    Args:
-        to_number:    Victim's registered phone number
-        victim_name:  Victim's name (for logging)
-        message_text: The check-in question
-        also_call:    If True, also make a voice call in addition to SMS
-
-    Returns:
-        Combined result dict
+    Dispatch proactive check-in across selected communication channels.
     """
-    print(f"\n📲 [NHAA 14566] Dispatching proactive check-in to {victim_name} ({to_number})")
+    print(f"\n📲 [NHAA 14566] Dispatching multi-channel check-in to {victim_name} ({to_number})")
 
     result = {"victim": victim_name, "to": to_number, "channels": []}
 
-    # Always send SMS
-    sms_result = send_sms(to_number, f"[NHAA 14566] {message_text}")
-    result["sms"] = sms_result
-    result["channels"].append("SMS")
+    # 1. SMS
+    if send_sms_flag:
+        sms_res = send_sms(to_number, f"[NHAA 14566] {message_text}")
+        result["sms"] = sms_res
+        result["channels"].append("SMS")
 
-    # Optionally make a voice call too
-    if also_call:
-        voice_result = make_voice_call(to_number, message_text)
-        result["voice"] = voice_result
+    # 2. WhatsApp
+    if send_whatsapp_flag:
+        wa_res = send_whatsapp(to_number, message_text)
+        result["whatsapp"] = wa_res
+        result["channels"].append("WhatsApp")
+
+    # 3. Voice Call
+    if send_voice:
+        voice_res = make_voice_call(to_number, message_text)
+        result["voice"] = voice_res
         result["channels"].append("Voice Call")
+
+    # 4. Email (Twilio SendGrid)
+    if send_email_flag or to_email:
+        from email_channel import send_email_alert
+        email_res = send_email_alert(
+            to_email=to_email,
+            subject=f"NHAA 14566 Proactive Check-in: {victim_name}",
+            body_text=message_text
+        )
+        result["email"] = email_res
+        result["channels"].append("Email (SendGrid)")
 
     return result
 
