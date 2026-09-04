@@ -4,6 +4,7 @@ Stores Victims, Case Context, Encrypted Interaction Logs, and Counselor Alerts.
 """
 import sqlite3
 import json
+import uuid
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional
@@ -108,11 +109,11 @@ def save_victim_turn(state: Dict[str, Any]) -> str:
     risk_tier = state.get("risk_tier", "Routine")
     reasons_json = json.dumps(state.get("explainability_reasons", []))
     timestamp = state.get("timestamp") or datetime.now().isoformat()
-    log_id = f"LOG-{datetime.now().strftime('%Y%m%d%H%M%S')}-{victim_id}"
+    log_id = f"LOG-{victim_id}-T{turn_id}-{uuid.uuid4().hex[:8]}"
 
     # Insert interaction log
     cursor.execute("""
-    INSERT INTO interaction_logs (
+    INSERT OR REPLACE INTO interaction_logs (
         log_id, victim_id, turn_id, channel, encrypted_message, audio_metadata,
         nlp_score, speech_score, behavior_score, context_score,
         fused_risk_score, risk_tier, explainability_reasons, timestamp
