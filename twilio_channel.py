@@ -1,0 +1,167 @@
+"""
+Twilio Channel Integration for SIH 26094 - NHAA 14566
+Handles outbound SMS and Voice IVRS calls to victims' registered mobile numbers.
+
+Setup:
+  1. Go to https://console.twilio.com and copy Account SID and Auth Token.
+  2. Buy a phone number (Voice + SMS capable).
+  3. Fill in .env:
+       TWILIO_ACCOUNT_SID=ACxxxxx
+       TWILIO_AUTH_TOKEN=xxxxxxx
+       TWILIO_FROM_NUMBER=+1XXXXXXXXXX
+"""
+import os
+from dotenv import load_dotenv
+from pathlib import Path
+
+load_dotenv(Path(__file__).parent / ".env")
+
+ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
+AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
+FROM_NUMBER = os.getenv("TWILIO_FROM_NUMBER", "")
+TO_NUMBER = os.getenv("TWILIO_TO_NUMBER", "")
+RENDER_URL = os.getenv("RENDER_EXTERNAL_URL", "")
+
+def _is_configured() -> bool:
+    """Return True only if real Twilio credentials are present."""
+    return (
+        ACCOUNT_SID.startswith("AC") and
+        len(AUTH_TOKEN) >= 32 and
+        FROM_NUMBER.startswith("+")
+    )
+
+
+# 1. Send SMS to Victim
+def send_sms(to_number: str, message: str) -> dict:
+    """Send a plain-text check-in SMS to victim's registered mobile number."""
+    if not _is_configured():
+        print(f"[Twilio SMS] Simulating send to {to_number}: {message[:60]}...")
+        return {"success": False, "error": "Twilio credentials not configured"}
+
+    try:
+        from twilio.rest import Client
+        client = Client(ACCOUNT_SID, AUTH_TOKEN)
+        msg = client.messages.create(
+            body=message,
+            from_=FROM_NUMBER,
+            to=to_number
+        )
+        print(f"[Twilio SMS] Sent to {to_number} | SID: {msg.sid} | Status: {msg.status}")
+        return {"success": True, "sid": msg.sid, "status": msg.status}
+    except Exception as e:
+        print(f"[Twilio SMS] Error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+# 2. Outbound IVRS Voice Call
+def make_voice_call(to_number: str, spoken_message: str) -> dict:
+    """
+    Make an automated outbound voice call to the victim.
+    Auto-detects:
+      1. RENDER_EXTERNAL_URL — deployed production server on Render
+      2. TWIML_BIN_URL       — hosted on Twilio's cloud
+      3. NGROK_URL           — local tunnel fallback
+    """
+    if not _is_configured():
+        print(f"[Twilio Voice] Simulating call to {to_number}: {spoken_message[:60]}...")
+        return {"success": False, "error": "Twilio credentials not configured"}
+
+    try:
+        from twilio.rest import Client
+        client = Client(ACCOUNT_SID, AUTH_TOKEN)
+
+        render_url = os.getenv("RENDER_EXTERNAL_URL", "").strip()
+        twiml_bin  = os.getenv("TWIML_BIN_URL", "").strip()
+        ngrok_url  = os.getenv("NGROK_URL", "").strip()
+
+        if render_url:
+            twiml_url = f"{render_url.rstrip('/')}/twiml"
+            print(f"[Twilio Voice] Using Render deployed URL: {twiml_url}")
+        elif twiml_bin:
+            twiml_url = twiml_bin
+            print(f"[Twilio Voice] Using TwiML Bin: {twiml_url}")
+        elif ngrok_url:
+            twiml_url = f"{ngrok_url.rstrip('/')}/twiml"
+            print(f"[Twilio Voice] Using tunnel URL: {twiml_url}")
+        else:
+            twiml_url = "http://localhost:8000/twiml"
+
+        call = client.calls.create(
+            url=twiml_url,
+            from_=FROM_NUMBER,
+            to=to_number
+        )
+        print(f"[Twilio Voice] Call initiated to {to_number} | SID: {call.sid} | Status: {call.status}")
+        return {"success": True, "call_sid": call.sid, "status": call.status}
+    except Exception as e:
+        error_msg = str(e)
+        print(f"[Twilio Voice] Error: {error_msg}")
+        return {"success": False, "error": error_msg}
+
+
+# 3. Combined Dispatch (SMS + Optional Voice)
+def dispatch_checkin(
+    to_number: str,
+    victim_name: str,
+    message_text: str,
+    also_call: bool = False
+) -> dict:
+    """
+    Dispatch proactive check-in via SMS (always) + Voice call (optional).
+
+    Args:
+        to_number:    Victim's registered phone number
+        victim_name:  Victim's name (for logging)
+        message_text: The check-in question
+        also_call:    If True, also make a voice call in addition to SMS
+
+    Returns:
+        Combined result dict
+    """
+    print(f"\n📲 [NHAA 14566] Dispatching proactive check-in to {victim_name} ({to_number})")
+
+    result = {"victim": victim_name, "to": to_number, "channels": []}
+
+    # Always send SMS
+    sms_result = send_sms(to_number, f"[NHAA 14566] {message_text}")
+    result["sms"] = sms_result
+    result["channels"].append("SMS")
+
+    # Optionally make a voice call too
+    if also_call:
+        voice_result = make_voice_call(to_number, message_text)
+        result["voice"] = voice_result
+        result["channels"].append("Voice Call")
+
+    return result
+
+
+# ─────────────────────────────────────────────
+# QUICK SELF-TEST (run this file directly)
+# ─────────────────────────────────────────────
+if __name__ == "__main__":
+    print("=" * 60)
+    print("🧪 TWILIO CHANNEL SELF-TEST")
+    print("=" * 60)
+
+    if not _is_configured():
+        print("\n⚠️  TWILIO NOT CONFIGURED YET")
+        print("Open .env and replace the placeholder values:")
+        print("  TWILIO_ACCOUNT_SID=ACxxxxx   ← from console.twilio.com")
+        print("  TWILIO_AUTH_TOKEN=xxxxxxx    ← from console.twilio.com")
+        print("  TWILIO_FROM_NUMBER=+1XXXXXX  ← your purchased Twilio number")
+    else:
+        print("✅ Twilio credentials loaded!")
+        print(f"  Account SID: {ACCOUNT_SID[:10]}...")
+        print(f"  From Number: {FROM_NUMBER}")
+
+        # Replace with your own test number to actually send
+        TEST_NUMBER = input("\nEnter your phone number to test (e.g. +919876543210): ").strip()
+        if TEST_NUMBER:
+            result = dispatch_checkin(
+                to_number=TEST_NUMBER,
+                victim_name="Test Victim",
+                message_text="Namaste! This is a test check-in from NHAA 14566. How are you feeling today?",
+                also_call=True
+            )
+            print("\nResult:", result)

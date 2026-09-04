@@ -1,0 +1,49 @@
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# SIH Documents and PDFs
+*.pdf
+*.docx
+*.doc
+
+# Python artifacts and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.pytest_cache/
+
+# SQLite Databases (generated automatically at build/run time)
+*.db
+*.sqlite
+*.sqlite3
+distress_monitoring.db
+
+# Node.js and Frontend dependencies
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Binaries
+*.exe
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
