@@ -21,7 +21,7 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 INDICBERT_API_URL = os.getenv(
     "INDICBERT_API_URL", 
-    "https://calamari-stalling-carnivore.ngrok-free.dev/predict"
+    "http://52.87.185.211:8000/predict"
 ).strip()
 HF_TOKEN = os.getenv("HF_TOKEN", "").strip()
 
