@@ -15,7 +15,14 @@ from core.state import VictimState
 # Designed to run smoothly on Render 512MB RAM without OOM crashes.
 # ─────────────────────────────────────────────────────────────────────────────
 
-INDICBERT_API_URL = os.getenv("INDICBERT_API_URL", "").strip()
+from dotenv import load_dotenv
+from pathlib import Path
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+INDICBERT_API_URL = os.getenv(
+    "INDICBERT_API_URL", 
+    "https://calamari-stalling-carnivore.ngrok-free.dev/predict"
+).strip()
 HF_TOKEN = os.getenv("HF_TOKEN", "").strip()
 
 # Multi-lingual clinical crisis lexicons across Indian languages
@@ -125,12 +132,13 @@ def analyze_text_distress(text: str) -> Dict[str, Any]:
     # 1. Check if external IndicBERTv2 API / HF Space is configured
     if INDICBERT_API_URL:
         try:
-            r = requests.post(INDICBERT_API_URL, json={"text": cleaned}, timeout=3)
+            r = requests.post(INDICBERT_API_URL, json={"text": cleaned}, timeout=4)
             if r.status_code == 200:
                 data = r.json()
-                data["analysis_source"] = "indicbertv2_remote_api"
+                if "analysis_source" not in data:
+                    data["analysis_source"] = "robbiinn_indicbertv2_finetuned_gpu"
                 return data
-        except Exception:
+        except Exception as e:
             pass
 
     # 2. Native Multi-Lingual Clinical Lexicon & Sentiment Engine (Runs in <5ms, 0 RAM)
