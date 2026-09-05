@@ -19,10 +19,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-INDICBERT_API_URL = os.getenv(
-    "INDICBERT_API_URL", 
-    "http://52.87.185.211:8000/predict"
-).strip()
+INDICBERT_API_URL = os.getenv("INDICBERT_API_URL", "").strip()
 HF_TOKEN = os.getenv("HF_TOKEN", "").strip()
 
 # Multi-lingual clinical crisis lexicons across Indian languages

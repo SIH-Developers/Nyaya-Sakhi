@@ -28,4 +28,4 @@ services:
       - key: SMTP_PASS
         sync: false
       - key: INDICBERT_API_URL
-        value: http://52.87.185.211:8000/predict
+        sync: false
