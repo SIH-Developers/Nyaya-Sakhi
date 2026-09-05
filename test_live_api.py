@@ -1,6 +1,10 @@
+import sys
 import requests
 import json
 import time
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 BASE = "https://nyaya-sakhi-tszb.onrender.com"
 
