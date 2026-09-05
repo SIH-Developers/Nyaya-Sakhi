@@ -1,109 +1,24 @@
 import os
 import re
 import requests
-from typing import Dict, Any, List
-from core.state import VictimState
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Nyaya Sakhi Multi-Lingual Crisis & Distress Analyzer
-# Supports: Hindi, Hinglish, Tamil, Telugu, Bengali, Gujarati, Marathi,
-#           Punjabi, Kannada, Malayalam, Urdu, and English.
-# Architecture:
-#   1. Remote IndicBERTv2 API / HF Space (if INDICBERT_API_URL configured)
-#   2. HuggingFace Serverless Inference (if HF_TOKEN configured)
-#   3. Embedded Multi-Lingual Clinical Lexicon & Safety Floor (Zero-RAM, 5ms)
-# Designed to run smoothly on Render 512MB RAM without OOM crashes.
-# ─────────────────────────────────────────────────────────────────────────────
-
+from typing import Dict, Any
 from dotenv import load_dotenv
 from pathlib import Path
+from core.state import VictimState
+
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 INDICBERT_API_URL = os.getenv("INDICBERT_API_URL", "").strip()
-HF_TOKEN = os.getenv("HF_TOKEN", "").strip()
 
-# Multi-lingual clinical crisis lexicons across Indian languages
-MULTI_LINGUAL_CRISIS_LEXICON = {
-    "acute_threat_violence": [
-        # English
-        "kill me", "kill us", "try to kill", "attack", "stab", "shoot", "gun",
-        "weapon", "murder", "hurt me", "beat me", "throat", "strangle", "threaten to kill",
-        "burn my", "kidnap", "kidnapping", "abduct", "abduction", "hostage", "assault",
-        # Hindi & Hinglish
-        "bachao", "maar raha", "maar rahe", "jaan se maar", "marne ki koshish",
-        "hathiyar", "chaku", "goli", "bandook", "mar dala", "khoon", "jala diya",
-        "kidnap karna", "agwah", "bandi bana", "pitaai", "hamla",
-        # Tamil
-        "enna kolla pakkuranaa", "kolla pakkuran", "kolla poranga", "kaapathunga",
-        "adikkiranga", "kathi", "thuppakki", "kadathal", "uyirukku aabathu",
-        # Telugu
-        "chompeyyadaaniki", "champadaniki", "champestanu", "kapadandi", "rakshinchandi",
-        "kodutunnaru", "daadi", "kidnap", "prananiki pramadam",
-        # Bengali
-        "maar te chaicche", "mere phelbe", "bachao", "khun korbe", "aakromon",
-        "chhuri", "marpeet", "kidnap",
-        # Gujarati
-        "maarva maange", "maari nakhashe", "bachavo", "hamlo", "chaku",
-        # Marathi
-        "jeev ghenyacha", "marun takin", "vachva", "hulla", "marhan",
-        # Punjabi
-        "maar dena chaunde", "maar ditta", "bachao", "hamla", "hathiyar",
-        # Kannada
-        "kollalu prayatnisuttiddare", "badididdare", "bachav maadi", "kaapadi",
-        # Malayalam
-        "kollan nokkunnu", "thallunnu", "rakshikkanam", "aakramanam"
-    ],
-    "stalking_intimidation": [
-        # English
-        "following me", "stalking", "chasing", "outside my house", "threat",
-        "threatening", "warned me", "chase", "men outside", "force me", "surrounding",
-        # Hindi & Hinglish
-        "peecha kar raha", "picha kar raha", "picha kar rahe", "dhamki", "dhamka raha",
-        "ghar ke bahar", "gunde", "darana", "rok rahe hain",
-        # Tamil
-        "pin thodaruran", "threat pandran", "veetu veliye", "bayamaduthuraan",
-        # Telugu
-        "ventapadutunnaru", "bhayapedutunnaru", "inti bayata", "bediristunnaru",
-        # Bengali
-        "pechone lagche", "domkacche", "barir baire",
-        # Other regional cues
-        "dhamki ditti", "dhamki dili", "bayapadutiddare"
-    ],
-    "emergency_help": [
-        "please help", "save me", "in trouble", "help me", "sos", "bachao",
-        "madad karo", "madad", "emergency", "police", "call police", "kaapathunga",
-        "kapadandi", "vachva", "rakshikkanam", "sahayam"
-    ],
-    "hopelessness": [
-        "no point", "hopeless", "give up", "can't do this", "nothing matters",
-        "lost all hope", "no future", "pointless", "koi fayda nahi", "thak chuka hoon",
-        "himmat toot gayi", "nambikkai illai", "aasa ledu", "nirashe"
-    ],
-    "self_harm": [
-        "end it", "better off dead", "kill myself", "die", "hurt myself",
-        "disappear", "sleep forever", "mar jana chahta", "atmahatya",
-        "jeena nahi chahta", "uyira maachika", "chavalanukuntunna"
-    ],
-    "fear_anxiety": [
-        "scared", "terrified", "panic", "unsafe", "threatened", "shaking",
-        "danger", "afraid", "dar lag raha", "bohot dar", "tension hai",
-        "bayamaga irukku", "bhayam vestundi", "bhoy korche", "ghabrat"
-    ],
-    "withdrawal": [
-        "alone", "leave me alone", "nobody cares", "quiet", "stop checking",
-        "isolated", "empty", "akele rehna", "chhod do", "koi nahi hai"
-    ]
+SCORE_MAP = {
+    "Routine":  0.05,
+    "Watch":    0.45,
+    "Urgent":   0.85,
+    "Critical": 0.95,
 }
 
-# Positive & Safe expressions (Negative controls)
-POSITIVE_SAFE_CUES = [
-    "happy", "safe", "felling safe", "feeling safe", "good", "fine", "great",
-    "peaceful", "calm", "relieved", "all good", "no threat", "no problem",
-    "thank you", "thanks", "theek", "thik", "badhiya", "sukoon", "shanti"
-]
-
 def clean_text(text: str) -> str:
-    """Preprocess text: remove PII-like patterns and sanitize."""
+    """Preprocess text: sanitize whitespace and mask direct PII."""
     if not text:
         return ""
     cleaned = re.sub(r'\b\d{10}\b', '[PHONE]', text)
@@ -115,8 +30,10 @@ def clean_text(text: str) -> str:
 
 def analyze_text_distress(text: str) -> Dict[str, Any]:
     """
-    Multi-agent NLP text distress analyzer.
-    Supports 24 Indian languages + Hinglish + English.
+    Pure Machine Learning NLP text distress analyzer powered by
+    Fine-Tuned IndicBERTv2 (Robbiinn/nyaya-sakhi-crisis-indicbert).
+    Supports English + 24 Indian languages natively via neural embeddings.
+    Zero hardcoded keyword lists.
     """
     cleaned = clean_text(text)
     if not cleaned:
@@ -133,93 +50,46 @@ def analyze_text_distress(text: str) -> Dict[str, Any]:
             "analysis_source": "empty_input"
         }
 
-    t = cleaned.lower()
-    has_positive_safe = any(kw in t for kw in POSITIVE_SAFE_CUES)
-    has_explicit_threat = any(kw in t for kw in MULTI_LINGUAL_CRISIS_LEXICON["acute_threat_violence"])
-    has_self_harm = any(kw in t for kw in MULTI_LINGUAL_CRISIS_LEXICON["self_harm"])
-
-    # 1. Check if external IndicBERTv2 API / AWS EC2 endpoint is configured
+    # Query fine-tuned IndicBERTv2 neural inference service
     if INDICBERT_API_URL:
         try:
-            headers = {"ngrok-skip-browser-warning": "true", "User-Agent": "NyayaSakhi/1.0"}
-            r = requests.post(INDICBERT_API_URL, json={"text": cleaned}, headers=headers, timeout=8)
+            r = requests.post(INDICBERT_API_URL, json={"text": cleaned}, timeout=8)
             if r.status_code == 200:
                 data = r.json()
-                if "analysis_source" not in data:
-                    data["analysis_source"] = "robbiinn_indicbertv2_aws_24_7"
-
-                # Guardrail: If user explicitly says "happy" or "feeling safe" and no threats exist,
-                # correct the model's English false-positive bias to Routine!
-                if has_positive_safe and not (has_explicit_threat or has_self_harm):
-                    data["distress_score"] = 0.05
-                    data["top_emotions"] = [{"label": "routine", "score": 0.98}]
-                    data["distress_severity"] = "routine"
-                    data["threat_violence_flag"] = False
-                    data["intimidation_flag"] = False
-                    data["emergency_help_flag"] = False
-                    data["hopelessness_flag"] = False
-                    data["self_harm_cues"] = False
-                    data["withdrawal_flag"] = False
-                    data["analysis_source"] = "indicbertv2_with_safety_guardrail"
+                if "distress_score" in data and "distress_severity" in data:
                     return data
-
-                return data
-            else:
-                print(f"[NLP Agent] GPU endpoint HTTP {r.status_code}: {r.text[:100]}")
+                
+                label = data.get("label", "Routine")
+                score = data.get("distress_score", SCORE_MAP.get(label, 0.05))
+                confidence = data.get("confidence", 0.95)
+                
+                return {
+                    "distress_score": score,
+                    "top_emotions": [{"label": label.lower(), "score": confidence}],
+                    "distress_severity": "acute distress" if score >= 0.75 else ("moderate stress" if score >= 0.45 else "routine"),
+                    "threat_violence_flag": label == "Critical",
+                    "intimidation_flag": label in ["Urgent", "Critical"],
+                    "emergency_help_flag": label in ["Urgent", "Critical"],
+                    "hopelessness_flag": label in ["Watch", "Urgent"],
+                    "self_harm_cues": label == "Critical",
+                    "withdrawal_flag": label == "Watch",
+                    "analysis_source": data.get("analysis_source", "indicbertv2_pure_neural_model")
+                }
         except Exception as e:
-            print(f"[NLP Agent] Remote GPU call failed: {e}")
+            print(f"[NLP Agent] Inference request error: {e}")
 
-    # 2. Native Multi-Lingual Clinical Lexicon & Sentiment Engine (Runs in <5ms, 0 RAM)
-    t = cleaned.lower()
-    
-    threat_violence_flag = any(kw in t for kw in MULTI_LINGUAL_CRISIS_LEXICON["acute_threat_violence"])
-    intimidation_flag    = any(kw in t for kw in MULTI_LINGUAL_CRISIS_LEXICON["stalking_intimidation"])
-    emergency_help_flag  = any(kw in t for kw in MULTI_LINGUAL_CRISIS_LEXICON["emergency_help"])
-    self_harm_cues       = any(kw in t for kw in MULTI_LINGUAL_CRISIS_LEXICON["self_harm"])
-    hopelessness_flag    = any(kw in t for kw in MULTI_LINGUAL_CRISIS_LEXICON["hopelessness"])
-    fear_cues            = any(kw in t for kw in MULTI_LINGUAL_CRISIS_LEXICON["fear_anxiety"])
-    withdrawal_flag      = any(kw in t for kw in MULTI_LINGUAL_CRISIS_LEXICON["withdrawal"])
-
-    # Baseline routine score
-    distress_score = 0.05
-    top_emotions = [{"label": "routine", "score": 0.95}]
-    label = "Routine"
-
-    # Multi-lingual classification matching IndicBERTv2 tiers
-    if self_harm_cues or threat_violence_flag:
-        distress_score = 0.95
-        top_emotions = [{"label": "critical", "score": 0.98}, {"label": "fear", "score": 0.95}]
-        label = "Critical"
-    elif intimidation_flag or (emergency_help_flag and fear_cues):
-        distress_score = 0.85
-        top_emotions = [{"label": "urgent", "score": 0.92}, {"label": "fear", "score": 0.85}]
-        label = "Urgent"
-    elif emergency_help_flag or hopelessness_flag:
-        distress_score = 0.75
-        top_emotions = [{"label": "urgent", "score": 0.82}, {"label": "hopelessness", "score": 0.75}]
-        label = "Urgent"
-    elif fear_cues or withdrawal_flag:
-        distress_score = 0.45
-        top_emotions = [{"label": "watch", "score": 0.85}, {"label": "stress", "score": 0.75}]
-        label = "Watch"
-
-    severity = (
-        "acute distress" if distress_score >= 0.75 else
-        "moderate stress" if distress_score >= 0.45 else
-        "routine"
-    )
-
+    # Standby if inference service unreachable
     return {
-        "distress_score": round(distress_score, 3),
-        "top_emotions": top_emotions,
-        "distress_severity": severity,
-        "threat_violence_flag": threat_violence_flag,
-        "intimidation_flag": intimidation_flag,
-        "emergency_help_flag": emergency_help_flag,
-        "hopelessness_flag": hopelessness_flag,
-        "self_harm_cues": self_harm_cues,
-        "withdrawal_flag": withdrawal_flag,
-        "analysis_source": "indicbertv2_multilingual_engine",
+        "distress_score": 0.05,
+        "top_emotions": [{"label": "routine", "score": 0.85}],
+        "distress_severity": "routine",
+        "threat_violence_flag": False,
+        "intimidation_flag": False,
+        "emergency_help_flag": False,
+        "hopelessness_flag": False,
+        "self_harm_cues": False,
+        "withdrawal_flag": False,
+        "analysis_source": "indicbertv2_offline_standby"
     }
 
 

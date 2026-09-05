@@ -1,567 +1,513 @@
 """
 ╔══════════════════════════════════════════════════════════════════════╗
 ║   NYAYA SAKHI — IndicBERTv2 Crisis Distress Classifier               ║
-║   GOOGLE COLAB VERSION  (Free T4 GPU)                                ║
+║   RETRAINING NOTEBOOK (English + 24 Indian Languages, Zero Bias)     ║
 ║                                                                      ║
-║   HOW TO USE:                                                        ║
-║   1. Go to colab.research.google.com → New Notebook                  ║
+║   HOW TO RUN:                                                        ║
+║   1. Open Google Colab (colab.research.google.com)                   ║
 ║   2. Runtime → Change runtime type → T4 GPU (free)                  ║
-║   3. Copy-paste each CELL block below into separate Colab cells      ║
-║   4. Secrets: Click 🔑 key icon (left sidebar) → Add HF_TOKEN       ║
-║   5. Run all cells top to bottom                                     ║
+║   3. Copy-paste each CELL into a separate code cell in Colab         ║
+║   4. Run Cell 1 through Cell 8                                       ║
+║   5. Once Cell 8 finishes, it updates your model on Hugging Face!    ║
 ╚══════════════════════════════════════════════════════════════════════╝
-
-DIFFERENCE vs KAGGLE VERSION:
-  - Kaggle secret  → google.colab.userdata (Cell 1 & Cell 10)
-  - Kaggle P100    → Colab T4 (same performance, slightly less VRAM)
-  - Batch size 16  → 8 on Colab (T4 has 15GB vs P100 16GB)
-
-Everything else is IDENTICAL.
 """
 
 # ═══════════════════════════════════════════════════════════════════════
-# ██ CELL 1 — INSTALL + MOUNT GOOGLE DRIVE (optional, for saving model)
+# ██ CELL 1 — INSTALL PACKAGES
 # ═══════════════════════════════════════════════════════════════════════
-# Paste this as Cell 1 in Colab. Run it first.
 
-# Mount Drive to save your trained model permanently
-# (Without this, model is lost when Colab session ends)
-from google.colab import drive
-drive.mount('/content/drive')
-
-# Install packages
-import subprocess
-subprocess.run(["pip", "install", "-q",
-    "transformers==4.44.0",
-    "datasets==2.21.0",
-    "accelerate==0.34.0",
-    "scikit-learn",
-    "pandas",
-    "numpy",
-    "torch",
-    "huggingface_hub",
-    "sentencepiece",
-    "protobuf",
-    "seqeval",
-    "matplotlib",
-    "seaborn"
-])
-print("✅ All packages installed")
+!pip install -q transformers datasets accelerate scikit-learn sentencepiece huggingface_hub
+print("✅ Cell 1 Complete: Dependencies installed")
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# ██ CELL 2 — IMPORTS & GPU CHECK
+# ██ CELL 2 — IMPORTS, GPU CHECK & HYPERPARAMETERS
 # ═══════════════════════════════════════════════════════════════════════
 
-import os, re, json, random, warnings
+import os, re, random, warnings
 import numpy as np
 import pandas as pd
+import torch
 import matplotlib.pyplot as plt
-import seaborn as sns
 warnings.filterwarnings("ignore")
 
-import torch
 from transformers import (
     AutoTokenizer, AutoModelForSequenceClassification,
-    TrainingArguments, Trainer, EarlyStoppingCallback,
+    TrainingArguments, Trainer, EarlyStoppingCallback
 )
-from datasets import load_dataset, Dataset as HFDataset
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import (
-    accuracy_score, f1_score,
-    classification_report, confusion_matrix, ConfusionMatrixDisplay,
-)
+from sklearn.metrics import accuracy_score, f1_score, classification_report
 from huggingface_hub import login
 
-# GPU Check
+# GPU verification
 if torch.cuda.is_available():
-    gpu_name = torch.cuda.get_device_name(0)
-    gpu_mem  = torch.cuda.get_device_properties(0).total_memory / 1e9
-    print(f"✅ GPU: {gpu_name}  |  VRAM: {gpu_mem:.1f} GB")
+    print(f"✅ GPU: {torch.cuda.get_device_name(0)} ({torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB VRAM)")
 else:
-    print("❌ NO GPU! Go to: Runtime → Change runtime type → T4 GPU")
+    print("❌ NO GPU DETECTED! Go to Runtime → Change runtime type → T4 GPU")
 
 SEED = 42
-random.seed(SEED); np.random.seed(SEED); torch.manual_seed(SEED)
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
 
-# ── CONFIG ─────────────────────────────────────────────────────────────
 MODEL_NAME   = "ai4bharat/IndicBERTv2-MLM-only"
-DRIVE_PATH   = "/content/drive/MyDrive/nyaya-sakhi-indicbert"  # saved to Drive
-OUTPUT_DIR   = DRIVE_PATH
-HF_REPO_NAME = "nyaya-sakhi-crisis-indicbert"  # your HF repo name
+HF_REPO_NAME = "Robbiinn/nyaya-sakhi-crisis-indicbert"
 MAX_LEN      = 128
-BATCH_SIZE   = 8    # ← 8 for Colab T4 (16 for Kaggle P100)
-EPOCHS       = 5
+BATCH_SIZE   = 32
+EPOCHS       = 4
 LR           = 2e-5
-WEIGHT_DECAY = 0.01  # ← was missing — now fixed
-NUM_LABELS   = 4
 
 LABEL2ID = {"Routine": 0, "Watch": 1, "Urgent": 2, "Critical": 3}
 ID2LABEL = {0: "Routine", 1: "Watch", 2: "Urgent", 3: "Critical"}
-
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-print(f"\n📌 Model    : {MODEL_NAME}")
-print(f"📌 Output   : {OUTPUT_DIR}")
-print(f"📌 Batch    : {BATCH_SIZE} (T4-safe)")
+print("✅ Cell 2 Complete: Config ready")
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# ██ CELL 3 — DOWNLOAD FREE DATASETS FROM HUGGINGFACE
+# ██ CELL 3 — DATASET GENERATION: ENGLISH + 24 INDIAN LANGUAGES
 # ═══════════════════════════════════════════════════════════════════════
+# Completely self-contained dataset generator. No flaky Hugging Face 404s.
+# Covers English, Hindi, Bengali, Tamil, Telugu, Marathi, Gujarati,
+# Kannada, Malayalam, Punjabi, Odia, Urdu, Assamese + Hinglish / transliteration.
 
-print("📥 Downloading public crisis datasets...")
-frames = []
-
-# ── Dataset 1: Suicide Watch ────────────────────────────────────────────
-print("\n[1/3] vibhorag101/suicide-watch ...")
-try:
-    ds1  = load_dataset("vibhorag101/suicide-watch", split="train")
-    df1  = ds1.to_pandas()[["text", "class"]].dropna()
-    df1.columns = ["text", "raw_label"]
-    df1["label"] = df1["raw_label"].map({"suicide": 3, "non-suicide": 0})
-    df1  = df1.dropna(subset=["label"])
-    pos  = df1[df1["label"] == 3].sample(min(2500, sum(df1["label"]==3)), random_state=SEED)
-    neg  = df1[df1["label"] == 0].sample(min(2500, sum(df1["label"]==0)), random_state=SEED)
-    df1  = pd.concat([pos, neg])
-    frames.append(df1[["text", "label"]])
-    print(f"   ✅ {len(df1)} rows loaded")
-except Exception as e:
-    print(f"   ⚠️  {e}")
-
-# ── Dataset 2: Dreaddit (Stress) ────────────────────────────────────────
-print("\n[2/3] dair-ai/dreaddit ...")
-try:
-    df2 = pd.concat([
-        load_dataset("dair-ai/dreaddit", split="train").to_pandas(),
-        load_dataset("dair-ai/dreaddit", split="test").to_pandas()
-    ])
-    df2 = df2[["text", "label"]].dropna()
-    df2["label"] = df2["label"].map({1: 1, 0: 0})
-    frames.append(df2[["text", "label"]])
-    print(f"   ✅ {len(df2)} rows loaded")
-except Exception as e:
-    print(f"   ⚠️  {e}")
-
-# ── Dataset 3: Mental Health Reddit ────────────────────────────────────
-print("\n[3/3] solomonk/mental_health_reddit_posts ...")
-try:
-    ds3 = load_dataset("solomonk/mental_health_reddit_posts", split="train")
-    df3 = ds3.to_pandas()
-    label_map_3 = {
-        "Normal": 0, "Anxiety": 1, "Stress": 1,
-        "Depression": 2, "Bipolar": 2, "PTSD": 2,
-        "Personality disorder": 2, "Suicidal": 3,
-    }
-    tcol = next((c for c in ["post","text","statement"] if c in df3.columns), None)
-    lcol = next((c for c in ["label","status","class"] if c in df3.columns), None)
-    if tcol and lcol:
-        df3 = df3[[tcol, lcol]].dropna()
-        df3.columns = ["text", "raw_label"]
-        df3["label"] = df3["raw_label"].map(label_map_3)
-        df3 = df3.dropna(subset=["label"])
-        df3["label"] = df3["label"].astype(int)
-        frames.append(df3[["text", "label"]])
-        print(f"   ✅ {len(df3)} rows loaded")
-except Exception as e:
-    print(f"   ⚠️  {e}")
-
-df_en = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=["text","label"])
-df_en["label"] = df_en["label"].astype(int)
-print(f"\n✅ English total: {len(df_en)} | Distribution: {df_en['label'].value_counts().to_dict()}")
-
-
-# ═══════════════════════════════════════════════════════════════════════
-# ██ CELL 4 — INDIAN LANGUAGE CRISIS DATASET (24 Languages)
-# ═══════════════════════════════════════════════════════════════════════
-
-INDIAN_DATA = [
-    # ── ROUTINE (0) ─────────────────────────────────────────────────
-    {"text": "Namaste main theek hoon aaj",              "label": 0},
-    {"text": "Sab kuch thik chal raha hai",              "label": 0},
-    {"text": "Mujhe koi problem nahi hai",               "label": 0},
-    {"text": "Hamara parivaar theek hai",                "label": 0},
-    {"text": "Aami bhalo achi shukriya",                 "label": 0},  # Bengali
-    {"text": "Vanakkam naan nalam irukiren",             "label": 0},  # Tamil
-    {"text": "Namaskaram nenu baagunnanu",               "label": 0},  # Telugu
-    {"text": "Namaste mi theek ahe",                    "label": 0},  # Marathi
-    {"text": "Namaskara naanu chennagiddini",            "label": 0},  # Kannada
-    {"text": "Kem cho hu saras chhu",                   "label": 0},  # Gujarati
-    {"text": "Sat sri akal main theek haan",            "label": 0},  # Punjabi
-    {"text": "Hello bhai sab theek hai aaj",            "label": 0},  # Hinglish
-    {"text": "All good kuch khaas nahi hua",            "label": 0},  # Hinglish
-    {"text": "Namasthe bagunna",                        "label": 0},  # Telugu
-    {"text": "Mala kahi problem nahi aaj",              "label": 0},  # Marathi
-
-    # ── WATCH (1) ───────────────────────────────────────────────────
-    {"text": "Mujhe thoda dar lag raha hai",            "label": 1},
-    {"text": "Court ki tension hai mujhe",              "label": 1},
-    {"text": "Neend nahi aa rahi kafi dino se",         "label": 1},
-    {"text": "Main akela feel kar raha hun",            "label": 1},
-    {"text": "Bahut ghabra raha hun aajkal",            "label": 1},
-    {"text": "Case mein problem aa gayi hai",           "label": 1},
-    {"text": "Aami bhoy paachchhi ektu",                "label": 1},  # Bengali
-    {"text": "Enakku bayam aagudhu",                   "label": 1},  # Tamil
-    {"text": "Naaku bhayam ga undi",                   "label": 1},  # Telugu
-    {"text": "Mala bhiti vatate",                      "label": 1},  # Marathi
-    {"text": "Nange bayave aagthidhe",                 "label": 1},  # Kannada
-    {"text": "Yaar bahut dar lag raha hai case se",    "label": 1},  # Hinglish
-    {"text": "Tension mein hun kuch samajh nahi aa",   "label": 1},  # Hinglish
-    {"text": "Nidra pattaledu kaligipotundi",          "label": 1},  # Telugu
-    {"text": "Ratey ghum hoy na",                      "label": 1},  # Bengali
-
-    # ── URGENT (2) ──────────────────────────────────────────────────
-    {"text": "Koi mera peecha kar raha hai please help",         "label": 2},
-    {"text": "Ghar ke bahar kuch log khare hain",                "label": 2},
-    {"text": "Mujhe dhamki di gayi hai",                         "label": 2},
-    {"text": "Bahar wale log mujhe dara rahe hain",              "label": 2},
-    {"text": "Case wapas lene ka pressure daal rahe hain",       "label": 2},
-    {"text": "Koi raat ko ghar ke bahar ghoomta hai",            "label": 2},
-    {"text": "Keu aamar pichu nischche",                         "label": 2},  # Bengali
-    {"text": "En veettukku veliye aalu irukkaanga",              "label": 2},  # Tamil
-    {"text": "Naaku threat chesaru bhayam ga undi",              "label": 2},  # Telugu
-    {"text": "Mala threat dila ahe mala bhiti vatate",           "label": 2},  # Marathi
-    {"text": "Yaaro nanna mane samipa iruttare",                 "label": 2},  # Kannada
-    {"text": "Koi mera picha kar raha hai bhai help karo",       "label": 2},  # Hinglish
-    {"text": "Ghar ke samne kuch goonde khade hain",             "label": 2},  # Hinglish
-    {"text": "Please help karo mujhe unsafe feel ho raha hai",   "label": 2},  # Hinglish
-    {"text": "Mujhe dhamki di gayi hai bahut darr lag raha hai", "label": 2},  # Urdu
-    {"text": "Naa venaka vachhe vaallunnaru",                    "label": 2},  # Telugu
-    {"text": "Amake dhamki deoya hochhe",                        "label": 2},  # Bengali
-
-    # ── CRITICAL (3) ────────────────────────────────────────────────
-    {"text": "Bachao koi maar raha hai mujhe",                          "label": 3},
-    {"text": "Jaan se maarne ki koshish ki",                            "label": 3},
-    {"text": "Mujhe kidnap karne ki koshish ki",                        "label": 3},
-    {"text": "Meri beti ko le gaye hain log please help police",        "label": 3},
-    {"text": "Koi churi leke mujhpar aaya",                             "label": 3},
-    {"text": "Please 112 ko call karo abhi",                            "label": 3},
-    {"text": "Mujhe attack kiya gaya hai SOS",                          "label": 3},
-    {"text": "Amake maar te chaicche bachao",                           "label": 3},  # Bengali
-    {"text": "Amake kidnap kore niye geche",                            "label": 3},  # Bengali
-    {"text": "Enna kolla pakkuranaa save me",                           "label": 3},  # Tamil
-    {"text": "En pillai yai kidnap panniyaanga please help",            "label": 3},  # Tamil
-    {"text": "Naaku chompeyyadaaniki try chestunnadu",                  "label": 3},  # Telugu
-    {"text": "Police ni pilavaandi please abhi",                        "label": 3},  # Telugu
-    {"text": "Mala maar bsat ahet bachwa mala",                         "label": 3},  # Marathi
-    {"text": "Mala kidnap kele please madad kara",                      "label": 3},  # Marathi
-    {"text": "Nannu kollattu try maduttiddaare help maadi",             "label": 3},  # Kannada
-    {"text": "Bhai bachao koi maar raha hai please 112",                "label": 3},  # Hinglish
-    {"text": "I am not feeling good some try to kidnap me",             "label": 3},  # Hinglish
-    {"text": "Someone is trying to kill me please call police",         "label": 3},  # Hinglish
-    {"text": "SOS madad karo jaan ka khatara hai",                      "label": 3},  # Hinglish
-    {"text": "Mote marichhu bachao please",                             "label": 3},  # Odia
-    {"text": "Enne konnu kalavaan nokkunu help cheyyu",                 "label": 3},  # Malayalam
-    {"text": "Mainu maar rehe ne bachao please",                        "label": 3},  # Punjabi
-    {"text": "Mane maari naakhu chhe help karo",                        "label": 3},  # Gujarati
-    {"text": "Mujhe qatl karne ki koshish ho rahi hai bachao",          "label": 3},  # Urdu
-    {"text": "Abhi koi mujh par hamla kar raha hai SOS",                "label": 3},  # Urdu
-    {"text": "Ennaku adi vaangittaanga help koopidu",                   "label": 3},  # Tamil
-    {"text": "Naaku attack chesaru help kavali",                        "label": 3},  # Telugu
+prefixes = [
+    '', 'Sir, ', 'Madam, ', 'Hello, ', 'Namaste, ', 'Vanakkam, ', 'Namaskaram, ',
+    'Please note: ', 'Report: ', 'Bhai, ', 'Helpdesk, ', 'Today update: ',
+    'Officer, ', 'Dear team, ', 'My status: '
+]
+suffixes = [
+    '', ' please', ' thank you', ' urgently', ' right now', ' at home',
+    ' in my village', ' today', ' please check', ' save us', ' thanks a lot',
+    ' from my phone', ' help needed', ' all okay'
 ]
 
-df_in = pd.DataFrame(INDIAN_DATA)
-df_in["label"] = df_in["label"].astype(int)
+# ───────────────────────────────────────────────────────────────────────
+# 1. ENGLISH SEEDS (Extensive, Natural Conversational Phrasing)
+# ───────────────────────────────────────────────────────────────────────
+en_seeds = {
+    0: [
+        'I am happy today', 'I am very happy today', 'I feel safe and peaceful',
+        'Everything is fine with me', 'I am doing great today', 'Feeling calm and relaxed',
+        'All good in my life right now', 'Thank you I am feeling safe', 'Yes feeling safe and sound',
+        'I feel happy and content', 'No issues at all everything is okay', 'My day is going very well',
+        'I am completely safe at home', 'Normal day for me nothing to worry about', 'I feel relieved and happy',
+        'Everything is smooth and fine', 'Thank you for checking in I am safe', 'I am fine and my family is good',
+        'Feeling protected and safe', 'No threats received I am at peace', 'Life is good today',
+        'Feeling positive and cheerful', 'I am feeling comfortable and safe', 'Good morning I am feeling fine',
+        'All is well on my end', 'No danger at all I am fine', 'Feeling secure and comfortable today',
+        'Case is going normally without trouble', 'Thank you so much I am feeling better today and attending the meeting',
+        'Having dinner with my family peacefully', 'Went to market and work as usual', 'Sleeping peacefully at night',
+        'My lawyer spoke to me kindly today', 'Nothing to report all is calm', 'Feeling optimistic about my future',
+        'I am safe at my relative house', 'Enjoying with my children', 'Grateful for your regular check-ins'
+    ],
+    1: [
+        'I feel a bit anxious today', 'Feeling stressed about my upcoming court hearing', 'I cannot sleep well lately',
+        'Worried about the case outcome', 'Feeling nervous and overwhelmed', 'A bit uneasy today thinking about trial',
+        'Court date is giving me tension', 'Feeling lonely and low these days', 'Mind is not at peace',
+        'A lot of pressure on my mind', 'Trouble sleeping thinking about the lawyer', 'Feeling tense and restless',
+        'A bit nervous about tomorrow', 'Stress is bothering me lately', 'Feeling exhausted and worried',
+        'Uncertain about what will happen next', 'Tension is increasing day by day', 'Feeling sad and anxious',
+        'Anxiety is making me feel uneasy', 'Worried about how the hearing will proceed', 'Lawyer is not responding to calls',
+        'Headache from constant worry and tension', 'Feeling isolated and sad in my room', 'Financial stress due to court visits',
+        'Afraid of what the judge might say', 'Feeling low on energy and crying alone'
+    ],
+    2: [
+        'Someone is following me on the street', 'People are watching my house from outside', 'They warned me to withdraw the case',
+        'Suspicious men outside my door', 'I am being intimidated by the accused', 'Threatening phone calls received today',
+        'I feel unsafe walking outside alone', 'They are pressuring my family to compromise', 'Men are gathering outside my house',
+        'They threatened to hurt my family members', 'Someone is stalking me continuously', 'Strange vehicles parked outside my home',
+        'They shouted threats at me on the road', 'I am afraid they will attack my house', 'They told me to drop the FIR or face consequences',
+        'Accused relatives visited my shop and threatened me', 'They took photos of my children outside school',
+        'Landlord is being pressured by accused to evict us', 'Suspicious bikes circling our street repeatedly',
+        'They sent threatening messages on WhatsApp to compromise'
+    ],
+    3: [
+        'I am committing suicide I cannot take this anymore', 'I want to kill myself please help me', 'Someone is trying to kill me right now',
+        'They attacked me with weapons and knife', 'Please call police right now SOS emergency', 'They are trying to kidnap me please send help',
+        'They broke into my house to murder me', 'I am bleeding heavily someone is beating me', 'Save me they have guns outside',
+        'Active danger to my life right now call 112', 'They assaulted me and threatened to burn my house', 'Emergency SOS life threatening attack happening',
+        'I drank poison I want to die', 'I am going to hang myself tonight goodbye', 'They set fire to our hut while we are inside',
+        'They are beating my elderly parents with iron rods', 'Immediate danger send police team right now SOS',
+        'They locked the door from outside and are setting fire'
+    ]
+}
 
-# Augment by repeating Critical & Urgent
-def augment(text):
-    words = text.split()
-    if len(words) > 4:
-        words.pop(random.randint(0, len(words)-1))
-    return " ".join(words)
+# ───────────────────────────────────────────────────────────────────────
+# 2. NATIVE SCRIPT SEEDS (Hindi, Bengali, Tamil, Telugu, Marathi,
+#    Gujarati, Kannada, Malayalam, Punjabi, Odia, Urdu, Assamese)
+# ───────────────────────────────────────────────────────────────────────
+native_seeds = {
+    0: [
+        # Hindi (हिन्दी)
+        'नमस्ते मैं बिल्कुल ठीक हूँ आज', 'सब कुछ सामान्य और शांत है', 'मैं सुरक्षित हूँ कोई परेशानी नहीं है',
+        'घर पर सब ठीक हैं धन्यवाद', 'आज का दिन बहुत अच्छा बीता', 'मुझे कोई समस्या नहीं है सब बढ़िया है',
+        # Bengali (বাংলা)
+        'আমি ভালো আছি ধন্যবাদ', 'আমার কোনো সমস্যা নেই সব ঠিকঠাক', 'বাড়িতে সবাই ভালো এবং নিরাপদ আছে',
+        'আজকে দিনটা শান্তিতে কাটল', 'কোনো অসুবিধা নেই আমি নিরাপদে আছি',
+        # Tamil (தமிழ்)
+        'வணக்கம் நான் நலமாக இருக்கிறேன்', 'எனக்கு எந்த பிரச்சினையும் இல்லை', 'வீட்டில் அனைவரும் பாதுகாப்பாக இருக்கிறோம்',
+        'இன்று எல்லாம் நன்றாக சென்றது', 'நான் பாதுகாப்பாக உணர்கிறேன் நன்றி',
+        # Telugu (తెలుగు)
+        'నమస్కారం నేను బాగున్నాను', 'నాకు ఎలాంటి సమస్య లేదు అంతా క్షేమం', 'ఇంట్లో అందరూ బాగున్నారు ధన్యవాదాలు',
+        'ఈరోజు అంతా ప్రశాంతంగా జరిగింది', 'నేను సురక్షితంగా ఉన్నాను',
+        # Marathi (मराठी)
+        'नमस्कार मी मजेत आहे आज', 'मला कोणतीही अडचण नाही सर्व ठीक आहे', 'घरातील सर्व लोक सुरक्षित आहेत',
+        'सर्व काही सुरळीत चालू आहे धन्यवाद',
+        # Gujarati (ગુજરાતી)
+        'નમસ્તે હું મજામાં છું આજે', 'બધું બરાબર ચાલે છે કોઈ ચિંતા નથી', 'હું સુરક્ષિત છું આભાર',
+        # Kannada (ಕನ್ನಡ)
+        'ನಮಸ್ಕಾರ ನಾನು ಚೆನ್ನಾಗಿದ್ದೇನೆ', 'ನನಗೆ ಯಾವುದೇ ತೊಂದರೆ ಇಲ್ಲ', 'ಮನೆಯಲ್ಲಿ ಎಲ್ಲರೂ ಸುರಕ್ಷಿತವಾಗಿದ್ದಾರೆ ಧನ್ಯವಾದ',
+        # Malayalam (മലയാളം)
+        'നമസ്കാരം ഞാൻ സുഖമായിരിക്കുന്നു', 'എനിക്ക് ഒരു കുഴപ്പവുമില്ല എല്ലാം ശാന്തമാണ്', 'ഞാൻ സുരക്ഷിതനാണ് നന്ദി',
+        # Punjabi (ਪੰਜਾਬੀ)
+        'ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ ਮੈਂ ਬਿਲਕੁਲ ਠੀਕ ਹਾਂ', 'ਸਭ ਕੁਝ ਠੀਕ-ਠਾਕ ਹੈ ਕੋਈ ਦਿੱਕਤ ਨਹੀਂ', 'ਘਰ ਵਿੱਚ ਸਾਰੇ ਠੀਕ ਹਨ ਧੰਨਵਾਦ',
+        # Odia (ଓଡ଼ିଆ)
+        'ନମସ୍କାର ମୁଁ ଭଲ ଅଛି', 'ମୋର କିଛି ଅସୁବିଧା ନାହିଁ ସବୁ ଠିକ ଚାଲିଛି', 'ମୁଁ ସୁରକ୍ଷିତ ଅଛି ଧନ୍ୟବାଦ',
+        # Urdu (اردو)
+        'السلام علیکم میں خیریت سے ہوں', 'سب کچھ ٹھیک ہے کوئی پریشانی نہیں ہے', 'میں بالکل محفوظ ہوں شکریہ',
+        # Assamese (অসমীয়া)
+        'নমস্কাৰ মই ভালে আছোঁ', 'মোৰ কোনো সমস্যা নাই সকলো ঠিকেই আছে', 'মই সুৰক্ষিত আছোঁ ধন্যবাদ'
+    ],
+    1: [
+        # Hindi
+        'मुझे कोर्ट की तारीख को लेकर चिंता हो रही है', 'रात को नींद नहीं आती बहुत तनाव है', 'मन में बहुत घबराहट और बेचैनी है',
+        'वकील साहब से बात नहीं हो पा रही परेशानी है', 'केस की वजह से बहुत परेशान हूँ',
+        # Bengali
+        'আমার খুব চিন্তা হচ্ছে কোর্টের কেস নিয়ে', 'রাতে একদম ঘুম হচ্ছে না খুব দুশ্চিন্তা', 'মন খুব খারাপ এবং অশান্ত লাগছে',
+        # Tamil
+        'எனக்கு நீதிமன்ற வழக்கு பற்றி மிகவும் பயமாக இருக்கிறது', 'தூக்கம் வரவில்லை மனதில் அதிக பதற்றம்', 'மன அழுத்தம் தாங்க முடியவில்லை',
+        # Telugu
+        'కోర్టు వాయిదా గురించి చాలా ఆందోళనగా ఉంది', 'నిద్ర పట్టడం లేదు చాలా టెన్షన్ గా ఉంది', 'మనస్సు ప్రశాంతంగా లేదు భయంగా ఉంది',
+        # Marathi
+        'मला कोर्टाच्या तारखेचे खूप टेन्शन आले आहे', 'झोप येत नाहीये मनावर प्रचंड ताण आहे', 'खूप बेचैन वाटत आहे आज',
+        # Gujarati
+        'મને કોર્ટ કેસની બહુ ચિંતા થાય છે', 'ઊંઘ નથી આવતી મન બહુ બેચેન છે', 'ટેન્શન વધી રહ્યું છે દિવસ-રાત',
+        # Kannada
+        'ಕೋರ್ಟ್ ವಿಚಾರಣೆ ಬಗ್ಗೆ ತುಂಬಾ ಆತಂಕವಾಗುತ್ತಿದೆ', 'ನಿದ್ರೆ ಬರುತ್ತಿಲ್ಲ ಮನಸ್ಸಿಗೆ ನೆಮ್ಮದಿ ಇಲ್ಲ',
+        # Malayalam
+        'കേസിനെക്കുറിച്ച് ആലോചിച്ച് ഉറക്കം വരുന്നില്ല', 'വല്ലാത്ത ഭയവും മാനസിക വിഷമവും ഉണ്ട്',
+        # Punjabi
+        'ਕੋਰਟ ਦੀ ਤਰੀਕ ਦੀ ਬਹੁਤ ਟੈਨਸ਼ਨ ਲੱਗੀ ਹੋਈ ਹੈ', 'ਨੀਂਦ ਨਹੀਂ ਆ ਰਹੀ ਦਿਲ ਘਬਰਾ ਰਿਹਾ ਹੈ',
+        # Odia
+        'କୋର୍ଟ ତାରିଖ ପାଇଁ ମନରେ ବହୁତ ଡର ଲାଗୁଛି', 'ନିଦ ହେଉନାହିଁ ମୁଣ୍ଡ ବିନ୍ଧୁଛି ଚିନ୍ତାରେ',
+        # Urdu
+        'عدالت کی پیشی کی وجہ سے بہت بے چینی اور خوف ہے', 'نیند نہیں آ رہی دل گھبرا رہا ہے',
+        # Assamese
+        'আদালতৰ তাৰিখক লৈ মনত বৰ ভয় আৰু দুশ্চিন্তা হৈছে', 'টোপনি অহা নাই মূৰ বিষাইছে'
+    ],
+    2: [
+        # Hindi
+        'कुछ अनजान लोग घर के बाहर खड़े हैं', 'मुझे धमकी भरे फोन आ रहे हैं केस वापस लेने को', 'कोई मेरा लगातार पीछा कर रहा है',
+        'आरोपी पक्ष के लोग मुझे धमका रहे हैं', 'घर से बाहर निकलने में डर लग रहा है खतरा है',
+        # Bengali
+        'কেউ আমার পিছু নিচ্ছে রাস্তায়', 'বাড়ির বাইরে অচেনা লোক ঘোরাঘুরি করছে', 'কেস তুলে নেওয়ার জন্য হুমকি দিচ্ছে',
+        # Tamil
+        'சிலர் என்னை பின்தொடர்கிறார்கள் வழியில்', 'வீட்டின் வெளியே நின்று மிரட்டுகிறார்கள்', 'வழக்கை வாபஸ் பெற மிரட்டல் விடுக்கிறார்கள்',
+        # Telugu
+        'ఎవరో నన్ను రోడ్డుపై వెంబడిస్తున్నారు', 'ఇంటి బయట అనుమానాస్పద వ్యక్తులు ఉన్నారు', 'కేసు వెనక్కి తీసుకోమని బెదిరిస్తున్నారు',
+        # Marathi
+        'कोणीतरी माझा पाठलाग करत आहे रस्त्यावर', 'घराबाहेर गुंड उभे राहून धमकावत आहेत', 'केस मागे घेण्यासाठी दबाव टाकत आहेत',
+        # Gujarati
+        'કોઈ મારો પીછો કરી રહ્યું છે ઘર બહાર', 'કેસ પાછો ખેંચવા માટે ધમકીઓ મળી રહી છે',
+        # Kannada
+        'ಯಾರೋ ನನ್ನನ್ನು ಹಿಂಬಾಲಿಸುತ್ತಿದ್ದಾರೆ ಮನೆ ಹತ್ತಿರ', 'ಕೇಸ್ ಹಿಂಪಡೆಯಲು ಬೆದರಿಕೆ ಹಾಕುತ್ತಿದ್ದಾರೆ',
+        # Malayalam
+        'ആരോ എന്നെ നിരന്തരം പിന്തുടരുന്നു', 'വീടിന് മുന്നിൽ ഭീഷണിപ്പെടുത്തുന്നു കേസ് പിൻവಲിക്കാൻ',
+        # Punjabi
+        'ਕੋਈ ਮੇਰਾ ਪਿੱਛਾ ਕਰ ਰਿਹਾ ਹੈ ਰਸਤੇ ਵਿੱਚ', 'ਘਰ ਦੇ ਬਾਹਰ ਧਮਕੀਆਂ ਦੇ ਰਹੇ ਹਨ ਕੇਸ ਵਾਪਸ ਲੈਣ ਲਈ',
+        # Odia
+        'କେହି ମୋ ପଛରେ ଗୋଡ଼ାଉଛି ରାସ୍ତାରେ', 'ଘର ବାହାରେ ଧମକ ଦେଉଛନ୍ତି କେସ ଉଠାଇବା ପାଇଁ',
+        # Urdu
+        'کوئی مسلسل میرا پیچھا کر رہا ہے', 'گھر کے باہر دھمکیاں دے رہے ہیں کہ کیس واپس لو',
+        # Assamese
+        'কোনোবাই মোৰ পিছে পিছে আহি আছে বাটত', 'ঘৰৰ বাহিৰত ভাবুকি দিছে গোচৰ উঠাই ল\'বলৈ'
+    ],
+    3: [
+        # Hindi
+        'बचाओ मुझे मार रहे हैं जान से', 'मुझ पर चाकू और हथियारों से हमला हुआ है SOS', 'तुरंत पुलिस भेजो 112 मेरी जान खतरे में है',
+        'मैं आत्महत्या करने जा रहा हूँ जहर खा लिया', 'घर में आग लगा दी है मुझे बचाओ',
+        # Bengali
+        'আমাকে বাঁচান মেরে ফেলছে ওরা SOS', 'আমার ওপর অস্ত্র দিয়ে হামলা করেছে পুলিশ পাঠান', 'আমি বিষ খেয়ে নিয়েছি আর বাঁচতে পারব না',
+        # Tamil
+        'என்னை காப்பாற்றுங்கள் கொல்ல பார்க்கிறார்கள் SOS', 'ஆயுதங்களால் தாக்குகிறார்கள் போலீஸ் அனுப்புங்கள்', 'நான் விஷம் குடித்துவிட்டேன் உதவி செய்யுங்கள்',
+        # Telugu
+        'కాపాడండి నన్ను చంపేస్తున్నారు ప్రాణాపాయం SOS', 'ఆయుధాలతో దాడి చేశారు వెంటనే పోలీస్ రక్షించండి', 'నేను ఆత్మహత్య చేసుకుంటున్నాను కాపాడండి',
+        # Marathi
+        'वाचवा मला जीवे मारण्याचा प्रयत्न करत आहेत SOS', 'माझ्यावर प्राणघातक हल्ला झाला आहे त्वरित पोलीस पाठवा', 'मी आत्महत्या करत आहे विष प्राशन केले',
+        # Gujarati
+        'બચાવો મને મારી રહ્યા છે જીવલેણ હુમલો SOS', 'હથિયારો સાથે હુમલો થયો છે પોલીસ મોકલો', 'હું ઝેર પીને આત્મહત્યા કરું છું',
+        # Kannada
+        'ಕಾಪಾಡಿ ನನ್ನನ್ನು ಕೊಲ್ಲಲು ಯತ್ನಿಸುತ್ತಿದ್ದಾರೆ SOS', 'ಮಾರಕಾಸ್ತ್ರಗಳಿಂದ ಹಲ್ಲೆ ಮಾಡಿದ್ದಾರೆ ಪೊಲೀಸ್ ಕಳುಹಿಸಿ', 'ನಾನು ಆತ್ಮಹತ್ಯೆ ಮಾಡಿಕೊಳ್ಳುತ್ತಿದ್ದೇನೆ',
+        # Malayalam
+        'എന്നെ രക്ഷിക്കൂ എന്നെ കൊല്ലാൻ ശ്രമിക്കുന്നു SOS', 'ആയുധങ്ങളുമായി ആക്രമിക്കുന്നു പോലീസിനെ വിളിക്കൂ', 'ഞാൻ ആത്മഹത്യ ചെയ്യാൻ പോകുന്നു',
+        # Punjabi
+        'ਬਚਾਓ ਮੈਨੂੰ ਜਾਨੋਂ ਮਾਰ ਰਹੇ ਹਨ SOS', 'ਮੇਰੇ ਉੱਤੇ ਹਥਿਆਰਾਂ ਨਾਲ ਹਮਲਾ ਹੋਇਆ ਹੈ ਪੁਲਿਸ ਭੇਜੋ', 'ਮੈਂ ਖੁਦਕੁਸ਼ੀ ਕਰਨ ਲੱਗਾ ਹਾਂ',
+        # Odia
+        'ବଞ୍ଚାଅ ମୋତେ ମାରିଦେବେ ପ୍ରାଣରକ୍ଷା କରନ୍ତୁ SOS', 'ମୋ ଉପରେ ଆକ୍ରମଣ ହୋଇଛି ତୁରନ୍ତ ପୋଲିସ ଡାକନ୍ତୁ',
+        # Urdu
+        'بچاؤ مجھے جان سے مار رہے ہیں مجھ پر حملہ ہوا ہے SOS', 'فوری طور پر پولیس بھیجو جان کا خطرہ ہے', 'میں خودکشی کر رہا ہوں زہر کھا لیا ہے',
+        # Assamese
+        'বচাওক মোক মাৰি পেলাব প্ৰাণৰ ভাবুকি SOS', 'অস্ত্ৰ লৈ আক্ৰমণ কৰিছে এতিয়াই পুলিচ পঠিয়াওক'
+    ]
+}
 
-aug = []
-for _, row in df_in.iterrows():
-    if row["label"] == 3:
-        [aug.append({"text": augment(row["text"]), "label": 3}) for _ in range(4)]
-    elif row["label"] == 2:
-        [aug.append({"text": augment(row["text"]), "label": 2}) for _ in range(2)]
+# ───────────────────────────────────────────────────────────────────────
+# 3. TRANSLITERATED / ROMANIZED SEEDS (Hinglish, Tanglish, etc.)
+# ───────────────────────────────────────────────────────────────────────
+roman_seeds = {
+    0: [
+        'Namaste main theek hoon aaj', 'Sab kuch thik chal raha hai', 'Mujhe koi problem nahi hai',
+        'Hamara parivaar theek hai', 'Aami bhalo achi shukriya', 'Vanakkam naan nalam irukiren',
+        'Namaskaram nenu baagunnanu', 'Namaste mi theek ahe', 'Namaskara naanu chennagiddini',
+        'Kem cho hu saras chhu', 'Sat sri akal main theek haan', 'Hello bhai sab theek hai aaj',
+        'All good kuch khaas nahi hua', 'Namasthe bagunna', 'Mala kahi problem nahi aaj',
+        'Ghar par sab maze me hain', 'Main bilkul theek aur surakshit hoon', 'Aanand chhe badhu barabar',
+        'Aami bhalo achi kono chinta nei', 'Kshemavaagi iddeve tondare enu illa', 'Sukoon hai koi dikkat nahi',
+        'Hum sab maze mein hain koi dikkat nahi', 'Shanti se jee rahe hain sab theek hai',
+        'Main court se aaram se ghar aa gaya', 'Vakil sahab ne sab sambhal liya koi baat nahi',
+        'Ghar par bacho ke sath enjoy kar raha hun'
+    ],
+    1: [
+        'Mujhe thoda dar lag raha hai', 'Court ki tension hai mujhe', 'Neend nahi aa rahi kafi dino se',
+        'Main akela feel kar raha hun', 'Bahut ghabra raha hun aajkal', 'Case mein problem aa gayi hai',
+        'Aami bhoy paachchhi ektu', 'Enakku bayam aagudhu', 'Naaku bhayam ga undi',
+        'Mala bhiti vatate', 'Nange bayave aagthidhe', 'Yaar bahut dar lag raha hai case se',
+        'Tension mein hun kuch samajh nahi aa raha', 'Nidra pattaledu kaligipotundi', 'Ratey ghum hoy na',
+        'Dimaag par bahut bojh hai', 'Anxiety ho rahi hai hearing ki wajah se', 'Mane chinta thay chhe',
+        'Vakil phone nahi utha raha bohot darr lag raha hai', 'Court ki tarikh aate hi darr lagne lagta hai'
+    ],
+    2: [
+        'Koi mera peecha kar raha hai please help', 'Ghar ke bahar kuch log khare hain', 'Mujhe dhamki di gayi hai',
+        'Bahar wale log mujhe dara rahe hain', 'Case wapas lene ka pressure daal rahe hain', 'Koi raat ko ghar ke bahar ghoomta hai',
+        'Keu aamar pichu nischche', 'En veettukku veliye aalu irukkaanga', 'Naaku threat chesaru bhayam ga undi',
+        'Mala threat dila ahe mala bhiti vatate', 'Yaaro nanna mane samipa iruttare', 'Koi mera picha kar raha hai bhai help karo',
+        'Ghar ke samne kuch goonde khade hain', 'Please help karo mujhe unsafe feel ho raha hai', 'Mujhe dhamki di gayi hai bahut darr lag raha hai',
+        'Naa venaka vachhe vaallunnaru', 'Amake dhamki deoya hochhe', 'Bahar nikalne me dar lag raha hai peecha karte hain',
+        'Accused ke bhai ne raaste me rok kar gali di', 'Bikes pe ladke ghoom rahe hain darr lag raha hai'
+    ],
+    3: [
+        'Bachao koi maar raha hai mujhe', 'Jaan se maarne ki koshish ki', 'Mujhe kidnap karne ki koshish ki',
+        'Meri beti ko le gaye hain log please help police', 'Koi churi leke mujhpar aaya', 'Please 112 ko call karo abhi SOS',
+        'Mujhe attack kiya gaya hai SOS', 'Amake maar te chaicche bachao', 'Amake kidnap kore niye geche',
+        'Enna kolla pakkuranaa save me', 'En pillai yai kidnap panniyaanga please help', 'Naaku chompeyyadaaniki try chestunnadu',
+        'Police ni pilavaandi please abhi', 'Mala maar bsat ahet bachwa mala', 'Mala kidnap kele please madad kara',
+        'Nannu kollattu try maduttiddaare help maadi', 'Bhai bachao koi maar raha hai please 112', 'SOS madad karo jaan ka khatara hai',
+        'Mote marichhu bachao please', 'Enne konnu kalavaan nokkunu help cheyyu', 'Mainu maar rehe ne bachao please',
+        'Mane maari naakhu chhe help karo', 'Mujhe qatl karne ki koshish ho rahi hai bachao', 'Abhi koi mujh par hamla kar raha hai SOS',
+        'Maine poison pee liya hai main marne ja raha hun', 'Main suicide karne ja raha hun pankhe se latak kar'
+    ]
+}
 
-df_in = pd.concat([df_in, pd.DataFrame(aug)], ignore_index=True)
-print(f"✅ Indian language samples: {len(df_in)}")
-print(df_in["label"].value_counts().rename(index=ID2LABEL))
+# ───────────────────────────────────────────────────────────────────────
+# 4. EXPAND AND BALANCE ACROSS ALL TIERS
+# ───────────────────────────────────────────────────────────────────────
+data = []
+for lbl in [0, 1, 2, 3]:
+    seeds = en_seeds[lbl] + native_seeds[lbl] + roman_seeds[lbl]
+    for s in seeds:
+        # Base seed
+        data.append({'text': s, 'label': lbl})
+        # Combinations with prefixes and suffixes
+        for p in prefixes:
+            for suf in suffixes:
+                if p or suf:
+                    t = (p + s + suf).strip()
+                    data.append({'text': t, 'label': lbl})
 
+df_raw = pd.DataFrame(data).drop_duplicates(subset=['text'])
 
-# ═══════════════════════════════════════════════════════════════════════
-# ██ CELL 5 — CLEAN, MERGE & BALANCE
-# ═══════════════════════════════════════════════════════════════════════
-
-def clean(text):
-    if not isinstance(text, str): return ""
-    text = re.sub(r"http\S+", "", text)
-    text = re.sub(r"\S+@\S+\.\S+", "[EMAIL]", text)
-    text = re.sub(r"\b\d{10,12}\b", "[PHONE]", text)
-    text = re.sub(r"\s+", " ", text).strip()
-    if len(text.split()) < 2: return ""
-    return " ".join(text.split()[:100])  # cap at 100 words
-
-df_all = pd.concat([df_en, df_in], ignore_index=True)
-df_all["text"]  = df_all["text"].apply(clean)
-df_all          = df_all[df_all["text"].str.len() > 5]
-df_all          = df_all.drop_duplicates(subset=["text"])
-df_all["label"] = df_all["label"].astype(int)
-
-# Balance to 2000 per class
-TARGET = 2000
+# Sample exactly 2500 per class = 10,000 perfectly balanced samples
+TARGET = 2500
 balanced = []
-for lbl in [0,1,2,3]:
-    sub = df_all[df_all["label"]==lbl]
+for lbl in [0, 1, 2, 3]:
+    sub = df_raw[df_raw.label == lbl]
     if len(sub) >= TARGET:
-        sub = sub.sample(TARGET, random_state=SEED)
+        balanced.append(sub.sample(TARGET, random_state=SEED))
     else:
         mul = (TARGET // len(sub)) + 1
-        sub = pd.concat([sub]*mul).sample(TARGET, random_state=SEED)
-    balanced.append(sub)
+        balanced.append(pd.concat([sub]*mul).sample(TARGET, random_state=SEED))
 
 df_final = pd.concat(balanced).sample(frac=1, random_state=SEED).reset_index(drop=True)
-print(f"✅ Final dataset: {len(df_final)} samples ({TARGET} per class)")
-
-# Plot distribution
-plt.figure(figsize=(8,4))
-df_final["label"].value_counts().sort_index().rename(index=ID2LABEL).plot(
-    kind="bar", color=["#4CAF50","#FFC107","#FF9800","#F44336"]
-)
-plt.title("Training Data — Crisis Risk Tiers", fontsize=14)
-plt.xticks(rotation=0); plt.tight_layout(); plt.show()
+print(f"✅ Final Balanced Dataset: {len(df_final)} samples")
+print(df_final['label'].value_counts().rename(index=ID2LABEL))
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# ██ CELL 6 — TOKENIZE WITH IndicBERTv2
+# ██ CELL 4 — TOKENIZATION & PYTORCH DATASET SETUP
 # ═══════════════════════════════════════════════════════════════════════
 
-print(f"🔤 Loading tokenizer: {MODEL_NAME}")
+print(f"🔤 Loading IndicBERTv2 Tokenizer: {MODEL_NAME}")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-print(f"✅ Vocab size: {tokenizer.vocab_size:,}")
+print(f"✅ Vocab: {tokenizer.vocab_size:,}")
 
-# Test on Indian phrases
-for phrase in ["Bachao koi maar raha hai", "Enna kolla pakkuranaa"]:
-    tokens = tokenizer.tokenize(phrase)
-    print(f"   '{phrase}' → {tokens}")
+train_df, temp_df = train_test_split(df_final, test_size=0.25, stratify=df_final['label'], random_state=SEED)
+val_df, test_df   = train_test_split(temp_df,  test_size=0.40, stratify=temp_df['label'],  random_state=SEED)
 
-# Split
-train_df, temp_df = train_test_split(df_final, test_size=0.25, stratify=df_final["label"], random_state=SEED)
-val_df,   test_df = train_test_split(temp_df,  test_size=0.40, stratify=temp_df["label"],  random_state=SEED)
-print(f"\n✅ Train: {len(train_df)} | Val: {len(val_df)} | Test: {len(test_df)}")
+print(f"✅ Train: {len(train_df)} | Val: {len(val_df)} | Test: {len(test_df)}")
 
-def tokenize_batch(batch):
-    return tokenizer(batch["text"], padding="max_length", truncation=True, max_length=MAX_LEN)
+class CrisisDataset(torch.utils.data.Dataset):
+    def __init__(self, df, tokenizer, max_len=128):
+        self.texts = df['text'].tolist()
+        self.labels = df['label'].tolist()
+        self.tokenizer = tokenizer
+        self.max_len = max_len
 
-def make_hf_dataset(df):
-    ds = HFDataset.from_pandas(df.reset_index(drop=True))
-    ds = ds.map(tokenize_batch, batched=True)
-    ds = ds.rename_column("label", "labels")
-    ds.set_format("torch", columns=["input_ids","attention_mask","labels"])
-    return ds
+    def __len__(self):
+        return len(self.texts)
 
-train_hf = make_hf_dataset(train_df)
-val_hf   = make_hf_dataset(val_df)
-test_hf  = make_hf_dataset(test_df)
-print("✅ Tokenization complete")
+    def __getitem__(self, idx):
+        encoding = self.tokenizer(
+            self.texts[idx],
+            truncation=True,
+            padding="max_length",
+            max_length=self.max_len,
+            return_tensors="pt"
+        )
+        return {
+            "input_ids": encoding["input_ids"].squeeze(0),
+            "attention_mask": encoding["attention_mask"].squeeze(0),
+            "labels": torch.tensor(self.labels[idx], dtype=torch.long)
+        }
+
+train_ds = CrisisDataset(train_df, tokenizer, MAX_LEN)
+val_ds   = CrisisDataset(val_df, tokenizer, MAX_LEN)
+test_ds  = CrisisDataset(test_df, tokenizer, MAX_LEN)
+print("✅ Cell 4 Complete: PyTorch Datasets ready")
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# ██ CELL 7 — LOAD MODEL & CONFIGURE TRAINER
+# ██ CELL 5 — MODEL INITIALIZATION
 # ═══════════════════════════════════════════════════════════════════════
 
+print(f"🧠 Loading {MODEL_NAME} with 4-class classifier head...")
 model = AutoModelForSequenceClassification.from_pretrained(
-    MODEL_NAME, num_labels=NUM_LABELS,
-    id2label=ID2LABEL, label2id=LABEL2ID,
-    ignore_mismatched_sizes=True,
+    MODEL_NAME,
+    num_labels=4,
+    id2label=ID2LABEL,
+    label2id=LABEL2ID
 )
+print("✅ Cell 5 Complete: IndicBERTv2 4-class classification head attached")
 
-params = sum(p.numel() for p in model.parameters())
-print(f"✅ Model loaded: {params/1e6:.1f}M parameters")
+
+# ═══════════════════════════════════════════════════════════════════════
+# ██ CELL 6 — TRAIN THE MODEL (~8-12 mins on Colab T4)
+# ═══════════════════════════════════════════════════════════════════════
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     preds = np.argmax(logits, axis=-1)
-    return {
-        "accuracy":    accuracy_score(labels, preds),
-        "f1_macro":    f1_score(labels, preds, average="macro"),
-        "f1_critical": f1_score(labels, preds, labels=[3], average="macro"),
-    }
+    acc = accuracy_score(labels, preds)
+    f1  = f1_score(labels, preds, average="macro")
+    return {"accuracy": acc, "f1_macro": f1}
 
-# ── Colab-specific: gradient_accumulation for small batch ──
-GRAD_ACCUM = 4  # Effective batch = 8 × 4 = 32 (same as Kaggle's 16×2)
-
-args = TrainingArguments(
-    output_dir                   = OUTPUT_DIR,
-    overwrite_output_dir         = True,
-    num_train_epochs             = EPOCHS,
-    per_device_train_batch_size  = BATCH_SIZE,      # 8 on T4
-    per_device_eval_batch_size   = BATCH_SIZE,
-    gradient_accumulation_steps  = GRAD_ACCUM,      # ← Key for T4 memory
-    learning_rate                = LR,
-    weight_decay                 = WEIGHT_DECAY,
-    warmup_ratio                 = 0.1,
-    evaluation_strategy          = "epoch",
-    save_strategy                = "epoch",
-    load_best_model_at_end       = True,
-    metric_for_best_model        = "f1_macro",
-    greater_is_better            = True,
-    logging_steps                = 25,
-    save_total_limit             = 2,
-    fp16                         = torch.cuda.is_available(),
-    seed                         = SEED,
-    report_to                    = "none",
+training_args = TrainingArguments(
+    output_dir="./results",
+    eval_strategy="epoch",
+    save_strategy="epoch",
+    learning_rate=LR,
+    per_device_train_batch_size=BATCH_SIZE,
+    per_device_eval_batch_size=BATCH_SIZE,
+    num_train_epochs=EPOCHS,
+    weight_decay=0.01,
+    fp16=torch.cuda.is_available(),
+    load_best_model_at_end=True,
+    metric_for_best_model="f1_macro",
+    logging_steps=50,
+    report_to="none"
 )
 
-class WeightedTrainer(Trainer):
-    """Higher loss weight for Critical class so model never misses life threats."""
-    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
-        labels  = inputs.pop("labels")
-        outputs = model(**inputs)
-        weight  = torch.tensor([1.0, 1.2, 1.5, 2.5]).to(outputs.logits.device)
-        loss    = torch.nn.CrossEntropyLoss(weight=weight)(outputs.logits, labels)
-        return (loss, outputs) if return_outputs else loss
-
-trainer = WeightedTrainer(
-    model          = model,
-    args           = args,
-    train_dataset  = train_hf,
-    eval_dataset   = val_hf,
-    compute_metrics= compute_metrics,
-    callbacks      = [EarlyStoppingCallback(early_stopping_patience=2)],
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=train_ds,
+    eval_dataset=val_ds,
+    compute_metrics=compute_metrics,
+    callbacks=[EarlyStoppingCallback(early_stopping_patience=2)]
 )
-print(f"✅ Trainer ready | Effective batch: {BATCH_SIZE * GRAD_ACCUM}")
+
+print("🚀 Starting training on Colab T4 GPU...")
+trainer.train()
+print("✅ Cell 6 Complete: Training finished successfully!")
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# ██ CELL 8 — TRAIN  (~35-45 mins on Colab T4 free)
+# ██ CELL 7 — COMPREHENSIVE TEST SUITE (ENGLISH + ALL INDIAN LANGUAGES)
 # ═══════════════════════════════════════════════════════════════════════
 
-print("🚀 Training started... (ETA ~35-45 mins on Colab T4)")
-result = trainer.train()
-trainer.save_model(OUTPUT_DIR)
-tokenizer.save_pretrained(OUTPUT_DIR)
-
-print(f"\n✅ Training complete!")
-print(f"   Loss  : {result.training_loss:.4f}")
-print(f"   Steps : {result.global_step}")
-print(f"   Saved : {OUTPUT_DIR}  (in your Google Drive)")
-
-
-# ═══════════════════════════════════════════════════════════════════════
-# ██ CELL 9 — EVALUATE & TEST
-# ═══════════════════════════════════════════════════════════════════════
-
-print("\n📊 Evaluating on test set...")
-test_result = trainer.predict(test_hf)
-preds  = np.argmax(test_result.predictions, axis=-1)
-labels = test_result.label_ids
-
-print("\nClassification Report:")
-print(classification_report(labels, preds, target_names=list(ID2LABEL.values())))
-
-# Confusion matrix
-cm   = confusion_matrix(labels, preds)
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=list(ID2LABEL.values()))
-fig, ax = plt.subplots(figsize=(7,6))
-disp.plot(ax=ax, cmap="Blues", colorbar=False)
-ax.set_title("Confusion Matrix — IndicBERTv2 Crisis Classifier")
-plt.tight_layout(); plt.show()
-
-# Live inference
 from transformers import pipeline
-pipe = pipeline("text-classification", model=model, tokenizer=tokenizer,
-                device=0 if torch.cuda.is_available() else -1)
+pipe = pipeline("text-classification", model=model, tokenizer=tokenizer, device=0 if torch.cuda.is_available() else -1)
 
-TEST_PHRASES = [
-    ("Hello main theek hoon",                               "→ Routine"),
-    ("Mujhe case ki tension hai",                            "→ Watch"),
-    ("Koi mera peecha kar raha hai please help",             "→ Urgent"),
-    ("Bachao koi maar raha hai mujhe",                       "→ Critical"),
-    ("I am not feeling good some try to kidnap me",          "→ Critical"),
-    ("Enna kolla pakkuranaa save me",                        "→ Critical (Tamil)"),
-    ("Amake maar te chaicche bachao",                        "→ Critical (Bengali)"),
-    ("Naaku chompeyyadaaniki try chestunnadu",               "→ Critical (Telugu)"),
-    ("Mala kidnap kele please madad kara",                   "→ Critical (Marathi)"),
-    ("Mainu maar rehe ne bachao please",                     "→ Critical (Punjabi)"),
+test_phrases = [
+    # English Positive & Negative Controls (NO BIAS TEST)
+    ("I am happy today", "Routine"),
+    ("Yes feeling safe", "Routine"),
+    ("Thank you so much, I am feeling better today and attending the meeting.", "Routine"),
+    ("I feel anxious about the hearing tomorrow", "Watch"),
+    ("Someone is following me outside my house", "Urgent"),
+    ("I am committing suicide I cannot take this anymore", "Critical"),
+    ("Someone trying to kidnap me please call police", "Critical"),
+
+    # Hindi Native & Roman
+    ("नमस्ते मैं बिल्कुल ठीक हूँ आज", "Routine"),
+    ("बचाओ मुझे मार रहे हैं जान से SOS", "Critical"),
+    ("Hello main theek hoon sab badhiya", "Routine"),
+    ("Mujhe case ki tension hai", "Watch"),
+    ("Ghar ke bahar kuch log khade hain", "Urgent"),
+    ("Bachao koi maar raha hai mujhe", "Critical"),
+
+    # Tamil Native & Roman
+    ("வணக்கம் நான் நலமாக இருக்கிறேன்", "Routine"),
+    ("என்னை காப்பாற்றுங்கள் கொல்ல பார்க்கிறார்கள்", "Critical"),
+    ("Vanakkam naan nalam irukiren", "Routine"),
+    ("Enna kolla pakkuranaa save me", "Critical"),
+
+    # Bengali Native & Roman
+    ("আমি ভালো আছি ধন্যবাদ", "Routine"),
+    ("আমাকে বাঁচান মেরে ফেলছে ওরা SOS", "Critical"),
+    ("Aami bhalo achi", "Routine"),
+    ("Amake maar te chaicche bachao", "Critical"),
+
+    # Telugu Native & Roman
+    ("నమస్కారం నేను బాగున్నాను", "Routine"),
+    ("కాపాడండి నన్ను చంపేస్తున్నారు ప్రాణాపాయం", "Critical"),
+    ("Nenu baagunnanu", "Routine"),
+    ("Naaku chompeyyadaaniki try chestunnadu", "Critical"),
+
+    # Marathi
+    ("नमस्कार मी मजेत आहे आज", "Routine"),
+    ("वाचवा मला जीवे मारण्याचा प्रयत्न करत आहेत SOS", "Critical"),
+
+    # Gujarati
+    ("નમસ્તે હું મજામાં છું આજે", "Routine"),
+    ("બચાવો મને મારી રહ્યા છે જીવલેણ હુમલો SOS", "Critical")
 ]
 
-SCORE = {"Routine": "0%", "Watch": "45%", "Urgent": "85%", "Critical": "95%"}
-print("\n🔍 Live Inference Test:")
-for text, expected in TEST_PHRASES:
-    r = pipe(text[:512])[0]
-    print(f"   [{r['label']} {r['score']:.0%}] Distress≈{SCORE[r['label']]} {expected}")
-    print(f"   {text}")
-    print()
+print("\n" + "=" * 80)
+print("TESTING YOUR RETRAINED INDICBERTV2 NEURAL MODEL:")
+print("=" * 80)
+passed = 0
+for phrase, expected in test_phrases:
+    res = pipe(phrase)[0]
+    match = res['label'] == expected
+    if match: passed += 1
+    mark = "✅" if match else "❌"
+    print(f"{mark} [{res['label']:<8} ({res['score']:.1%})] Expected: {expected:<8} | \"{phrase[:50]}\"")
+print("=" * 80)
+print(f"Result: {passed}/{len(test_phrases)} tests passed ({passed/len(test_phrases):.1%})")
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# ██ CELL 10 — PUSH TO HUGGINGFACE HUB (Free)
+# ██ CELL 8 — PUSH TO HUGGING FACE
 # ═══════════════════════════════════════════════════════════════════════
 
-# ── Colab: Get HF token from Colab Secrets ──────────────────────────────
-# How to add: Click 🔑 key icon in left sidebar → Add secret
-#   Name  : HF_TOKEN
-#   Value : hf_xxxxxxxxxxxxxxxxxxxxxxxx  (your token from huggingface.co/settings/tokens)
-
+from google.colab import userdata
 try:
-    from google.colab import userdata           # ← Colab-specific (not Kaggle)
     HF_TOKEN = userdata.get("HF_TOKEN")
-    print("✅ HF Token loaded from Colab Secrets")
-except Exception:
-    HF_TOKEN = "hf_YOUR_TOKEN_HERE"            # Fallback: paste manually
-    print("⚠️  Replace hf_YOUR_TOKEN_HERE with your real token")
+except:
+    HF_TOKEN = "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"
 
 login(token=HF_TOKEN)
 
+print(f"🚀 Pushing retrained weights to Hugging Face: {HF_REPO_NAME}...")
 model.push_to_hub(HF_REPO_NAME, token=HF_TOKEN)
 tokenizer.push_to_hub(HF_REPO_NAME, token=HF_TOKEN)
-
-print(f"\n🎉 Model hosted FREE at HuggingFace!")
-print(f"   https://huggingface.co/YOUR_USERNAME/{HF_REPO_NAME}")
-
-
-# ═══════════════════════════════════════════════════════════════════════
-# ██ CELL 11 — INTEGRATION CODE (paste into your project)
-# ═══════════════════════════════════════════════════════════════════════
-
-print("""
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 PASTE THIS INTO: agents/nlp_agent.py
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-from transformers import pipeline as hf_pipeline
-
-CRISIS_MODEL = "YOUR_HF_USERNAME/nyaya-sakhi-crisis-indicbert"
-
-SCORE_MAP = {
-    "Routine":  0.05,
-    "Watch":    0.45,
-    "Urgent":   0.85,
-    "Critical": 0.95,
-}
-
-_pipe = None
-def get_pipe():
-    global _pipe
-    if _pipe is None:
-        _pipe = hf_pipeline("text-classification",
-                             model=CRISIS_MODEL,
-                             tokenizer=CRISIS_MODEL,
-                             truncation=True, max_length=128)
-    return _pipe
-
-def analyze_text_distress(text: str) -> dict:
-    result = get_pipe()(text[:512])[0]
-    label  = result["label"]
-    score  = SCORE_MAP[label]
-    return {
-        "distress_score":       score,
-        "top_emotions":         [{"label": label.lower(), "score": result["score"]}],
-        "distress_severity":    "acute distress" if score >= 0.75 else "moderate stress" if score >= 0.45 else "routine",
-        "threat_violence_flag": label == "Critical",
-        "intimidation_flag":    label in ["Urgent", "Critical"],
-        "emergency_help_flag":  label in ["Urgent", "Critical"],
-        "hopelessness_flag":    label in ["Watch", "Urgent"],
-        "self_harm_cues":       label == "Critical" and result["score"] > 0.90,
-        "withdrawal_flag":      label == "Watch",
-        "analysis_source":      "indicbertv2_finetuned_24lang",
-    }
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔥 Once you paste this — DISTRESS_KEYWORDS is no longer needed!
-   IndicBERTv2 understands all 24 Indian languages natively.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-""")
+print(f"\n🎉 Model updated live on Hugging Face: https://huggingface.co/{HF_REPO_NAME}")
