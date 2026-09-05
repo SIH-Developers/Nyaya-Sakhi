@@ -157,8 +157,8 @@ def handle_text_message(req: ChatbotMessageRequest):
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
         """, (
             req.victim_id, "Telegram User", "Scheduled Caste",
-            f"FIR-2026/TG-{req.victim_id[-4:]}", "Central Kotwali PS",
-            "New Delhi / NCR", "Delhi", "Trial", "Granted", 1, "Pending",
+            f"TG-{req.victim_id[-4:]}", "Helpline 14566 Intake",
+            "Self-Reported via Telegram", "Delhi", "Helpline Intake", "None", 0, "Pending",
             datetime.now().isoformat()
         ))
         conn.commit()
@@ -298,8 +298,8 @@ async def handle_audio_file_upload(
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
         """, (
             victim_id, "Telegram User", "Scheduled Caste",
-            f"FIR-2026/TG-{victim_id[-4:]}", "Central Kotwali PS",
-            "New Delhi / NCR", "Delhi", "Trial", "Granted", 1, "Pending",
+            f"TG-{victim_id[-4:]}", "Helpline 14566 Intake",
+            "Self-Reported via Telegram", "Delhi", "Helpline Intake", "None", 0, "Pending",
             datetime.now().isoformat()
         ))
         conn.commit()

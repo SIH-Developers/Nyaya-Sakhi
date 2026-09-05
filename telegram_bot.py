@@ -83,8 +83,8 @@ def ensure_victim_registered(chat_id: int, user_name: str) -> str:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
         """, (
             victim_id, user_name, "Scheduled Caste",
-            f"FIR-2026/TG-{str(chat_id)[-4:]}", "Central Kotwali PS",
-            "New Delhi / NCR", "Delhi", "Trial", "Granted", 1, "Pending",
+            f"TG-{str(chat_id)[-4:]}", "Helpline 14566 Intake",
+            "Self-Reported via Telegram", "Delhi", "Helpline Intake", "None", 0, "Pending",
             datetime.now().isoformat()
         ))
         conn.commit()
@@ -211,15 +211,32 @@ def process_telegram_update(update: dict):
             score_pct = int((res.get("fused_risk_score", 0.0)) * 100)
             reasons = res.get("explainability_reasons", [])
 
-            reply = (
-                f"📊 *Distress Score:* `{score_pct}%` | *Status:* *{risk_tier}*\n\n"
-                f"🔍 *Multi-Agent Analysis:*\n"
-            )
-            for r in reasons[:3]:
-                reply += f"• {r}\n"
-
-            if res.get("escalation_triggered"):
-                reply += "\n🚨 *Alert logged on Counselor Dashboard for proactive follow-up.*"
+            if risk_tier == "Urgent":
+                reply = (
+                    f"🚨 *CRITICAL SAFETY ALERT ({score_pct}% - Urgent)*\n\n"
+                    f"🔍 *Threat & Distress Analysis:*\n"
+                )
+                for r in reasons[:3]:
+                    reply += f"• {r}\n"
+                reply += (
+                    f"\n🛡️ *Immediate Safety Protocol:*\n"
+                    f"• If you are facing direct physical danger, call **112 (Police)** or toll-free **14566 (NHAA Helpline)** right now.\n"
+                    f"• An urgent high-priority ticket has been dispatched to your on-duty district counselor for safety outreach under Section 15A."
+                )
+            elif risk_tier in ["Counselor Outreach", "Watch"]:
+                reply = (
+                    f"⚠️ *Distress Assessment:* `{score_pct}%` | *Status:* *{risk_tier}*\n\n"
+                    f"🔍 *Factors Identified:*\n"
+                )
+                for r in reasons[:3]:
+                    reply += f"• {r}\n"
+                reply += f"\n💙 *We are here with you.* A support counselor has been updated on your case status. Call **14566** anytime."
+            else:
+                reply = (
+                    f"💚 *Distress Assessment:* `{score_pct}%` | *Status:* *Routine / Stable*\n\n"
+                    f"• {reasons[0] if reasons else 'All signals within stable baseline thresholds.'}\n\n"
+                    f"Namaste {user_name}! Your well-being monitoring is active. You can reach out to your counselor or call 14566 anytime you need assistance."
+                )
 
             send_telegram_message(chat_id, reply)
         except Exception as e:

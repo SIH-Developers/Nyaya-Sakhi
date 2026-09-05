@@ -38,12 +38,24 @@ def compute_multimodal_fusion(
     if nlp.get("self_harm_cues"):
         reasons.append("🚨 Critical: Explicit self-harm or suicidal ideation markers detected in text.")
         base_fused_score = max(base_fused_score, 0.95)
+    if nlp.get("threat_violence_flag"):
+        reasons.append("🚨 Emergency Hazard: Active physical violence or life threat reported.")
+        base_fused_score = max(base_fused_score, 0.95)
+    elif nlp.get("intimidation_flag"):
+        reasons.append("⚠️ Active Threat: Victim reports being followed, stalked, or intimidated.")
+        base_fused_score = max(base_fused_score, 0.85)
+    elif nlp.get("emergency_help_flag"):
+        reasons.append("🆘 Immediate Help Requested: Distress call logged.")
+        base_fused_score = max(base_fused_score, 0.75)
     elif nlp.get("hopelessness_flag"):
         reasons.append("⚠️ High Distress: Language indicates severe hopelessness or psychological despair.")
-    elif nlp.get("top_emotions"):
-        top_emo = nlp["top_emotions"][0]
-        if top_emo["score"] > 0.6:
-            reasons.append(f"Dominant emotion detected: '{top_emo['label']}' (confidence: {top_emo['score']:.2f})")
+        base_fused_score = max(base_fused_score, 0.80)
+
+    if nlp.get("top_emotions"):
+        for emo in nlp["top_emotions"]:
+            if emo["score"] >= 0.25 and emo["label"] not in ["neutral", "caring", "desire", "curiosity"]:
+                reasons.append(f"Emotion detected: '{emo['label']}' (confidence: {emo['score']:.2f})")
+                break
 
     # Extract Case Context explainability
     for trigger in context.get("legal_triggers", []):

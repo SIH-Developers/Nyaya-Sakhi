@@ -8,12 +8,33 @@ from core.state import VictimState
 # Initialize Hugging Face Inference Client
 hf_client = InferenceClient(token=HF_TOKEN) if HF_TOKEN else None
 
-# Distress and Hopelessness Lexicon for Fallback / Augmentation
+# Distress, Threat, and Hopelessness Lexicon for Multimodal Distress Prediction
 DISTRESS_KEYWORDS = {
-    "hopelessness": ["no point", "hopeless", "give up", "can't do this", "nothing matters", "lost all hope", "no future", "pointless"],
-    "self_harm": ["end it", "better off dead", "kill myself", "die", "hurt myself", "disappear", "sleep forever"],
-    "fear_anxiety": ["scared", "terrified", "panic", "unsafe", "threatened", "shaking", "stalking", "danger", "afraid"],
-    "withdrawal": ["alone", "leave me alone", "nobody cares", "quiet", "stop checking", "isolated", "empty"]
+    "acute_threat_violence": [
+        "kill me", "kill us", "try to kill", "attack", "stab", "shoot", "gun",
+        "weapon", "murder", "hurt me", "beat", "hit me", "marne", "jaan se", "hathiyar",
+        "throat", "strangle", "threaten to kill", "destroy me", "burn my"
+    ],
+    "stalking_intimidation": [
+        "following me", "stalking", "chasing", "outside my house", "threat",
+        "threatening", "warned me", "dhamki", "chase", "men outside", "force me", "surrounding"
+    ],
+    "emergency_help": [
+        "please help", "save me", "in trouble", "help me", "sos", "bachao", "madad", "emergency"
+    ],
+    "hopelessness": [
+        "no point", "hopeless", "give up", "can't do this", "nothing matters",
+        "lost all hope", "no future", "pointless"
+    ],
+    "self_harm": [
+        "end it", "better off dead", "kill myself", "die", "hurt myself", "disappear", "sleep forever"
+    ],
+    "fear_anxiety": [
+        "scared", "terrified", "panic", "unsafe", "threatened", "shaking", "danger", "afraid", "dar lag"
+    ],
+    "withdrawal": [
+        "alone", "leave me alone", "nobody cares", "quiet", "stop checking", "isolated", "empty"
+    ]
 }
 
 def clean_text(text: str) -> str:
@@ -32,32 +53,44 @@ def fallback_text_analysis(text: str) -> Dict[str, Any]:
     """Rule-based clinical sentiment and distress fallback."""
     text_lower = text.lower()
     
-    hopelessness_flag = any(kw in text_lower for kw in DISTRESS_KEYWORDS["hopelessness"])
+    threat_violence_flag = any(kw in text_lower for kw in DISTRESS_KEYWORDS["acute_threat_violence"])
+    intimidation_flag = any(kw in text_lower for kw in DISTRESS_KEYWORDS["stalking_intimidation"])
+    emergency_help_flag = any(kw in text_lower for kw in DISTRESS_KEYWORDS["emergency_help"])
     self_harm_cues = any(kw in text_lower for kw in DISTRESS_KEYWORDS["self_harm"])
+    hopelessness_flag = any(kw in text_lower for kw in DISTRESS_KEYWORDS["hopelessness"])
     fear_cues = any(kw in text_lower for kw in DISTRESS_KEYWORDS["fear_anxiety"])
     withdrawal_flag = any(kw in text_lower for kw in DISTRESS_KEYWORDS["withdrawal"])
     
     # Calculate heuristic score
-    distress_score = 0.1
-    top_emotions = [{"label": "neutral", "score": 0.5}]
+    distress_score = 0.05
+    top_emotions = [{"label": "neutral", "score": 0.85}]
     
-    if self_harm_cues:
-        distress_score = max(distress_score, 0.95)
-        top_emotions = [{"label": "despair", "score": 0.95}, {"label": "fear", "score": 0.85}]
+    if self_harm_cues or threat_violence_flag:
+        distress_score = 0.95
+        top_emotions = [{"label": "fear", "score": 0.95}, {"label": "despair", "score": 0.90}]
+    elif intimidation_flag:
+        distress_score = 0.85
+        top_emotions = [{"label": "fear", "score": 0.88}, {"label": "nervousness", "score": 0.80}]
+    elif emergency_help_flag:
+        distress_score = 0.75
+        top_emotions = [{"label": "fear", "score": 0.80}, {"label": "sadness", "score": 0.70}]
     elif hopelessness_flag:
-        distress_score = max(distress_score, 0.75)
+        distress_score = 0.75
         top_emotions = [{"label": "sadness", "score": 0.82}, {"label": "grief", "score": 0.70}]
     elif fear_cues:
-        distress_score = max(distress_score, 0.65)
+        distress_score = 0.65
         top_emotions = [{"label": "fear", "score": 0.80}, {"label": "nervousness", "score": 0.75}]
     elif withdrawal_flag:
-        distress_score = max(distress_score, 0.55)
+        distress_score = 0.55
         top_emotions = [{"label": "sadness", "score": 0.60}]
         
     return {
         "distress_score": round(distress_score, 3),
         "top_emotions": top_emotions,
-        "distress_severity": "acute distress" if distress_score > 0.7 else ("moderate stress" if distress_score > 0.4 else "routine"),
+        "distress_severity": "acute distress" if distress_score >= 0.75 else ("moderate stress" if distress_score >= 0.45 else "routine"),
+        "threat_violence_flag": threat_violence_flag,
+        "intimidation_flag": intimidation_flag,
+        "emergency_help_flag": emergency_help_flag,
         "hopelessness_flag": hopelessness_flag,
         "self_harm_cues": self_harm_cues,
         "withdrawal_flag": withdrawal_flag,
@@ -65,19 +98,31 @@ def fallback_text_analysis(text: str) -> Dict[str, Any]:
     }
 
 def analyze_text_distress(text: str) -> Dict[str, Any]:
-    """Analyze victim text message using Hugging Face models with fallback."""
+    """Analyze victim text message using Hugging Face models with safety overrides."""
     cleaned = clean_text(text)
     if not cleaned:
         return {
             "distress_score": 0.0,
             "top_emotions": [],
             "distress_severity": "none",
+            "threat_violence_flag": False,
+            "intimidation_flag": False,
+            "emergency_help_flag": False,
             "hopelessness_flag": False,
             "self_harm_cues": False,
             "withdrawal_flag": False,
             "analysis_source": "empty_input"
         }
     
+    text_lower = cleaned.lower()
+    threat_violence_flag = any(kw in text_lower for kw in DISTRESS_KEYWORDS["acute_threat_violence"])
+    intimidation_flag = any(kw in text_lower for kw in DISTRESS_KEYWORDS["stalking_intimidation"])
+    emergency_help_flag = any(kw in text_lower for kw in DISTRESS_KEYWORDS["emergency_help"])
+    self_harm_cues = any(kw in text_lower for kw in DISTRESS_KEYWORDS["self_harm"])
+    hopelessness_flag = any(kw in text_lower for kw in DISTRESS_KEYWORDS["hopelessness"])
+    fear_cues = any(kw in text_lower for kw in DISTRESS_KEYWORDS["fear_anxiety"])
+    withdrawal_flag = any(kw in text_lower for kw in DISTRESS_KEYWORDS["withdrawal"])
+
     # Try Hugging Face Serverless Inference if available
     if hf_client:
         try:
@@ -92,18 +137,18 @@ def analyze_text_distress(text: str) -> Dict[str, Any]:
             high_distress_emotions = {"sadness", "grief", "fear", "nervousness", "disappointment", "anger", "remorse"}
             distress_emotions_score = sum(r["score"] for r in hf_res if r["label"] in high_distress_emotions)
             
-            # 2. Check for clinical keywords
-            text_lower = cleaned.lower()
-            hopelessness_flag = any(kw in text_lower for kw in DISTRESS_KEYWORDS["hopelessness"])
-            self_harm_cues = any(kw in text_lower for kw in DISTRESS_KEYWORDS["self_harm"])
-            withdrawal_flag = any(kw in text_lower for kw in DISTRESS_KEYWORDS["withdrawal"])
-            
-            # Compute composite distress score
+            # Compute composite distress score with safety floor overrides
             base_score = min(1.0, distress_emotions_score)
-            if self_harm_cues:
+            if self_harm_cues or threat_violence_flag:
                 base_score = max(base_score, 0.95)
+            elif intimidation_flag:
+                base_score = max(base_score, 0.85)
+            elif emergency_help_flag:
+                base_score = max(base_score, 0.75)
             elif hopelessness_flag:
                 base_score = max(base_score, 0.80)
+            elif fear_cues:
+                base_score = max(base_score, 0.65)
             
             severity = "acute distress" if base_score >= 0.75 else ("moderate stress" if base_score >= 0.45 else "routine")
             
@@ -111,13 +156,15 @@ def analyze_text_distress(text: str) -> Dict[str, Any]:
                 "distress_score": round(base_score, 3),
                 "top_emotions": top_emotions,
                 "distress_severity": severity,
+                "threat_violence_flag": threat_violence_flag,
+                "intimidation_flag": intimidation_flag,
+                "emergency_help_flag": emergency_help_flag,
                 "hopelessness_flag": hopelessness_flag,
                 "self_harm_cues": self_harm_cues,
                 "withdrawal_flag": withdrawal_flag,
                 "analysis_source": "huggingface_api"
             }
         except Exception:
-            # Fallback to local heuristic if token has permission issue or network timeout
             return fallback_text_analysis(cleaned)
     else:
         return fallback_text_analysis(cleaned)
