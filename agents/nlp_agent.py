@@ -95,6 +95,13 @@ MULTI_LINGUAL_CRISIS_LEXICON = {
     ]
 }
 
+# Positive & Safe expressions (Negative controls)
+POSITIVE_SAFE_CUES = [
+    "happy", "safe", "felling safe", "feeling safe", "good", "fine", "great",
+    "peaceful", "calm", "relieved", "all good", "no threat", "no problem",
+    "thank you", "thanks", "theek", "thik", "badhiya", "sukoon", "shanti"
+]
+
 def clean_text(text: str) -> str:
     """Preprocess text: remove PII-like patterns and sanitize."""
     if not text:
@@ -126,7 +133,12 @@ def analyze_text_distress(text: str) -> Dict[str, Any]:
             "analysis_source": "empty_input"
         }
 
-    # 1. Check if external IndicBERTv2 API / HF Space is configured
+    t = cleaned.lower()
+    has_positive_safe = any(kw in t for kw in POSITIVE_SAFE_CUES)
+    has_explicit_threat = any(kw in t for kw in MULTI_LINGUAL_CRISIS_LEXICON["acute_threat_violence"])
+    has_self_harm = any(kw in t for kw in MULTI_LINGUAL_CRISIS_LEXICON["self_harm"])
+
+    # 1. Check if external IndicBERTv2 API / AWS EC2 endpoint is configured
     if INDICBERT_API_URL:
         try:
             headers = {"ngrok-skip-browser-warning": "true", "User-Agent": "NyayaSakhi/1.0"}
@@ -134,7 +146,23 @@ def analyze_text_distress(text: str) -> Dict[str, Any]:
             if r.status_code == 200:
                 data = r.json()
                 if "analysis_source" not in data:
-                    data["analysis_source"] = "robbiinn_indicbertv2_finetuned_gpu"
+                    data["analysis_source"] = "robbiinn_indicbertv2_aws_24_7"
+
+                # Guardrail: If user explicitly says "happy" or "feeling safe" and no threats exist,
+                # correct the model's English false-positive bias to Routine!
+                if has_positive_safe and not (has_explicit_threat or has_self_harm):
+                    data["distress_score"] = 0.05
+                    data["top_emotions"] = [{"label": "routine", "score": 0.98}]
+                    data["distress_severity"] = "routine"
+                    data["threat_violence_flag"] = False
+                    data["intimidation_flag"] = False
+                    data["emergency_help_flag"] = False
+                    data["hopelessness_flag"] = False
+                    data["self_harm_cues"] = False
+                    data["withdrawal_flag"] = False
+                    data["analysis_source"] = "indicbertv2_with_safety_guardrail"
+                    return data
+
                 return data
             else:
                 print(f"[NLP Agent] GPU endpoint HTTP {r.status_code}: {r.text[:100]}")
