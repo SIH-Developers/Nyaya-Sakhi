@@ -3,12 +3,13 @@
 ║   NYAYA SAKHI — IndicBERTv2 Crisis Distress Classifier               ║
 ║   FINE-TUNING & RETRAINING (REAL ONLINE DATASETS + MULTILINGUAL)     ║
 ║                                                                      ║
-║   Real Online Datasets Integrated:                                   ║
+║   Real Online Datasets Integrated (100% Parquet, No Scripts):        ║
 ║   1. ourafla/Mental-Health_Text-Classification_Dataset (Reddit/Real) ║
 ║   2. dair-ai/emotion (416k real English emotional statements)        ║
-║   3. tweet_eval / hate & hostility (Real online threat & abuse)      ║
-║   4. ai4bharat/IndicSentiment (Native Indian languages sentiment)    ║
-║   5. Multilingual Indian Atrocity & Crisis Corpus (12 Scripts)       ║
+║   3. cardiffnlp/tweet_eval (Real online threat & abuse)              ║
+║   4. manueltonneau/india-hate-speech-superset (Real Indian threats)  ║
+║   5. tyqiangz/multilingual-sentiments (Real Hindi sentiments)        ║
+║   6. Multilingual Indian Atrocity & Crisis Corpus (12 Scripts)       ║
 ║                                                                      ║
 ║   RUN ON GOOGLE COLAB OR KAGGLE (T4 / P100 GPU):                     ║
 ║   1. Paste into Colab/Kaggle notebook                                ║
@@ -21,7 +22,7 @@
 # ██ CELL 1 — INSTALL PACKAGES
 # ═══════════════════════════════════════════════════════════════════════
 
-!pip install -q transformers datasets accelerate scikit-learn sentencepiece huggingface_hub
+!pip install -q transformers datasets accelerate scikit-learn sentencepiece huggingface_hub pyarrow
 print("✅ Cell 1 Complete: Dependencies installed")
 
 
@@ -73,7 +74,7 @@ print("✅ Cell 2 Complete: Config ready")
 online_frames = []
 
 # ── 1. Real Mental Health & Suicidal Corpus (Reddit & Clinical) ─────────
-print("\n[1/4] Loading real-world crisis data from Hugging Face: ourafla/Mental-Health_Text-Classification_Dataset...")
+print("\n[1/5] Loading real-world crisis data: ourafla/Mental-Health_Text-Classification_Dataset...")
 try:
     ds_mh = load_dataset("ourafla/Mental-Health_Text-Classification_Dataset", split="train")
     df_mh = ds_mh.to_pandas()
@@ -89,12 +90,12 @@ try:
     df_mh["mapped_label"] = df_mh[label_col].map(mh_map)
     df_mh = df_mh.dropna(subset=["mapped_label"]).rename(columns={text_col: "text", "mapped_label": "label"})
     online_frames.append(df_mh[["text", "label"]])
-    print(f"   ✅ Loaded {len(df_mh)} samples from Mental-Health dataset!")
+    print(f"   ✅ Loaded {len(df_mh):,} real crisis samples (Normal, Anxiety, Depression, Suicidal)!")
 except Exception as e:
     print(f"   ⚠️ Could not load ourafla dataset: {e}")
 
 # ── 2. Real Human Emotion & Routine Wellbeing (dair-ai/emotion) ───────────
-print("\n[2/4] Loading real emotional statements from Hugging Face: dair-ai/emotion...")
+print("\n[2/5] Loading real emotional statements: dair-ai/emotion...")
 try:
     ds_em = load_dataset("dair-ai/emotion", split="train")
     df_em = ds_em.to_pandas()
@@ -102,40 +103,54 @@ try:
     # 3: anger (Urgent -> 2), 4: fear (Urgent -> 2), 5: surprise (Routine -> 0)
     em_map = {0: 1, 1: 0, 2: 0, 3: 2, 4: 2, 5: 0}
     df_em["label"] = df_em["label"].map(em_map)
-    df_em = df_em.groupby("label").apply(lambda x: x.sample(min(len(x), 1000), random_state=SEED)).reset_index(drop=True)
+    df_em = df_em.groupby("label").apply(lambda x: x.sample(min(len(x), 1500), random_state=SEED)).reset_index(drop=True)
     online_frames.append(df_em[["text", "label"]])
-    print(f"   ✅ Loaded {len(df_em)} real emotional & routine samples!")
+    print(f"   ✅ Loaded {len(df_em):,} real emotional & routine samples!")
 except Exception as e:
     print(f"   ⚠️ Could not load dair-ai/emotion: {e}")
 
-# ── 3. Real Online Threat & Hostility (tweet_eval hate speech) ──────────
-print("\n[3/4] Loading real threat & harassment data from Hugging Face: tweet_eval (hate)...")
+# ── 3. Real Online Threat & Harassment (cardiffnlp/tweet_eval hate) ──────
+print("\n[3/5] Loading real threat & harassment data: cardiffnlp/tweet_eval...")
 try:
-    ds_hate = load_dataset("tweet_eval", "hate", split="train")
+    ds_hate = load_dataset("cardiffnlp/tweet_eval", "hate", split="train")
     df_hate = ds_hate.to_pandas()
     df_hate_pos = df_hate[df_hate["label"] == 1].copy()
     df_hate_pos["label"] = 2
     online_frames.append(df_hate_pos[["text", "label"]])
-    print(f"   ✅ Loaded {len(df_hate_pos)} real threat/harassment samples!")
+    print(f"   ✅ Loaded {len(df_hate_pos):,} real threat/harassment samples!")
 except Exception as e:
-    print(f"   ⚠️ Could not load tweet_eval: {e}")
+    print(f"   ⚠️ Could not load cardiffnlp/tweet_eval: {e}")
 
-# ── 4. Real Indian Language Multilingual Sentiment (ai4bharat/IndicSentiment) ──
-print("\n[4/4] Loading Indic language sentiment from Hugging Face: ai4bharat/IndicSentiment...")
+# ── 4. Real Indian Language Hate & Threat (manueltonneau/india-hate-speech-superset) ──
+print("\n[4/5] Loading Indian hostility & threat data: manueltonneau/india-hate-speech-superset...")
 try:
-    ds_indic = load_dataset("ai4bharat/IndicSentiment", trust_remote_code=True, split="train")
-    df_indic = ds_indic.to_pandas()
-    indic_map = {"positive": 0, "neutral": 0, "negative": 1}
-    df_indic["label"] = df_indic["label"].map(indic_map)
-    df_indic = df_indic.dropna(subset=["label"])
-    df_indic = df_indic.sample(min(len(df_indic), 3000), random_state=SEED)
-    online_frames.append(df_indic[["text", "label"]])
-    print(f"   ✅ Loaded {len(df_indic)} real Indian language samples!")
+    ds_ind_hate = load_dataset("manueltonneau/india-hate-speech-superset", split="train")
+    df_ind_hate = ds_ind_hate.to_pandas()
+    lbl_col = "labels" if "labels" in df_ind_hate.columns else "label"
+    df_ind_hate_pos = df_ind_hate[df_ind_hate[lbl_col] == 1].copy()
+    df_ind_hate_pos["label"] = 2  # Urgent (intimidation & threats)
+    df_ind_hate_pos = df_ind_hate_pos.sample(min(len(df_ind_hate_pos), 2000), random_state=SEED)
+    online_frames.append(df_ind_hate_pos[["text", "label"]])
+    print(f"   ✅ Loaded {len(df_ind_hate_pos):,} real Indian hostility & threat samples!")
 except Exception as e:
-    print(f"   ℹ️ IndicSentiment loading bypassed (using native corpus): {e}")
+    print(f"   ⚠️ Could not load Indian hate speech dataset: {e}")
 
-# ── 5. Domain-Specific Indian Crisis & Atrocity Corpus (12 Indian Scripts + Roman) ──
-print("\n[5/5] Merging with specialized multi-script Indian legal atrocity & crisis corpus...")
+# ── 5. Real Hindi Multilingual Sentiment (tyqiangz/multilingual-sentiments) ──
+print("\n[5/5] Loading real Hindi sentiments: tyqiangz/multilingual-sentiments...")
+try:
+    ds_hi = load_dataset("tyqiangz/multilingual-sentiments", "hindi", split="train")
+    df_hi = ds_hi.to_pandas()
+    # 0: positive -> Routine (0), 1: neutral -> Routine (0), 2: negative -> Watch (1)
+    hi_map = {0: 0, 1: 0, 2: 1}
+    df_hi["label"] = df_hi["label"].map(hi_map)
+    df_hi = df_hi.sample(min(len(df_hi), 2000), random_state=SEED)
+    online_frames.append(df_hi[["text", "label"]])
+    print(f"   ✅ Loaded {len(df_hi):,} real Hindi sentiment samples!")
+except Exception as e:
+    print(f"   ⚠️ Could not load multilingual-sentiments: {e}")
+
+# ── 6. Domain-Specific Indian Crisis & Atrocity Corpus (12 Indian Scripts + Roman) ──
+print("\n[6/6] Merging with specialized multi-script Indian legal atrocity & crisis corpus...")
 prefixes = ['', 'Sir, ', 'Madam, ', 'Hello, ', 'Namaste, ', 'Vanakkam, ', 'Namaskaram, ', 'Bhai, ', 'Report: ', 'Helpdesk: ', 'Officer, ']
 suffixes = ['', ' please', ' thank you', ' urgently', ' right now', ' at home', ' in my village', ' today', ' please check', ' save us']
 
@@ -149,11 +164,11 @@ en_seeds = {
 native_seeds = {
     0: [
         'नमस्ते मैं बिल्कुल ठीक हूँ आज', 'सब कुछ सामान्य और शांत है', 'मैं सुरक्षित हूँ कोई परेशानी नहीं है', 'घर पर सब ठीक हैं धन्यवाद',
-        'আমি ভালো আছি ধন্যবাদ', 'আমার কোনো समस्या নেই সব ঠিকঠাক', 'বাড়িতে সবাই ভালো এবং নিরাপদ আছে',
+        'আমি ভালো আছি ধন্যবাদ', 'আমার কোনো সমস্যা নেই সব ঠিকঠাক', 'বাড়িতে সবাই ভালো এবং নিরাপদ আছে',
         'வணக்கம் நான் நலமாக இருக்கிறேன்', 'எனக்கு எந்த பிரச்சினையும் இல்லை', 'வீட்டில் அனைவரும் பாதுகாப்பாக இருக்கிறோம்',
         'నమస్కారం నేను బాగున్నాను', 'నాకు ఎలాంటి సమస్య లేదు అంతా క్షేమం', 'ఇంట్లో అందరూ బాగున్నారు ధన్యవాదాలు',
         'नमस्कार मी मजेत आहे आज', 'मला कोणतीही अडचण नाही सर्व ठीक आहे', 'घरातील सर्व लोक सुरक्षित आहेत',
-        'નમસ્તે હું મજામાં છું આજે', 'બધું બરાબર ચાલે છે કોઈ ચિંતા નથી',
+        'નમસ્તે હું મજામાં છું આજે', 'બધું બરાબર ચાલે છે કોઈ ચિંता નથી',
         'ನಮಸ್ಕಾರ ನಾನು ಚೆನ್ನಾಗಿದ್ದೇನೆ', 'ನನಗೆ ಯಾವುದೇ ತೊಂದರೆ ಇಲ್ಲ',
         'നമസ്കാരം ഞാൻ സുഖമായിരിക്കുന്നു', 'എനിക്ക് ഒരു കുഴപ്പവുമില്ല',
         'ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ ਮੈਂ ਬਿਲਕੁਲ ਠੀਕ ਹਾਂ', 'ਸਭ ਕੁਝ ਠੀਕ-ਠਾਕ ਹੈ',
@@ -223,8 +238,8 @@ online_frames.append(df_domain)
 df_all = pd.concat(online_frames, ignore_index=True).dropna().drop_duplicates(subset=['text'])
 df_all["label"] = df_all["label"].astype(int)
 
-# Target 3,000 per class = 12,000 balanced samples
-TARGET = 3000
+# Target 3,500 per class = 14,000 balanced samples
+TARGET = 3500
 balanced = []
 for lbl in [0, 1, 2, 3]:
     sub = df_all[df_all.label == lbl]
