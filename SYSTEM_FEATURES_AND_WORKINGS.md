@@ -87,13 +87,15 @@ This platform implements a **proactive, multi-modal, multi-agent AI system** orc
 The core reasoning engine is built using **LangGraph** (`graph.py`), employing a parallel fan-out pattern to evaluate 4 distinct feature spaces simultaneously, converging into a clinical fusion agent.
 
 ### 3.1 Agent 1: Natural Language Processing Agent (`nlp_agent.py`)
-* **Underlying Model:** Hugging Face Serverless API running `SamLowe/roberta-base-go_emotions` (28 emotion labels).
+* **Underlying Model:** Hugging Face Serverless API running `SamLowe/roberta-base-go_emotions` (28 emotion labels) and `cardiffnlp/twitter-roberta-base-sentiment-latest`.
 * **Negative Emotion Mapping:** Computes weighted distress from emotions including `sadness`, `fear`, `grief`, `anger`, `remorse`, and `disgust`.
 * **Clinical Hopelessness & Self-Harm Detector:**
   * Uses a high-priority clinical lexicon targeting suicide ideation, profound despair, and hopelessness (e.g., *"no reason to live"*, *"better off dead"*, *"give up"*).
   * Immediately forces an emergency floor score of **0.95 (P1-Critical)** regardless of other signals.
+* **Clinical Reasoning & Explainability LLM:** Uses `meta-llama/Llama-3.3-70B-Instruct` for generating deep contextual summaries and legal risk insights for counselors.
 
 ### 3.2 Agent 2: Speech & Acoustic Prosody Agent (`speech_agent.py`)
+* **Speech-to-Text Transcription (ASR):** Uses `openai/whisper-large-v3-turbo` for high-accuracy multilingual transcription of phone calls and voice notes.
 * **Acoustic Signal Processing:** Analyzes audio waveforms for 3 primary vocal biomarkers of trauma:
   1. **Pitch Variance (F0 variability):** Flat, monotone pitch ($< 10.0$ Hz) indicates emotional blunting or depressive stupor. High erratic variance indicates panic.
   2. **Pause Ratio:** Silence ratio $> 25\%$ reflects cognitive hesitation, psychomotor retardation, or fear of speaking.
@@ -204,19 +206,17 @@ Provides 100% free, real-world smartphone testing without telecom gateway fees o
 ### 6.1 Why Proactive Check-Ins are Critical
 Victims suffering from severe trauma or facing intimidation rarely reach out voluntarily. Proactive check-ins flip the paradigm from **reactive** to **preventative**.
 
-### 6.2 How Check-Ins Reach the Victim
-Depending on the victim's registered device and connectivity:
-* **Basic Mobile Phones (Rural / Feature Phones):**
-  * The telephony gateway (NHAA 14566) triggers an automated outbound IVRS call.
-  * When the victim answers, an automated voice speaks the check-in question (e.g. *"Namaste, this is NHAA 14566. How are you feeling today?"*), records their spoken response, and uploads the audio.
-  * Alternatively, an outbound SMS with an interactive response shortcode is sent.
-* **Smartphones (Telegram / Mobile App):**
-  * The system dispatches an automated prompt directly to their Telegram chat or mobile app notification.
-  * The victim replies with text or a voice note.
+### 6.2 Multi-Channel Communication Engine
+The platform supports multi-channel outreach to bridge rural feature phones and modern smartphones:
+* **Twilio Interactive IVRS Voice Call:** Automated phone call where Twilio speaks the tailored check-in inquiry using text-to-speech, collects victim speech via `<Gather input="speech">`, and streams the transcript into LangGraph without blocking server latency.
+* **1-Click Official WhatsApp (`wa.me` Deep-Link):** Allows counselors to dispatch 100% custom, statutory NHAA check-ins directly into WhatsApp Web / mobile app pre-filled with victim contact details, bypassing trial account template limits.
+* **Interactive SMS:** Sends statutory reminders and well-being prompts directly to the victim's mobile number.
+* **Direct SMTP Email Alerts:** Sends beautifully branded, dual-format (HTML + Plaintext) official MoSJE notifications with Section 15A protection rights and emergency 14566 hotline details.
+* **Telegram Bot Channel:** `@nhaa_14566_sih_bot` provides automated text and voice note ingestion for smartphones.
 
 ### 6.3 Triggering Mechanisms
 1. **Automated Scheduled Cadence:** Run by background scheduler based on risk tier (Weekly for Routine, every 48 hours for Watch).
-2. **Counselor-Initiated Dispatch:** A counselor reviewing a victim's chart clicks **"Send Proactive Check-in Prompt"** in the Victim Detail Modal to dispatch an inquiry immediately.
+2. **Counselor-Initiated Dispatch:** A counselor reviewing a victim's chart clicks **"Auto-Dispatch (Call + SMS + Email)"** or **"Send via WhatsApp (wa.me)"** in the Victim Detail Modal to reach the victim immediately.
 
 ---
 
