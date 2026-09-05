@@ -413,6 +413,7 @@ def process_speech_pipeline(spoken_text: str, caller_number: str):
         pass
 
     try:
+        victim = get_victim_details(victim_id)
         history = get_victim_history(victim_id)
         state_input = {
             "victim_id": victim_id,
@@ -422,9 +423,11 @@ def process_speech_pipeline(spoken_text: str, caller_number: str):
             "message_text": spoken_text,
             "audio_metadata": None,
             "case_context": {
-                "case_stage": "Trial", "accused_bail_status": "Granted",
-                "threat_reported": False, "hearing_postponed": False,
-                "compensation_status": "Pending",
+                "case_stage": victim.get("case_stage", "Helpline Intake") if victim else "Helpline Intake",
+                "accused_bail_status": victim.get("accused_bail_status", "None") if victim else "None",
+                "threat_reported": bool(victim.get("threat_reported", 0)) if victim else False,
+                "hearing_postponed": bool(victim.get("hearing_postponed", 0)) if victim else False,
+                "compensation_status": victim.get("compensation_status", "Pending") if victim else "Pending",
                 "engagement": {"consecutive_missed_checkins": 0,
                                "response_latency_hours": 1.0,
                                "baseline_latency_hours": 2.0,

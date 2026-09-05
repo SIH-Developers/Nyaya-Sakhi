@@ -13,14 +13,16 @@ DISTRESS_KEYWORDS = {
     "acute_threat_violence": [
         "kill me", "kill us", "try to kill", "attack", "stab", "shoot", "gun",
         "weapon", "murder", "hurt me", "beat", "hit me", "marne", "jaan se", "hathiyar",
-        "throat", "strangle", "threaten to kill", "destroy me", "burn my"
+        "throat", "strangle", "threaten to kill", "destroy me", "burn my",
+        "kidnap", "kidnapping", "abduct", "abduction", "hostage", "bandi bana", "mar dala", "assault"
     ],
     "stalking_intimidation": [
         "following me", "stalking", "chasing", "outside my house", "threat",
-        "threatening", "warned me", "dhamki", "chase", "men outside", "force me", "surrounding"
+        "threatening", "warned me", "dhamki", "chase", "men outside", "force me", "surrounding",
+        "picha kar", "ghar ke bahar", "gunde"
     ],
     "emergency_help": [
-        "please help", "save me", "in trouble", "help me", "sos", "bachao", "madad", "emergency"
+        "please help", "save me", "in trouble", "help me", "sos", "bachao", "madad", "emergency", "police", "call police"
     ],
     "hopelessness": [
         "no point", "hopeless", "give up", "can't do this", "nothing matters",

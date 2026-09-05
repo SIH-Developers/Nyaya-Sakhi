@@ -104,13 +104,13 @@ def ensure_victim_registered(chat_id: int, user_name: str) -> str:
             "victim_id": victim_id,
             "name": user_name,
             "caste_category": "Scheduled Caste",
-            "fir_number": f"FIR-2026/TG-{str(chat_id)[-4:]}",
-            "police_station": "Central Kotwali PS",
-            "district": "New Delhi / NCR",
-            "state": "Delhi",
-            "case_stage": "Trial",
-            "accused_bail_status": "Granted",
-            "threat_reported": True,
+            "fir_number": f"TG-{str(chat_id)[-4:]}",
+            "police_station": "Helpline 14566 Intake",
+            "district": "Self-Reported via Telegram",
+            "state": "National",
+            "case_stage": "Helpline Intake",
+            "accused_bail_status": "None",
+            "threat_reported": False,
             "compensation_status": "Pending"
         }
         res = call_api("post", "victims", json=payload, timeout=5)
