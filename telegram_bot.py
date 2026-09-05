@@ -24,22 +24,22 @@ API_BASE_URL = f"{BASE_URL}/api"
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
 
 def call_api(method: str, path: str, **kwargs):
-    """Call backend API with automatic fallback between localhost port and public Render URL."""
+    """Call backend API with automatic fallback between public Render URL and localhost."""
+    candidate_urls = []
+    ext_url = os.getenv("RENDER_EXTERNAL_URL")
+    if ext_url:
+        candidate_urls.append(f"{ext_url.rstrip('/')}/api/{path.lstrip('/')}")
     port = os.getenv("PORT", "8000")
-    candidate_urls = [
-        f"http://127.0.0.1:{port}/api/{path.lstrip('/')}",
-        f"{os.getenv('RENDER_EXTERNAL_URL', 'https://nyaya-sakhi-tszb.onrender.com').rstrip('/')}/api/{path.lstrip('/')}",
-        f"http://127.0.0.1:8000/api/{path.lstrip('/')}"
-    ]
+    candidate_urls.append(f"http://127.0.0.1:{port}/api/{path.lstrip('/')}")
+    candidate_urls.append(f"http://127.0.0.1:8000/api/{path.lstrip('/')}")
+
     last_err = None
     for base in candidate_urls:
         try:
             if method.lower() == "get":
-                r = requests.get(base, timeout=kwargs.get("timeout", 10))
+                return requests.get(base, timeout=kwargs.get("timeout", 10))
             else:
-                r = requests.post(base, timeout=kwargs.get("timeout", 25), **{k: v for k, v in kwargs.items() if k != "timeout"})
-            if r.status_code in [200, 201]:
-                return r
+                return requests.post(base, timeout=kwargs.get("timeout", 25), **{k: v for k, v in kwargs.items() if k != "timeout"})
         except Exception as e:
             last_err = e
             continue
@@ -69,12 +69,37 @@ def ensure_victim_registered(chat_id: int, user_name: str) -> str:
     """Ensure real Telegram user has an active victim profile in the database."""
     victim_id = f"VIC-TG-{chat_id}"
     try:
-        # Check if already exists
+        from database import get_victim_details, get_connection
+        from datetime import datetime
+        if get_victim_details(victim_id):
+            return victim_id
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+        INSERT OR IGNORE INTO victims (
+            victim_id, name, caste_category, fir_number, police_station,
+            district, state, case_stage, accused_bail_status, threat_reported,
+            compensation_status, consent_flag, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+        """, (
+            victim_id, user_name, "Scheduled Caste",
+            f"FIR-2026/TG-{str(chat_id)[-4:]}", "Central Kotwali PS",
+            "New Delhi / NCR", "Delhi", "Trial", "Granted", 1, "Pending",
+            datetime.now().isoformat()
+        ))
+        conn.commit()
+        conn.close()
+        print(f"👤 Auto-registered real user directly in DB: {user_name} ({victim_id})")
+        return victim_id
+    except Exception as e:
+        print(f"Direct DB registration fallback: {e}")
+
+    try:
+        # Fallback via HTTP API
         check_res = call_api("get", f"victim/{victim_id}", timeout=5)
         if check_res.status_code == 200:
             return victim_id
         
-        # Register new real user profile
         payload = {
             "victim_id": victim_id,
             "name": user_name,
@@ -89,10 +114,10 @@ def ensure_victim_registered(chat_id: int, user_name: str) -> str:
             "compensation_status": "Pending"
         }
         res = call_api("post", "victims", json=payload, timeout=5)
-        if res.status_code == 200:
-            print(f"👤 Auto-registered real user: {user_name} ({victim_id}) into SQLite database!")
+        if res.status_code in [200, 201]:
+            print(f"👤 Auto-registered user via API: {user_name} ({victim_id})")
     except Exception as e:
-        print(f"Notice during victim registration: {e}")
+        print(f"API registration notice: {e}")
     return victim_id
 
 def process_telegram_update(update: dict):

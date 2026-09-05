@@ -146,6 +146,25 @@ def handle_text_message(req: ChatbotMessageRequest):
     Executes LangGraph multi-agent pipeline and persists results.
     """
     victim = get_victim_details(req.victim_id)
+    if not victim and req.victim_id.startswith("VIC-TG-"):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+        INSERT OR IGNORE INTO victims (
+            victim_id, name, caste_category, fir_number, police_station,
+            district, state, case_stage, accused_bail_status, threat_reported,
+            compensation_status, consent_flag, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+        """, (
+            req.victim_id, "Telegram User", "Scheduled Caste",
+            f"FIR-2026/TG-{req.victim_id[-4:]}", "Central Kotwali PS",
+            "New Delhi / NCR", "Delhi", "Trial", "Granted", 1, "Pending",
+            datetime.now().isoformat()
+        ))
+        conn.commit()
+        conn.close()
+        victim = get_victim_details(req.victim_id)
+
     if not victim:
         raise HTTPException(status_code=404, detail=f"Victim ID '{req.victim_id}' not found in registry")
 
@@ -268,6 +287,25 @@ async def handle_audio_file_upload(
     Extracts acoustic prosody from raw audio wave and transcribes speech.
     """
     victim = get_victim_details(victim_id)
+    if not victim and victim_id.startswith("VIC-TG-"):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+        INSERT OR IGNORE INTO victims (
+            victim_id, name, caste_category, fir_number, police_station,
+            district, state, case_stage, accused_bail_status, threat_reported,
+            compensation_status, consent_flag, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+        """, (
+            victim_id, "Telegram User", "Scheduled Caste",
+            f"FIR-2026/TG-{victim_id[-4:]}", "Central Kotwali PS",
+            "New Delhi / NCR", "Delhi", "Trial", "Granted", 1, "Pending",
+            datetime.now().isoformat()
+        ))
+        conn.commit()
+        conn.close()
+        victim = get_victim_details(victim_id)
+
     if not victim:
         raise HTTPException(status_code=404, detail=f"Victim ID '{victim_id}' not found")
 
