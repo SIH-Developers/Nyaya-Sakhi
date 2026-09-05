@@ -132,14 +132,17 @@ def analyze_text_distress(text: str) -> Dict[str, Any]:
     # 1. Check if external IndicBERTv2 API / HF Space is configured
     if INDICBERT_API_URL:
         try:
-            r = requests.post(INDICBERT_API_URL, json={"text": cleaned}, timeout=4)
+            headers = {"ngrok-skip-browser-warning": "true", "User-Agent": "NyayaSakhi/1.0"}
+            r = requests.post(INDICBERT_API_URL, json={"text": cleaned}, headers=headers, timeout=8)
             if r.status_code == 200:
                 data = r.json()
                 if "analysis_source" not in data:
                     data["analysis_source"] = "robbiinn_indicbertv2_finetuned_gpu"
                 return data
+            else:
+                print(f"[NLP Agent] GPU endpoint HTTP {r.status_code}: {r.text[:100]}")
         except Exception as e:
-            pass
+            print(f"[NLP Agent] Remote GPU call failed: {e}")
 
     # 2. Native Multi-Lingual Clinical Lexicon & Sentiment Engine (Runs in <5ms, 0 RAM)
     t = cleaned.lower()

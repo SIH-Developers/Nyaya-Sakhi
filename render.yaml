@@ -27,3 +27,5 @@ services:
         sync: false
       - key: SMTP_PASS
         sync: false
+      - key: INDICBERT_API_URL
+        value: https://calamari-stalling-carnivore.ngrok-free.dev/predict
