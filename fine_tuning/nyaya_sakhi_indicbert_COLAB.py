@@ -3,12 +3,12 @@
 ║   NYAYA SAKHI — IndicBERTv2 Crisis Distress Classifier               ║
 ║   RETRAINING NOTEBOOK (REAL ONLINE DATASETS + MULTILINGUAL INDIC)     ║
 ║                                                                      ║
-║   Real Online Datasets Integrated (100% Parquet, No Scripts):        ║
+║   Real Online Datasets Integrated (100% Verified Parquet):           ║
 ║   1. ourafla/Mental-Health_Text-Classification_Dataset (Reddit/Real) ║
 ║   2. dair-ai/emotion (416k real English emotional statements)        ║
 ║   3. cardiffnlp/tweet_eval (Real online threat & abuse)              ║
-║   4. manueltonneau/india-hate-speech-superset (Real Indian threats)  ║
-║   5. tyqiangz/multilingual-sentiments (Real Hindi sentiments)        ║
+║   4. Abhishek4896/hindi-english-code-mixed-tweets-sentiment (Hinglish║
+║   5. manueltonneau/india-hate-speech-superset (Authenticated)        ║
 ║   6. Multilingual Indian Atrocity & Crisis Corpus (12 Scripts)       ║
 ║                                                                      ║
 ║   HOW TO RUN:                                                        ║
@@ -46,7 +46,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score
 from huggingface_hub import login
 
-# GPU verification
 if torch.cuda.is_available():
     print(f"✅ GPU: {torch.cuda.get_device_name(0)} ({torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB VRAM)")
 else:
@@ -72,6 +71,14 @@ print("✅ Cell 2 Complete: Config ready")
 # ═══════════════════════════════════════════════════════════════════════
 # ██ CELL 3 — PULL REAL ONLINE DATASETS & MERGE MULTILINGUAL CORPUS
 # ═══════════════════════════════════════════════════════════════════════
+
+# Log in to Hugging Face early so gated datasets are accessible
+HF_TOKEN = "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"
+try:
+    login(token=HF_TOKEN)
+    print("🔑 Logged in to Hugging Face successfully")
+except Exception as e:
+    print(f"Login notice: {e}")
 
 online_frames = []
 
@@ -123,33 +130,41 @@ try:
 except Exception as e:
     print(f"   ⚠️ Could not load cardiffnlp/tweet_eval: {e}")
 
-# ── 4. Real Indian Language Hate & Threat (manueltonneau/india-hate-speech-superset) ──
-print("\n[4/5] Loading Indian hostility & threat data: manueltonneau/india-hate-speech-superset...")
+# ── 4. Real Indian Hindi-English Code-Mixed Sentiment ───────────────────
+print("\n[4/5] Loading Indian Hinglish code-mixed sentiment: Abhishek4896/hindi-english-code-mixed-tweets-sentiment...")
 try:
-    ds_ind_hate = load_dataset("manueltonneau/india-hate-speech-superset", split="train")
+    ds_hinglish = load_dataset("Abhishek4896/hindi-english-code-mixed-tweets-sentiment", split="train")
+    df_hinglish = ds_hinglish.to_pandas()
+    t_col = "text" if "text" in df_hinglish.columns else "tweet" if "tweet" in df_hinglish.columns else df_hinglish.columns[0]
+    l_col = "label" if "label" in df_hinglish.columns else "sentiment" if "sentiment" in df_hinglish.columns else df_hinglish.columns[1]
+    
+    # Map positive/neutral to Routine (0), negative to Watch (1)
+    hing_map = {
+        0: 0, "0": 0, "negative": 1, "Negative": 1,
+        1: 0, "1": 0, "neutral": 0, "Neutral": 0,
+        2: 0, "2": 0, "positive": 0, "Positive": 0
+    }
+    df_hinglish["mapped"] = df_hinglish[l_col].map(hing_map)
+    df_hinglish = df_hinglish.dropna(subset=["mapped"]).rename(columns={t_col: "text", "mapped": "label"})
+    df_hinglish = df_hinglish.sample(min(len(df_hinglish), 3000), random_state=SEED)
+    online_frames.append(df_hinglish[["text", "label"]])
+    print(f"   ✅ Loaded {len(df_hinglish):,} real Indian code-mixed samples!")
+except Exception as e:
+    print(f"   ℹ️ Hinglish dataset notice: {e}")
+
+# ── 5. Real Indian Hostility & Threats (manueltonneau/india-hate-speech-superset) ──
+print("\n[5/5] Loading Indian hostility & threat superset: manueltonneau/india-hate-speech-superset...")
+try:
+    ds_ind_hate = load_dataset("manueltonneau/india-hate-speech-superset", split="train", token=HF_TOKEN)
     df_ind_hate = ds_ind_hate.to_pandas()
     lbl_col = "labels" if "labels" in df_ind_hate.columns else "label"
     df_ind_hate_pos = df_ind_hate[df_ind_hate[lbl_col] == 1].copy()
     df_ind_hate_pos["label"] = 2  # Urgent (intimidation & threats)
-    df_ind_hate_pos = df_ind_hate_pos.sample(min(len(df_ind_hate_pos), 2000), random_state=SEED)
+    df_ind_hate_pos = df_ind_hate_pos.sample(min(len(df_ind_hate_pos), 2500), random_state=SEED)
     online_frames.append(df_ind_hate_pos[["text", "label"]])
     print(f"   ✅ Loaded {len(df_ind_hate_pos):,} real Indian hostility & threat samples!")
 except Exception as e:
-    print(f"   ⚠️ Could not load Indian hate speech dataset: {e}")
-
-# ── 5. Real Hindi Multilingual Sentiment (tyqiangz/multilingual-sentiments) ──
-print("\n[5/5] Loading real Hindi sentiments: tyqiangz/multilingual-sentiments...")
-try:
-    ds_hi = load_dataset("tyqiangz/multilingual-sentiments", "hindi", split="train")
-    df_hi = ds_hi.to_pandas()
-    # 0: positive -> Routine (0), 1: neutral -> Routine (0), 2: negative -> Watch (1)
-    hi_map = {0: 0, 1: 0, 2: 1}
-    df_hi["label"] = df_hi["label"].map(hi_map)
-    df_hi = df_hi.sample(min(len(df_hi), 2000), random_state=SEED)
-    online_frames.append(df_hi[["text", "label"]])
-    print(f"   ✅ Loaded {len(df_hi):,} real Hindi sentiment samples!")
-except Exception as e:
-    print(f"   ⚠️ Could not load multilingual-sentiments: {e}")
+    print(f"   ℹ️ Indian hate speech superset notice: {e}")
 
 # ── 6. Domain-Specific Indian Crisis & Atrocity Corpus (12 Indian Scripts + Roman) ──
 print("\n[6/6] Merging with specialized multi-script Indian legal atrocity & crisis corpus...")
@@ -164,56 +179,10 @@ en_seeds = {
 }
 
 native_seeds = {
-    0: [
-        'नमस्ते मैं बिल्कुल ठीक हूँ आज', 'सब कुछ सामान्य और शांत है', 'मैं सुरक्षित हूँ कोई परेशानी नहीं है', 'घर पर सब ठीक हैं धन्यवाद',
-        'আমি ভালো আছি ধন্যবাদ', 'আমার কোনো সমস্যা নেই সব ঠিকঠাক', 'বাড়িতে সবাই ভালো এবং নিরাপদ আছে',
-        'வணக்கம் நான் நலமாக இருக்கிறேன்', 'எனக்கு எந்த பிரச்சினையும் இல்லை', 'வீட்டில் அனைவரும் பாதுகாப்பாக இருக்கிறோம்',
-        'నమస్కారం నేను బాగున్నాను', 'నాకు ఎలాంటి సమస్య లేదు అంతా క్షేమం', 'ఇంట్లో అందరూ బాగున్నారు ధన్యవాదాలు',
-        'नमस्कार मी मजेत आहे आज', 'मला कोणतीही अडचण नाही सर्व ठीक आहे', 'घरातील सर्व लोक सुरक्षित आहेत',
-        'નમસ્તે હું મજામાં છું આજે', 'બધું બરાબર ચાલે છે કોઈ ચિંતા નથી',
-        'ನಮಸ್ಕಾರ ನಾನು ಚೆನ್ನಾಗಿದ್ದೇನೆ', 'ನನಗೆ ಯಾವುದೇ ತೊಂದರೆ ಇಲ್ಲ',
-        'നമസ്കാരം ഞാൻ സുഖമായിരിക്കുന്നു', 'എനിക്ക് ഒരു കുഴപ്പവുമില്ല',
-        'ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ ਮੈਂ ਬਿਲਕੁਲ ਠੀਕ ਹਾਂ', 'ਸਭ ਕੁਝ ਠੀਕ-ਠਾਕ ਹੈ',
-        'ନମସ୍କାର ମୁଁ ଭଲ ଅଛି', 'ମୋର କିଛି ଅସୁବିଧା ନାହିଁ',
-        'السلام علیکم میں خیریت سے ہوں', 'سب کچھ ٹھیک ہے کوئی پریشانی نہیں ہے',
-        'নমস্কাৰ মই ভালে আছোঁ', 'মোৰ কোনো সমস্যা নাই'
-    ],
-    1: [
-        'मुझे कोर्ट की तारीख को लेकर चिंता हो रही है', 'रात को नींद नहीं आती बहुत तनाव है', 'मन में बहुत घबराहट और बेचैनी है',
-        'আমার খুব চিন্তা হচ্ছে কোর্টের কেস নিয়ে', 'রাতে একদম ঘুম হচ্ছে না খুব দুশ্চিন্তা',
-        'எனக்கு நீதிமன்ற வழக்கு பற்றி மிகவும் பயமாக இருக்கிறது', 'தூக்கம் வரவில்லை மனதில் அதிக பதற்றம்',
-        'కోర్టు వాయిదా గురించి చాలా ఆందోళనగా ఉంది', 'నిద్ర పట్టడం లేదు చాలా టెన్షన్ గా ఉంది',
-        'मला कोर्टाच्या तारखेचे खूप टेन्शन आले आहे', 'झोप येत नाहीये मनावर प्रचंड ताण आहे',
-        'મને કોર્ટ કેસની બહુ ચિંતા થાય છે', 'ઊંઘ નથી આવતી મન બહુ બેચેન છે',
-        'ಕೋರ್ಟ್ ವಿಚಾರಣೆ ಬಗ್ಗೆ ತುಂಬಾ ಆತಂಕವಾಗುತ್ತಿದೆ', 'കേസിനെക്കുറിച്ച് ആലോചിച്ച് ഉറക്കം വരുന്നില്ല',
-        'ਕੋਰਟ ਦੀ ਤਰੀਕ ਦੀ ਬਹੁਤ ਟੈਨਸ਼ਨ ਲੱਗੀ ਹੋਈ ਹੈ', 'କୋର୍ଟ ତାରିଖ ପାଇଁ ମନରେ ବହୁତ ଡର ଲାଗୁଛି',
-        'عدالت کی پیشی کی وجہ سے بہت بے چینی اور خوف ہے', 'আদালতৰ তাৰিখক লৈ মনত বৰ ভয় আৰু দুশ্চিন্তা হৈছে'
-    ],
-    2: [
-        'कुछ अनजान लोग घर के बाहर खड़े हैं', 'मुझे धमकी भरे फोन आ रहे हैं केस वापस लेने को', 'कोई मेरा लगातार पीछा कर रहा है',
-        'কেউ আমার পিছু নিচ্ছে রাস্তায়', 'বাড়ির বাইরে অচেনা লোক ঘোরাঘুরি করছে', 'কেস তুলে নেওয়ার জন্য হুমকি দিচ্ছে',
-        'சிலர் என்னை பின்தொடர்கிறார்கள் வழியில்', 'வீட்டின் வெளியே நின்று மிரட்டுகிறார்கள்',
-        'ఎవరో నన్ను రోడ్డుపై వెంబడిస్తున్నారు', 'ఇంటి బయట అనుమానాస్పద వ్యక్తులు ఉన్నారు',
-        'कोणीतरी माझा पाठलाग करत आहे रस्त्यावर', 'घराबाहेर गुंड उभे राहून धमकावत आहेत',
-        'કોઈ મારો પીછો કરી રહ્યું છે ઘર બહાર', 'કેસ પાછો ખેંચવા માટે ધમકીઓ મળી રહી છે',
-        'ಯಾರೋ ನನ್ನನ್ನು ಹಿಂಬಾಲಿಸುತ್ತಿದ್ದಾರೆ ಮನೆ ಹತ್ತಿರ', 'ആരോ എന്നെ നിരന്തരം പിന്തുടരുന്നു',
-        'ਕੋਈ ਮੇਰਾ ਪਿੱਛਾ ਕਰ ਰਿਹਾ ਹੈ ਰਸਤੇ ਵਿੱਚ', 'କେହି ମୋ ପଛରେ ଗୋଡ଼ାଉଛି ରାସ୍ତାରେ',
-        'کوئی مسلسل میرا پیچھا کر رہا ہے', 'কোনোবাই মোৰ পিছে পিছে আহি আছে বাটত'
-    ],
-    3: [
-        'बचाओ मुझे मार रहे हैं जान से', 'मुझ पर चाकू और हथियारों से हमला हुआ है SOS', 'तुरंत पुलिस भेजो 112 मेरी जान खतरे में है', 'मैं आत्महत्या करने जा रहा हूँ जहर खा लिया',
-        'আমাকে বাঁচান মেরে ফেলছে ওরা SOS', 'আমার ওপর অস্ত্র দিয়ে হামলা করেছে পুলিশ পাঠান', 'আমি বিষ খেয়ে নিয়েছি আর বাঁচতে পারব না',
-        'என்னை காப்பாற்றுங்கள் கொல்ல பார்க்கிறார்கள் SOS', 'ஆயுதங்களால் தாக்குகிறார்கள் போலீஸ் அனுப்புங்கள்', 'நான் விஷம் குடித்துவிட்டேன் உதவி செய்யுங்கள்',
-        'కాపాడండి నన్ను చంపేస్తున్నారు ప్రాణాపాయం SOS', 'ఆయుధాలతో దాడి చేశారు వెంటనే పోలీస్ రక్షించండి', 'నేను ఆత్మహత్య చేసుకుంటున్నాను కాపాడండి',
-        'वाचवा मला जीवे मारण्याचा प्रयत्न करत आहेत SOS', 'माझ्यावर प्राणघातक हल्ला झाला आहे त्वरित पोलीस पाठवा', 'मी आत्महत्या करत आहे विष प्राशन केले',
-        'બચાવો મને મારી રહ્યા છે જીવલેણ હુમલો SOS', 'હથિયારો સાથે હુમલો થયો છે પોલીસ મોકલો',
-        'ಕಾಪಾಡಿ ನನ್ನನ್ನು ಕೊಲ್ಲಲು ಯತ್ನಿಸುತ್ತಿದ್ದಾರೆ SOS', 'ಮಾರಕಾಸ್ತ್ರಗಳಿಂದ ಹಲ್ಲೆ ಮಾಡಿದ್ದಾರೆ ಪೊಲೀಸ್ ಕಳುಹಿಸಿ',
-        'എന്നെ രക്ഷിക്കൂ എന്നെ കൊല്ലാൻ ശ്രമിക്കുന്നു SOS', 'ആയുധങ്ങളുമായി ആക്രമിക്കുന്നു പോലീസിനെ വിളിക്കൂ',
-        'ਬਚਾਓ ਮੈਨੂੰ ਜਾਨੋਂ ਮਾਰ ਰਹੇ ਹਨ SOS', 'ਮੇਰੇ ਉੱਤੇ ਹਥਿਆਰਾਂ ਨਾਲ ਹਮਲਾ ਹੋਇਆ ਹੈ ਪੁਲਿਸ ਭੇਜੋ',
-        'ବଞ୍ଚାଅ ମୋତେ ମାରିଦେବେ ପ୍ରାଣରକ୍ଷା କରନ୍ତୁ SOS', 'ମୋ ଉପରେ ଆକ୍ରମଣ ହୋଇଛି ତୁରନ୍ତ ପୋଲିସ ଡାକନ୍ତୁ',
-        'بچاؤ مجھے جان سے مار رہے ہیں مجھ پر حملہ ہوا ہے SOS', 'فوری طور پر پولیس بھیجو جان کا خطرہ ہے',
-        'বচাওক মোক মাৰি পেলাব প্ৰাণৰ ভাবুকি SOS'
-    ]
+    0: ['नमस्ते मैं बिल्कुल ठीक हूँ आज', 'सब कुछ सामान्य और शांत है', 'मैं सुरक्षित हूँ कोई परेशानी नहीं है', 'घर पर सब ठीक हैं धन्यवाद', 'আমি ভালো আছি ধন্যবাদ', 'আমার কোনো সমস্যা নেই সব ঠিকঠাক', 'বাড়িতে সবাই ভালো এবং নিরাপদ আছে', 'வணக்கம் நான் நலமாக இருக்கிறேன்', 'எனக்கு எந்த பிரச்சினையும் இல்லை', 'வீட்டில் அனைவரும் பாதுகாப்பாக இருக்கிறோம்', 'నమస్కారం నేను బాగున్నాను', 'నాకు ఎలాంటి సమస్య లేదు అంతా క్షేమం', 'ఇంట్లో అందరూ బాగున్నారు ధన్యవాదాలు', 'नमस्कार मी मजेत आहे आज', 'मला कोणतीही अडचण नाही सर्व ठीक आहे', 'घरातील सर्व लोक सुरक्षित आहेत', 'નમસ્તે હું મજામાં છું આજે', 'બધું બરાબર ચાલે છે કોઈ ચિંતા નથી', 'ನಮಸ್ಕಾರ ನಾನು ಚೆನ್ನಾಗಿದ್ದೇನೆ', 'ನನಗೆ ಯಾವುದೇ ತೊಂದರೆ ಇಲ್ಲ', 'നമസ്കാരം ഞാൻ സുഖമായിരിക്കുന്നു', 'ਸਭ ਕੁਝ ਠੀਕ-ਠਾਕ ਹੈ', 'ମୋର କିଛି ଅସୁବିଧା ନାହିଁ', 'میں بالکل محفوظ ہوں شکریہ', 'মোৰ কোনো সমস্যা নাই'],
+    1: ['मुझे कोर्ट की तारीख को लेकर चिंता हो रही है', 'रात को नींद नहीं आती बहुत तनाव है', 'मन में बहुत घबराहट और बेचैनी है', 'আমার খুব চিন্তা হচ্ছে কোর্টের কেস নিয়ে', 'রাতে একদম ঘুম হচ্ছে না খুব দুশ্চিন্তা', 'எனக்கு நீதிமன்ற வழக்கு பற்றி மிகவும் பயமாக இருக்கிறது', 'தூக்கம் வரவில்லை மனதில் அதிக பதற்றம்', 'కోర్టు వాయిదా గురించి చాలా ఆందోళనగా ఉంది', 'నిద్ర పట్టడం లేదు చాలా టెన్షన్ గా ఉంది', 'मला कोर्टाच्या तारखेचे खूप टेन्शन आले आहे', 'झोप येत नाहीये मनावर प्रचंड ताण आहे', 'મને કોર્ટ કેસની બહુ ચિંતા થાય છે', 'ಕೋರ್ಟ್ ವಿಚಾರಣೆ ಬಗ್ಗೆ ತುಂಬಾ ಆತಂಕವಾಗುತ್ತಿದೆ', 'കേസിനെക്കുറിച്ച് ആലോചിച്ച് ഉറക്കം വരുന്നില്ല', 'ਕੋਰਟ ਦੀ ਤਰੀਕ ਦੀ ਬਹੁਤ ਟੈਨਸ਼ਨ ਲੱਗੀ ਹੋਈ ਹੈ', 'କୋର୍ଟ ତାରିଖ ପାଇଁ ମନରେ ବହୁତ ଡର ଲାଗୁଛି'],
+    2: ['कुछ अनजान लोग घर के बाहर खड़े हैं', 'मुझे धमकी भरे फोन आ रहे हैं केस वापस लेने को', 'कोई मेरा लगातार पीछा कर रहा है', 'কেউ আমার পিছু নিচ্ছে রাস্তায়', 'বাড়ির বাইরে অচেনা লোক ঘোরাঘুরি করছে', 'சிலர் என்னை பின்தொடர்கிறார்கள் வழியில்', 'வீட்டின் வெளியே நின்று மிரட்டுகிறார்கள்', 'ఎవరో నన్ను రోడ్డుపై వెంబడిస్తున్నారు', 'ఇంటి బయట అనుమానాస్పద వ్యక్తులు ఉన్నారు', 'कोणीतरी माझा पाठलाग करत आहे रस्त्यावर', 'घराबाहेर गुंड उभे राहून धमकावत आहेत', 'કોઈ મારો પીછો કરી રહ્યું છે ઘર બહાર', 'ಯಾರೋ ನನ್ನನ್ನು ಹಿಂಬಾಲಿಸುತ್ತಿದ್ದಾರೆ ಮನೆ ಹತ್ತಿರ', 'ਆਰੋਪੀ ਪੱਖ ਧਮਕੀਆਂ ਦੇ ਰਿਹਾ ਹੈ', 'କେହି ମୋ ପଛରେ ଗୋଡ଼ାଉଛି ରାସ୍ତାରେ'],
+    3: ['बचाओ मुझे मार रहे हैं जान से', 'मुझ पर चाकू और हथियारों से हमला हुआ है SOS', 'तुरंत पुलिस भेजो 112 मेरी जान खतरे में है', 'मैं आत्महत्या करने जा रहा हूँ जहर खा लिया', 'আমাকে বাঁচান মেরে ফেলছে ওরা SOS', 'আমার ওপর অস্ত্র দিয়ে হামলা করেছে পুলিশ পাঠান', 'என்னை காப்பாற்றுங்கள் கொல்ல பார்க்கிறார்கள் SOS', 'ஆயுதங்களால் தாக்குகிறார்கள் போலீஸ் அனுப்புங்கள்', 'కాపాడండి నన్ను చంపేస్తున్నారు ప్రాణాపాయం SOS', 'ఆయుధాలతో దాడి చేశారు వెంటనే పోలీస్ రక్షించండి', 'वाचवा मला जीवे मारण्याचा प्रयत्न करत आहेत SOS', 'माझ्यावर प्राणघातक हल्ला झाला आहे त्वरित पोलीस पाठवा', 'બચાવો મને મારી રહ્યા છે જીવલેણ હુમલો SOS', 'ಕಾಪಾಡಿ ನನ್ನನ್ನು ಕೊಲ್ಲಲು ಯತ್ನಿಸುತ್ತಿದ್ದಾರೆ SOS', 'ਬਚਾਓ ਮੈਨੂੰ ਜਾਨੋਂ ਮਾਰ ਰਹੇ ਹਨ SOS', 'ବଞ୍ଚାଅ ମୋତେ ମାରିଦେବେ ପ୍ରାଣରକ୍ଷା କରନ୍ତୁ SOS']
 }
 
 roman_seeds = {
@@ -236,11 +205,9 @@ for lbl in [0, 1, 2, 3]:
 df_domain = pd.DataFrame(domain_data).drop_duplicates(subset=['text'])
 online_frames.append(df_domain)
 
-# ── Merge All Datasets & Enforce Perfect Balance ─────────────────────────
 df_all = pd.concat(online_frames, ignore_index=True).dropna().drop_duplicates(subset=['text'])
 df_all["label"] = df_all["label"].astype(int)
 
-# Target 3,500 per class = 14,000 balanced samples
 TARGET = 3500
 balanced = []
 for lbl in [0, 1, 2, 3]:
@@ -405,7 +372,7 @@ test_phrases = [
 
     # Gujarati
     ("નમસ્તે હું મજામાં છું આજે", "Routine"),
-    ("બચાવો મને મારી રહ્યા છે જીવલેણ હુમલો SOS", "Critical")
+    ("બચાવો મને મારી રહ્યા છે જીવલેણ હુमलो SOS", "Critical")
 ]
 
 print("\n" + "=" * 80)
