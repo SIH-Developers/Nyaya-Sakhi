@@ -37,6 +37,27 @@ api.add_middleware(
     allow_headers=["*"],
 )
 
+import threading
+import time
+
+@api.on_event("startup")
+def launch_telegram_bot_service():
+    """Launch Telegram polling bot in a background daemon thread so it runs 24/7 on Render and locally."""
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+    if bot_token and bot_token != "YOUR_TELEGRAM_BOT_TOKEN_HERE":
+        def _run_bg():
+            time.sleep(3)  # Give uvicorn a moment to bind
+            try:
+                from telegram_bot import run_bot
+                print("[FastAPI] Launching background Telegram bot worker...")
+                run_bot()
+            except Exception as e:
+                print(f"[FastAPI] Telegram bot background error: {e}")
+
+        t = threading.Thread(target=_run_bg, daemon=True, name="TelegramBotWorker")
+        t.start()
+        print("[FastAPI] Background Telegram bot worker registered.")
+
 # --- Pydantic Request Models ---
 class ChatbotMessageRequest(BaseModel):
     victim_id: str

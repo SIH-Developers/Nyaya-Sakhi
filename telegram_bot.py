@@ -23,6 +23,28 @@ BASE_URL = os.getenv("RENDER_EXTERNAL_URL", "http://127.0.0.1:8000").rstrip("/")
 API_BASE_URL = f"{BASE_URL}/api"
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
 
+def call_api(method: str, path: str, **kwargs):
+    """Call backend API with automatic fallback between localhost port and public Render URL."""
+    port = os.getenv("PORT", "8000")
+    candidate_urls = [
+        f"http://127.0.0.1:{port}/api/{path.lstrip('/')}",
+        f"{os.getenv('RENDER_EXTERNAL_URL', 'https://nyaya-sakhi-tszb.onrender.com').rstrip('/')}/api/{path.lstrip('/')}",
+        f"http://127.0.0.1:8000/api/{path.lstrip('/')}"
+    ]
+    last_err = None
+    for base in candidate_urls:
+        try:
+            if method.lower() == "get":
+                r = requests.get(base, timeout=kwargs.get("timeout", 10))
+            else:
+                r = requests.post(base, timeout=kwargs.get("timeout", 25), **{k: v for k, v in kwargs.items() if k != "timeout"})
+            if r.status_code in [200, 201]:
+                return r
+        except Exception as e:
+            last_err = e
+            continue
+    raise last_err or RuntimeError(f"Could not connect to backend for {path}")
+
 def send_telegram_message(chat_id: int, text: str):
     """Send text reply back to victim on Telegram."""
     url = f"{TELEGRAM_API}/sendMessage"
@@ -48,7 +70,7 @@ def ensure_victim_registered(chat_id: int, user_name: str) -> str:
     victim_id = f"VIC-TG-{chat_id}"
     try:
         # Check if already exists
-        check_res = requests.get(f"{API_BASE_URL}/victim/{victim_id}", timeout=5)
+        check_res = call_api("get", f"victim/{victim_id}", timeout=5)
         if check_res.status_code == 200:
             return victim_id
         
@@ -66,7 +88,7 @@ def ensure_victim_registered(chat_id: int, user_name: str) -> str:
             "threat_reported": True,
             "compensation_status": "Pending"
         }
-        res = requests.post(f"{API_BASE_URL}/victims", json=payload, timeout=5)
+        res = call_api("post", "victims", json=payload, timeout=5)
         if res.status_code == 200:
             print(f"👤 Auto-registered real user: {user_name} ({victim_id}) into SQLite database!")
     except Exception as e:
@@ -120,7 +142,7 @@ def process_telegram_update(update: dict):
         try:
             files = {"audio_file": ("voice_note.ogg", audio_bytes, "audio/ogg")}
             data = {"victim_id": victim_id, "browser_transcript": f"Live voice check-in from {user_name} via Telegram."}
-            res = requests.post(f"{API_BASE_URL}/upload-audio-call", data=data, files=files, timeout=20).json()
+            res = call_api("post", "upload-audio-call", data=data, files=files, timeout=25).json()
 
             risk_tier = res.get("risk_tier", "Routine")
             score_pct = int((res.get("fused_risk_score", 0.0)) * 100)
@@ -158,7 +180,7 @@ def process_telegram_update(update: dict):
                 "message_text": text_content,
                 "channel": "telegram_mobile"
             }
-            res = requests.post(f"{API_BASE_URL}/message", json=payload, timeout=15).json()
+            res = call_api("post", "message", json=payload, timeout=20).json()
 
             risk_tier = res.get("risk_tier", "Routine")
             score_pct = int((res.get("fused_risk_score", 0.0)) * 100)
