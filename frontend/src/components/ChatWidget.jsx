@@ -17,6 +17,19 @@ import { API_BASE } from '../config';
 
 const SESSION_ID = `web-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
+// Crisis keywords that trigger the safety bypass (consent NOT required — safety first).
+// Per design: calming response + 112/14566 must never be blocked by consent UX.
+const EMERGENCY_KEYWORDS = [
+  'suicide', 'kill myself', 'want to die', 'end my life',
+  'attack', 'knife', 'weapon', 'gun', 'help me', 'emergency',
+  'danger', 'threatened', 'rape', 'assault', 'dying',
+];
+const isEmergencyMessage = (text) =>
+  EMERGENCY_KEYWORDS.some(kw => text.toLowerCase().includes(kw));
+
+// Consent persisted per browser session (not per page load).
+const SESSION_KEY = 'nyaya_consent_given';
+
 const COLORS = {
   info:    { header: 'linear-gradient(135deg,#1a237e,#283593)', accent: '#5c6bc0' },
   calming: { header: 'linear-gradient(135deg,#1b5e20,#2e7d32)', accent: '#66bb6a' },
@@ -24,7 +37,16 @@ const COLORS = {
 
 export default function ChatWidget() {
   const [open, setOpen]             = useState(false);
-  const [consentGiven, setConsent]  = useState(false);
+  // sessionStorage-backed consent: persists across page reloads within the same browser session,
+  // but resets when the user closes the tab (appropriate for a sensitive mental-health context).
+  const [consentGiven, setConsentState] = useState(
+    () => sessionStorage.getItem(SESSION_KEY) === 'true'
+  );
+  const setConsent = (val) => {
+    sessionStorage.setItem(SESSION_KEY, val ? 'true' : 'false');
+    setConsentState(val);
+  };
+
   const [messages, setMessages]     = useState([
     {
       id: 0,
@@ -52,7 +74,14 @@ export default function ChatWidget() {
   const themeColors = mode === 'calming_companion' ? COLORS.calming : COLORS.info;
 
   const sendMessage = async (text) => {
+    const isEmergency = isEmergencyMessage(text);
+    // SAFETY FIRST: emergency messages bypass the consent gate so the
+    // calming response + 112/14566 banner always fires, even pre-consent.
+    // For non-emergency messages, the textarea is disabled anyway,
+    // but we guard here as a defence-in-depth check.
     if (!text.trim() || loading) return;
+    if (!consentGiven && !isEmergency) return;  // blocked — not an emergency
+
     const userMsg = { id: Date.now(), role: 'user', text };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
@@ -302,14 +331,14 @@ export default function ChatWidget() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKey}
-              placeholder="Type your question…"
-              disabled={!consentGiven}
+              placeholder={consentGiven ? 'Type your question…' : 'In danger? Type now — or accept the privacy notice above.'}
+              disabled={loading}
             />
             <button
               id="chat-send-btn"
-              style={{ ...styles.sendBtn, opacity: !consentGiven || loading ? 0.4 : 1 }}
+              style={{ ...styles.sendBtn, opacity: (!consentGiven && !isEmergencyMessage(input)) || loading ? 0.4 : 1 }}
               onClick={() => sendMessage(input)}
-              disabled={!consentGiven || loading}
+              disabled={(!consentGiven && !isEmergencyMessage(input)) || loading}
             >↑</button>
           </div>
         </div>

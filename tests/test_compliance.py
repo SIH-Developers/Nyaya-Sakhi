@@ -207,14 +207,112 @@ def test_purge_with_key_deletes_old_rows():
     return True
 
 
-# ─────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────
+# T6-D: Wrong key value must be rejected with 403
+# ────────────────────────────────────────────────────────────
+def test_purge_wrong_key_rejected():
+    section("T6-D: POST /api/officer/purge with WRONG key value → 403")
+
+    # Seed rows so there is something at risk of deletion
+    victim_id = "COMP-TEST-WRONG-KEY-001"
+    seed_consent_victim(victim_id)
+    seed_old_interaction_logs(victim_id, days_ago=800, count=2)
+    rows_before = count_interaction_logs(victim_id)
+    print(f"  Rows at risk before test: {rows_before}")
+    assert rows_before > 0, "Test setup issue: no rows seeded"
+
+    wrong_keys = [
+        "definitely-not-the-real-key-12345",
+        "nhaa-officer-2025",          # almost-correct
+        "NHAA-OFFICER-2024",          # correct value, wrong case
+        "",                            # empty string (different from missing header)
+    ]
+
+    all_rejected = True
+    for bad_key in wrong_keys:
+        resp = client.post(
+            "/api/officer/purge",
+            headers={"x-officer-key": bad_key},
+        )
+        rows_after = count_interaction_logs(victim_id)
+        accepted = resp.status_code == 200
+        deleted  = rows_after < rows_before
+        symbol   = "REJECTED" if not accepted else "!!! ACCEPTED !!!"
+        print(f"  Key: {repr(bad_key):45s}  status={resp.status_code}  rows_after={rows_after}  [{symbol}]")
+        if accepted or deleted:
+            all_rejected = False
+
+    rows_final = count_interaction_logs(victim_id)
+    print(f"  Rows after all wrong-key attempts: {rows_final} (must equal {rows_before})")
+
+    if all_rejected and rows_final == rows_before:
+        print(f"\n  {PASS}: All 4 wrong/malformed keys correctly rejected; no rows deleted")
+        return True
+    else:
+        print(f"\n  {FAIL}: At least one wrong key was accepted or rows were deleted")
+        return False
+
+
+# ────────────────────────────────────────────────────────────
+# T6-E: Key with whitespace padding must be rejected
+# (tests that server strips correctly and doesn't accidentally accept " correct-key ")
+# ────────────────────────────────────────────────────────────
+def test_purge_whitespace_key_behavior():
+    section("T6-E: Whitespace-padded key — strip correctly, reject if wrong value")
+
+    # The server does .strip() then compare_digest(). So:
+    # " nhaa-officer-2024 "  → strips to correct key → ACCEPT (200)
+    # " wrong-key "          → strips to wrong key   → REJECT (403)
+
+    results_e = {}
+
+    # Case 1: padded CORRECT key — server strips, should accept
+    resp_padded_correct = client.post(
+        "/api/officer/purge",
+        headers={"x-officer-key": f" {OFFICER_KEY} "},
+        params={"days_to_keep": 730},
+    )
+    print(f"  Padded correct key ' {OFFICER_KEY} ': status={resp_padded_correct.status_code}")
+    results_e["padded_correct_accepted"] = resp_padded_correct.status_code == 200
+
+    # Case 2: padded WRONG key — server strips, should reject
+    resp_padded_wrong = client.post(
+        "/api/officer/purge",
+        headers={"x-officer-key": " wrong-key "},
+    )
+    print(f"  Padded wrong key ' wrong-key ':   status={resp_padded_wrong.status_code}")
+    results_e["padded_wrong_rejected"] = resp_padded_wrong.status_code in (401, 403)
+
+    # Case 3: tab-padded wrong key
+    resp_tab_wrong = client.post(
+        "/api/officer/purge",
+        headers={"x-officer-key": "\twrong-key\t"},
+    )
+    print(f"  Tab-padded wrong key:              status={resp_tab_wrong.status_code}")
+    results_e["tab_wrong_rejected"] = resp_tab_wrong.status_code in (401, 403)
+
+    print()
+    for k, v in results_e.items():
+        print(f"  {PASS if v else FAIL}  {k}: {v}")
+
+    if all(results_e.values()):
+        print(f"\n  {PASS}: Whitespace handling correct")
+        return True
+    else:
+        print(f"\n  {FAIL}: Unexpected whitespace behavior")
+        return False
+
+
+# ────────────────────────────────────────────────────────────
 # Run all T6 tests
-# ─────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     results = {
         "T6-A: Consent capture":                test_consent_capture(),
-        "T6-B: Purge without key → 403":        test_purge_without_key_is_rejected(),
+        "T6-B: Purge without key → 422":        test_purge_without_key_is_rejected(),
         "T6-C: Purge with key → rows deleted":  test_purge_with_key_deletes_old_rows(),
+        "T6-D: Wrong key value → 403":          test_purge_wrong_key_rejected(),
+        "T6-E: Whitespace key handling":         test_purge_whitespace_key_behavior(),
     }
 
     print(f"\n\n{'='*60}")
@@ -224,4 +322,4 @@ if __name__ == "__main__":
         status = PASS if passed else FAIL
         print(f"  {status}  |  {name}")
     all_pass = all(results.values())
-    print(f"\n  Overall: {'✅ ALL PASSED' if all_pass else '❌ SOME FAILED'}")
+    print(f"\n  Overall: {'All PASSED' if all_pass else 'SOME FAILED'}")

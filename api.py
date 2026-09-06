@@ -732,12 +732,17 @@ def record_consent(req: ConsentRequest):
 
 
 # ── TASK 6: Officer-only route guard ─────────────────────────────────────────
+import secrets as _secrets
 
-OFFICER_API_KEY = os.getenv("OFFICER_API_KEY", "nhaa-officer-2024")
+# Loaded from environment; the in-source fallback is intentionally weak so
+# production must set OFFICER_API_KEY in .env — never rely on the default.
+_OFFICER_KEY_DEFAULT = "nhaa-officer-2024"
+OFFICER_API_KEY = os.getenv("OFFICER_API_KEY", _OFFICER_KEY_DEFAULT)
 
 def _require_officer(request_headers) -> bool:
-    key = request_headers.get("x-officer-key", "")
-    return key == OFFICER_API_KEY
+    key = request_headers.get("x-officer-key", "").strip()
+    # Constant-time comparison prevents timing oracle attacks
+    return _secrets.compare_digest(key, OFFICER_API_KEY)
 
 @api.get("/api/officer/retention-purge")
 def run_retention_purge(request: dict = None):
@@ -756,7 +761,7 @@ def purge_old_data(x_officer_key: str = Header(...), days_to_keep: int = 730):
     DPDP Act 2023 compliance: delete interaction logs older than `days_to_keep` days.
     Requires header: X-Officer-Key
     """
-    if x_officer_key != OFFICER_API_KEY:
+    if not _secrets.compare_digest(x_officer_key.strip(), OFFICER_API_KEY):
         raise HTTPException(status_code=403, detail="Unauthorised — officer key required")
     conn = get_connection()
     cursor = conn.cursor()
