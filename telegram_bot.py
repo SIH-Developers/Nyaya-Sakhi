@@ -24,14 +24,14 @@ API_BASE_URL = f"{BASE_URL}/api"
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
 
 def call_api(method: str, path: str, **kwargs):
-    """Call backend API with automatic fallback between localhost and public Render URL."""
+    """Call backend API with automatic fallback between public Render URL and localhost."""
     candidate_urls = []
-    port = os.getenv("PORT", "8000")
-    candidate_urls.append(f"http://127.0.0.1:{port}/api/{path.lstrip('/')}")
-    candidate_urls.append(f"http://127.0.0.1:8000/api/{path.lstrip('/')}")
     ext_url = os.getenv("RENDER_EXTERNAL_URL")
     if ext_url:
         candidate_urls.append(f"{ext_url.rstrip('/')}/api/{path.lstrip('/')}")
+    port = os.getenv("PORT", "8000")
+    candidate_urls.append(f"http://127.0.0.1:{port}/api/{path.lstrip('/')}")
+    candidate_urls.append(f"http://127.0.0.1:8000/api/{path.lstrip('/')}")
 
     last_err = None
     for base in candidate_urls:
@@ -203,25 +203,15 @@ def process_telegram_update(update: dict):
             payload = {
                 "victim_id": victim_id,
                 "message_text": text_content,
-                "channel": "telegram_mobile",
-                "user_name": user_name
+                "channel": "telegram_mobile"
             }
-            try:
-                res = call_api("post", "message", json=payload, timeout=6).json()
-            except Exception as api_err:
-                print(f"⚠️ HTTP API call timeout/fallback: {api_err}. Invoking internal pipeline directly...")
-                from api import handle_text_message, ChatbotMessageRequest
-                req = ChatbotMessageRequest(victim_id=victim_id, message_text=text_content, channel="telegram_mobile", user_name=user_name)
-                res = handle_text_message(req)
+            res = call_api("post", "message", json=payload, timeout=20).json()
 
             risk_tier = res.get("risk_tier", "Routine")
             score_pct = int((res.get("fused_risk_score", 0.0)) * 100)
             reasons = res.get("explainability_reasons", [])
 
-            bot_response = res.get("bot_response")
-            if bot_response:
-                reply = bot_response
-            elif risk_tier == "Urgent":
+            if risk_tier == "Urgent":
                 reply = (
                     f"🚨 *CRITICAL SAFETY ALERT ({score_pct}% - Urgent)*\n\n"
                     f"🔍 *Threat & Distress Analysis:*\n"
@@ -230,10 +220,8 @@ def process_telegram_update(update: dict):
                     reply += f"• {r}\n"
                 reply += (
                     f"\n🛡️ *Immediate Safety Protocol:*\n"
-                    f"• If you are in physical danger, call **112 (Police)** or **14566 (NHAA Helpline)** right now.\n"
-                    f"• High-priority ticket dispatched to District Counselor & Police Officer under Section 15A.\n\n"
-                    f"💬 *We are actively with you, {user_name}.*\n"
-                    f"_Please take a slow deep breath. Are you indoors in a safe room right now? Is anyone with you? Reply back to let us know._"
+                    f"• If you are facing direct physical danger, call **112 (Police)** or toll-free **14566 (NHAA Helpline)** right now.\n"
+                    f"• An urgent high-priority ticket has been dispatched to your on-duty district counselor for safety outreach under Section 15A."
                 )
             elif risk_tier in ["Counselor Outreach", "Watch"]:
                 reply = (
@@ -242,10 +230,7 @@ def process_telegram_update(update: dict):
                 )
                 for r in reasons[:3]:
                     reply += f"• {r}\n"
-                reply += (
-                    f"\n💙 *We hear you, {user_name}. Your counselor has been updated on your case status.*\n"
-                    f"_How are you feeling right now? If you need legal guidance or tele-counseling, reply here or call **14566** anytime._"
-                )
+                reply += f"\n💙 *We are here with you.* A support counselor has been updated on your case status. Call **14566** anytime."
             else:
                 reply = (
                     f"💚 *Distress Assessment:* `{score_pct}%` | *Status:* *Routine / Stable*\n\n"
@@ -277,19 +262,6 @@ def run_bot():
         try:
             url = f"{TELEGRAM_API}/getUpdates?offset={offset}&timeout=30"
             res = requests.get(url, timeout=35).json()
-            
-            if not res.get("ok"):
-                err_code = res.get("error_code")
-                desc = res.get("description", "")
-                if err_code == 409:
-                    print("⚠️ [Telegram Bot] Conflict 409: Another bot worker is actively polling getUpdates. Retrying in 10s...")
-                    time.sleep(10)
-                    continue
-                else:
-                    print(f"⚠️ [Telegram Bot] API warning ({err_code}): {desc}")
-                    time.sleep(5)
-                    continue
-
             updates = res.get("result", [])
 
             for update in updates:
@@ -300,7 +272,7 @@ def run_bot():
             print("\nStopping Telegram Bot.")
             break
         except Exception as e:
-            time.sleep(3)
+            time.sleep(2)
 
 if __name__ == "__main__":
     run_bot()
