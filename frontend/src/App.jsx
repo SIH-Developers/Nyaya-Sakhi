@@ -43,6 +43,8 @@ export default function App() {
 
   useEffect(() => {
     fetchDashboardData();
+    const interval = setInterval(fetchDashboardData, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleSelectVictim = async (victimId) => {

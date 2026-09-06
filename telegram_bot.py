@@ -203,7 +203,8 @@ def process_telegram_update(update: dict):
             payload = {
                 "victim_id": victim_id,
                 "message_text": text_content,
-                "channel": "telegram_mobile"
+                "channel": "telegram_mobile",
+                "user_name": user_name
             }
             res = call_api("post", "message", json=payload, timeout=20).json()
 
@@ -220,8 +221,10 @@ def process_telegram_update(update: dict):
                     reply += f"• {r}\n"
                 reply += (
                     f"\n🛡️ *Immediate Safety Protocol:*\n"
-                    f"• If you are facing direct physical danger, call **112 (Police)** or toll-free **14566 (NHAA Helpline)** right now.\n"
-                    f"• An urgent high-priority ticket has been dispatched to your on-duty district counselor for safety outreach under Section 15A."
+                    f"• If you are in physical danger, call **112 (Police)** or **14566 (NHAA Helpline)** right now.\n"
+                    f"• High-priority ticket dispatched to District Counselor & Police Officer under Section 15A.\n\n"
+                    f"💬 *We are actively with you, {user_name}.*\n"
+                    f"_Please take a slow deep breath. Are you indoors in a safe room right now? Is anyone with you? Reply back to let us know._"
                 )
             elif risk_tier in ["Counselor Outreach", "Watch"]:
                 reply = (
@@ -230,7 +233,10 @@ def process_telegram_update(update: dict):
                 )
                 for r in reasons[:3]:
                     reply += f"• {r}\n"
-                reply += f"\n💙 *We are here with you.* A support counselor has been updated on your case status. Call **14566** anytime."
+                reply += (
+                    f"\n💙 *We hear you, {user_name}. Your counselor has been updated on your case status.*\n"
+                    f"_How are you feeling right now? If you need legal guidance or tele-counseling, reply here or call **14566** anytime._"
+                )
             else:
                 reply = (
                     f"💚 *Distress Assessment:* `{score_pct}%` | *Status:* *Routine / Stable*\n\n"

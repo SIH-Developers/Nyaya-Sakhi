@@ -62,7 +62,8 @@ def launch_telegram_bot_service():
 class ChatbotMessageRequest(BaseModel):
     victim_id: str
     message_text: str
-    channel: str = "chatbot"  # 'chatbot' | 'app' | 'web_portal'
+    channel: str = "chatbot"  # 'chatbot' | 'app' | 'web_portal' | 'telegram_mobile'
+    user_name: Optional[str] = None
     engagement_telemetry: Optional[Dict[str, Any]] = None
 
 class IVRSCallRequest(BaseModel):
@@ -146,6 +147,7 @@ def handle_text_message(req: ChatbotMessageRequest):
     Executes LangGraph multi-agent pipeline and persists results.
     """
     victim = get_victim_details(req.victim_id)
+    name_to_use = req.user_name or "Telegram User"
     if not victim and req.victim_id.startswith("VIC-TG-"):
         conn = get_connection()
         cursor = conn.cursor()
@@ -153,17 +155,24 @@ def handle_text_message(req: ChatbotMessageRequest):
         INSERT OR IGNORE INTO victims (
             victim_id, name, caste_category, fir_number, police_station,
             district, state, case_stage, accused_bail_status, threat_reported,
-            compensation_status, consent_flag, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+            compensation_status, current_risk_score, current_risk_tier, consent_flag, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0.05, 'Routine', 1, ?)
         """, (
-            req.victim_id, "Telegram User", "Scheduled Caste",
+            req.victim_id, name_to_use, "Scheduled Caste",
             f"TG-{req.victim_id[-4:]}", "Helpline 14566 Intake",
-            "Self-Reported via Telegram", "Delhi", "Helpline Intake", "None", 0, "Pending",
+            "National Intake (Telegram)", "Delhi", "Helpline Intake", "Pending", 0, "Pending",
             datetime.now().isoformat()
         ))
         conn.commit()
         conn.close()
         victim = get_victim_details(req.victim_id)
+    elif victim and req.user_name and victim.get("name") in ["Telegram User", "Anonymous Victim"]:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE victims SET name = ? WHERE victim_id = ?", (req.user_name, req.victim_id))
+        conn.commit()
+        conn.close()
+        victim["name"] = req.user_name
 
     if not victim:
         raise HTTPException(status_code=404, detail=f"Victim ID '{req.victim_id}' not found in registry")
