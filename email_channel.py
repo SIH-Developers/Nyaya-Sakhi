@@ -96,8 +96,42 @@ def send_email_alert(
         html_content = _build_default_html(subject, body_text)
 
     # ─────────────────────────────────────────────────────────────
-    # Method 1: Direct SMTP (Gmail / Custom) - 100% Custom Content!
+    # Method 1: Brevo (Sendinblue) HTTPS API — Works on Render!
     # ─────────────────────────────────────────────────────────────
+    brevo_key = os.getenv("BREVO_API_KEY", "").strip()
+    if brevo_key:
+        try:
+            brevo_payload = {
+                "sender": {
+                    "name": FROM_NAME,
+                    "email": os.getenv("SMTP_USER", "tripathianimesh456@gmail.com").strip()
+                },
+                "to": [{"email": dest_email}],
+                "subject": subject,
+                "htmlContent": html_content,
+                "textContent": body_text
+            }
+            resp = requests.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={
+                    "api-key": brevo_key,
+                    "Content-Type": "application/json"
+                },
+                json=brevo_payload,
+                timeout=12
+            )
+            if resp.status_code in [200, 201, 202]:
+                print(f"[Brevo Email] OK - Delivered to {dest_email} | MessageId: {resp.json().get('messageId', 'N/A')}")
+                return {"success": True, "provider": "Brevo", "to": dest_email}
+            else:
+                print(f"[Brevo Email] Error {resp.status_code}: {resp.text[:200]}")
+        except Exception as e:
+            print(f"[Brevo Email] Exception: {e}")
+
+    # ─────────────────────────────────────────────────────────────
+    # Method 2: Direct SMTP (Gmail / Custom) - Local fallback
+    # ─────────────────────────────────────────────────────────────
+
     active_user = (os.getenv("SMTP_USER") or SMTP_USER).strip()
     active_pass = (os.getenv("SMTP_PASS") or SMTP_PASS).replace(" ", "").strip()
     active_host = os.getenv("SMTP_HOST") or SMTP_HOST
