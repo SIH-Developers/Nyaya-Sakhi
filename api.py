@@ -198,6 +198,7 @@ def handle_text_message(req: ChatbotMessageRequest):
 
     state_input = {
         "victim_id": req.victim_id,
+        "user_name": name_to_use,
         "turn_id": turn_id,
         "timestamp": datetime.now().isoformat(),
         "channel": req.channel,
@@ -225,7 +226,8 @@ def handle_text_message(req: ChatbotMessageRequest):
         "risk_tier": final_state.get("risk_tier"),
         "escalation_triggered": final_state.get("escalation_triggered"),
         "explainability_reasons": final_state.get("explainability_reasons"),
-        "nlp_results": final_state.get("nlp_results")
+        "nlp_results": final_state.get("nlp_results"),
+        "bot_response": final_state.get("bot_response")
     }
 
 @api.post("/api/call")

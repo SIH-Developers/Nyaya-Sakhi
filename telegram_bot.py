@@ -218,7 +218,10 @@ def process_telegram_update(update: dict):
             score_pct = int((res.get("fused_risk_score", 0.0)) * 100)
             reasons = res.get("explainability_reasons", [])
 
-            if risk_tier == "Urgent":
+            bot_response = res.get("bot_response")
+            if bot_response:
+                reply = bot_response
+            elif risk_tier == "Urgent":
                 reply = (
                     f"🚨 *CRITICAL SAFETY ALERT ({score_pct}% - Urgent)*\n\n"
                     f"🔍 *Threat & Distress Analysis:*\n"

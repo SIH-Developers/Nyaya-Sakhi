@@ -30,3 +30,5 @@ class VictimState(TypedDict, total=False):
     escalation_triggered: bool
     escalation_alert: Optional[Dict[str, Any]]
     case_coordinator_log: Optional[Dict[str, Any]]
+    user_name: Optional[str]
+    bot_response: Optional[str]

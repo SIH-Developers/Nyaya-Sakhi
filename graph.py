@@ -10,7 +10,8 @@ from agents import (
     behavior_agent_node,
     context_agent_node,
     fusion_agent_node,
-    escalation_agent_node
+    escalation_agent_node,
+    response_agent_node
 )
 
 def build_triage_graph():
@@ -24,6 +25,7 @@ def build_triage_graph():
     workflow.add_node("context_agent", context_agent_node)
     workflow.add_node("fusion_agent", fusion_agent_node)
     workflow.add_node("escalation_agent", escalation_agent_node)
+    workflow.add_node("response_agent", response_agent_node)
     
     # Parallel Fan-Out from START to individual domain agents
     workflow.add_edge(START, "nlp_agent")
@@ -37,9 +39,10 @@ def build_triage_graph():
     workflow.add_edge("behavior_agent", "fusion_agent")
     workflow.add_edge("context_agent", "fusion_agent")
     
-    # Fusion routes to Decision & Escalation
+    # Fusion routes to Decision & Escalation, then Response Generation
     workflow.add_edge("fusion_agent", "escalation_agent")
-    workflow.add_edge("escalation_agent", END)
+    workflow.add_edge("escalation_agent", "response_agent")
+    workflow.add_edge("response_agent", END)
     
     return workflow.compile()
 
