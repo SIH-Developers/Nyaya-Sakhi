@@ -5,6 +5,7 @@ import TriageRoster from './components/TriageRoster';
 import VictimDetailModal from './components/VictimDetailModal';
 import AlertsFeed from './components/AlertsFeed';
 import LiveSimulator from './components/LiveSimulator';
+import ChatWidget from './components/ChatWidget';
 
 import { API_BASE } from './config';
 
@@ -158,8 +159,11 @@ export default function App() {
         color: 'var(--text-muted)',
         background: 'rgba(10, 13, 20, 0.9)'
       }}>
-        Ministry of Social Justice and Empowerment (MoSJE) • National Helpline Against Atrocities (14566) • SIH Problem Statement 26094 • Powered by LangGraph & Hugging Face
+        Ministry of Social Justice and Empowerment (MoSJE) • National Helpline Against Atrocities (14566) • SIH Problem Statement 26094 • Powered by LangGraph &amp; Hugging Face
       </footer>
+
+      {/* TASK 3 & 4: Floating Chat Widget */}
+      <ChatWidget />
     </div>
   );
 }

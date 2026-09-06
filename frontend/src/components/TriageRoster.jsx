@@ -1,19 +1,46 @@
 import React, { useState } from 'react';
 import { Search, Filter, AlertCircle, ChevronRight, Scale, ShieldAlert } from 'lucide-react';
 
+// TASK 5: Channel badge config
+const CHANNEL_META = {
+  telegram_mobile:  { label: 'Telegram',  color: '#0088cc', icon: '📱' },
+  ivrs:             { label: 'IVRS Call',  color: '#7c3aed', icon: '📞' },
+  chatbot:          { label: 'Chatbot',    color: '#0ea5e9', icon: '💬' },
+  web_chat:         { label: 'Web Chat',   color: '#0ea5e9', icon: '🌐' },
+  whatsapp:         { label: 'WhatsApp',   color: '#25D366', icon: '💬' },
+  sms:              { label: 'SMS',        color: '#f59e0b', icon: '📨' },
+  email:            { label: 'Email',      color: '#6366f1', icon: '📧' },
+};
+
+function ChannelBadge({ channel }) {
+  const meta = CHANNEL_META[channel] || { label: channel || 'Unknown', color: '#4b5563', icon: '❓' };
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      background: `${meta.color}22`, color: meta.color,
+      border: `1px solid ${meta.color}55`,
+      borderRadius: 999, padding: '2px 8px', fontSize: '0.68rem', fontWeight: 600,
+      whiteSpace: 'nowrap',
+    }}>
+      {meta.icon} {meta.label}
+    </span>
+  );
+}
+
 export default function TriageRoster({ victims, onSelectVictim, selectedVictimId }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [tierFilter, setTierFilter] = useState('ALL');
+  const [searchTerm, setSearchTerm]     = useState('');
+  const [tierFilter, setTierFilter]     = useState('ALL');
+  const [channelFilter, setChannelFilter] = useState('ALL');
 
   const filteredVictims = victims.filter((v) => {
-    const matchesSearch = 
+    const matchesSearch =
       v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       v.victim_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (v.district && v.district.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (v.fir_number && v.fir_number.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    if (tierFilter === 'ALL') return matchesSearch;
-    return matchesSearch && v.current_risk_tier.toUpperCase() === tierFilter;
+    const matchesTier    = tierFilter    === 'ALL' || v.current_risk_tier?.toUpperCase() === tierFilter;
+    const matchesChannel = channelFilter === 'ALL' || v.last_channel === channelFilter;
+    return matchesSearch && matchesTier && matchesChannel;
   });
 
   const getBadgeClass = (tier) => {
@@ -110,6 +137,23 @@ export default function TriageRoster({ victims, onSelectVictim, selectedVictimId
               </button>
             ))}
           </div>
+
+          {/* TASK 5: Channel Filter */}
+          <select
+            id="channel-filter-select"
+            value={channelFilter}
+            onChange={e => setChannelFilter(e.target.value)}
+            style={{
+              background: 'rgba(255,255,255,0.05)', color: '#fff',
+              border: '1px solid var(--border-subtle)', borderRadius: 8,
+              padding: '7px 12px', fontSize: '0.78rem', cursor: 'pointer', outline: 'none',
+            }}
+          >
+            <option value="ALL">All Channels</option>
+            {Object.entries(CHANNEL_META).map(([k, v]) => (
+              <option key={k} value={k}>{v.icon} {v.label}</option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -123,6 +167,7 @@ export default function TriageRoster({ victims, onSelectVictim, selectedVictimId
               <th style={{ padding: '12px 16px' }}>Legal Stage & Bail</th>
               <th style={{ padding: '12px 16px' }}>Dynamic Distress Score</th>
               <th style={{ padding: '12px 16px' }}>Triage Tier</th>
+              <th style={{ padding: '12px 16px' }}>Channel</th>
               <th style={{ padding: '12px 16px', textAlign: 'right' }}>Action</th>
             </tr>
           </thead>
@@ -216,6 +261,14 @@ export default function TriageRoster({ victims, onSelectVictim, selectedVictimId
                       <span className="pulse-dot" style={{ background: 'currentColor' }}></span>
                       {v.current_risk_tier}
                     </span>
+                  </td>
+
+                  {/* TASK 5: Channel Badge */}
+                  <td style={{ padding: '16px' }}>
+                    {v.last_channel
+                      ? <ChannelBadge channel={v.last_channel} />
+                      : <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>—</span>
+                    }
                   </td>
 
                   {/* Action */}

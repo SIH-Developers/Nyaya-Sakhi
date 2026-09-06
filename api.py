@@ -606,9 +606,178 @@ def create_victim(req: NewVictimRequest):
     conn.close()
     return {"success": True, "victim_id": req.victim_id}
 
-# Mount React Frontend static files if built
+
+# ── TASK 3: RAG Info Chatbot ──────────────────────────────────────────────────
+
+class InfoChatRequest(BaseModel):
+    question: str
+    session_id: Optional[str] = ""
+
+@api.post("/api/chat/info")
+def chat_info(req: InfoChatRequest):
+    """
+    Rule-based RAG chatbot answering SC/ST PoA Act rights questions.
+    Falls back to Llama-3.3 via HF Inference API for unknown questions.
+    """
+    from services.rag_chatbot import get_info_response
+    return get_info_response(question=req.question, session_id=req.session_id or "")
+
+
+# ── TASK 4: NLP distress check for website chat (dual-mode) ──────────────────
+
+class WebChatRequest(BaseModel):
+    session_id: str
+    message: str
+    consent_given: bool = False
+
+@api.post("/api/chat/web")
+def chat_web(req: WebChatRequest):
+    """
+    Dual-mode website chat:
+      - 'info' mode by default (RAG chatbot)
+      - Switches to 'calming_companion' if NLP detects distress (score ≥ 0.5)
+    Runs the NLP agent on the message to detect distress signals.
+    """
+    from services.rag_chatbot import get_info_response
+    from agents.nlp_agent import nlp_agent_node
+
+    # Quick NLP distress check (lightweight, no full pipeline)
+    try:
+        nlp_state = {
+            "victim_id": f"WEB-{req.session_id}",
+            "message_text": req.message,
+            "turn_id": 1,
+            "timestamp": datetime.now().isoformat(),
+            "channel": "web_chat",
+            "audio_metadata": None,
+            "case_context": {},
+            "interaction_history": [],
+        }
+        nlp_out = nlp_agent_node(nlp_state)
+        nlp_res = nlp_out.get("nlp_results", {})
+        distress_score = nlp_res.get("distress_score", 0.0)
+    except Exception as e:
+        print(f"[WebChat NLP] {e}")
+        distress_score = 0.0
+
+    is_distressed = distress_score >= 0.5
+
+    if is_distressed:
+        # Calming companion mode
+        calming_responses = [
+            "मैं आपके साथ हूँ। (I am with you.) 🙏\n\nTake a slow deep breath with me. "
+            "You are safe right now. You are brave for reaching out.\n\n"
+            "Can you tell me — are you physically safe at this moment?",
+
+            "You are not alone. NHAA 14566 counselors are available 24/7 to support you. "
+            "If you feel in immediate danger, please call **112** (Police).\n\n"
+            "I'm here to listen. What would help you feel a little calmer right now?",
+
+            "I hear you, and what you're going through is not okay. "
+            "You deserve support and protection under the law.\n\n"
+            "Would you like me to connect you with a counselor? "
+            "Or I can share information about your legal rights.",
+        ]
+        import hashlib
+        idx = int(hashlib.md5(req.session_id.encode()).hexdigest(), 16) % len(calming_responses)
+        return {
+            "mode": "calming_companion",
+            "answer": calming_responses[idx],
+            "distress_score": round(distress_score, 3),
+            "show_emergency_banner": distress_score >= 0.75,
+            "suggestions": [
+                "I need to talk to a counselor",
+                "What are my legal rights?",
+                "I am safe, just stressed",
+            ]
+        }
+
+    # Info mode
+    info = get_info_response(question=req.message, session_id=req.session_id)
+    return {
+        "mode": "info",
+        "distress_score": round(distress_score, 3),
+        **info
+    }
+
+
+# ── TASK 6: Consent capture ───────────────────────────────────────────────────
+
+class ConsentRequest(BaseModel):
+    victim_id: str
+    consent_given: bool
+    consent_type: str = "data_processing"  # 'data_processing' | 'mental_health_monitoring'
+
+@api.post("/api/consent")
+def record_consent(req: ConsentRequest):
+    """Record explicit data-processing consent from victim."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            UPDATE victims SET consent_flag = ?, consent_timestamp = ?
+            WHERE victim_id = ?
+        """, (1 if req.consent_given else 0, datetime.now().isoformat(), req.victim_id))
+        if cursor.rowcount == 0:
+            conn.close()
+            raise HTTPException(status_code=404, detail="Victim not found")
+        conn.commit()
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+    conn.close()
+    return {"success": True, "victim_id": req.victim_id, "consent_given": req.consent_given}
+
+
+# ── TASK 6: Officer-only route guard ─────────────────────────────────────────
+
+OFFICER_API_KEY = os.getenv("OFFICER_API_KEY", "nhaa-officer-2024")
+
+def _require_officer(request_headers) -> bool:
+    key = request_headers.get("x-officer-key", "")
+    return key == OFFICER_API_KEY
+
+@api.get("/api/officer/retention-purge")
+def run_retention_purge(request: dict = None):
+    """
+    Officer-only: purge interaction logs older than 2 years (DPDP Act compliance).
+    Requires header: X-Officer-Key: <OFFICER_API_KEY>
+    """
+    from fastapi import Request
+    return {"info": "Use POST /api/officer/purge with X-Officer-Key header"}
+
+from fastapi import Request, Header
+
+@api.post("/api/officer/purge")
+def purge_old_data(x_officer_key: str = Header(...), days_to_keep: int = 730):
+    """
+    DPDP Act 2023 compliance: delete interaction logs older than `days_to_keep` days.
+    Requires header: X-Officer-Key
+    """
+    if x_officer_key != OFFICER_API_KEY:
+        raise HTTPException(status_code=403, detail="Unauthorised — officer key required")
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        DELETE FROM interaction_logs
+        WHERE julianday('now') - julianday(timestamp) > ?
+    """, (days_to_keep,))
+    deleted = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return {
+        "success": True,
+        "deleted_rows": deleted,
+        "policy": f"Retained last {days_to_keep} days of data per DPDP Act 2023"
+    }
+
+
+# ── Mount React Frontend static files if built ────────────────────────────────
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 frontend_dist = Path(__file__).parent / "frontend" / "dist"
 if frontend_dist.exists():
     api.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")
+

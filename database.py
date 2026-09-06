@@ -85,6 +85,34 @@ def init_db():
     )
     """)
 
+    # Migration: add new columns if they don't exist (safe for existing DBs)
+    for col_def in [
+        ("consent_timestamp", "ALTER TABLE victims ADD COLUMN consent_timestamp TEXT"),
+        ("last_channel",       "ALTER TABLE victims ADD COLUMN last_channel TEXT"),
+    ]:
+        try:
+            cursor.execute(col_def[1])
+        except Exception:
+            pass  # column already exists
+
+    # 4. Escalation Alerts table (TASK 2 — used by escalation_agent)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS escalation_alerts (
+        alert_id TEXT PRIMARY KEY,
+        victim_id TEXT NOT NULL,
+        timestamp TEXT,
+        priority TEXT,
+        risk_tier TEXT,
+        fused_risk_score REAL,
+        recommended_action TEXT,
+        clinical_reasons TEXT,
+        human_in_the_loop_status TEXT DEFAULT 'Awaiting Counselor Review',
+        acknowledged INTEGER DEFAULT 0,
+        channel TEXT,
+        FOREIGN KEY (victim_id) REFERENCES victims(victim_id)
+    )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -124,12 +152,12 @@ def save_victim_turn(state: Dict[str, Any]) -> str:
         fused_score, risk_tier, reasons_json, timestamp
     ))
 
-    # Update victim's current score & tier
+    # Update victim's current score, tier, last_channel
     cursor.execute("""
     UPDATE victims
-    SET current_risk_score = ?, current_risk_tier = ?, last_interaction_at = ?
+    SET current_risk_score = ?, current_risk_tier = ?, last_interaction_at = ?, last_channel = ?
     WHERE victim_id = ?
-    """, (fused_score, risk_tier, timestamp, victim_id))
+    """, (fused_score, risk_tier, timestamp, channel, victim_id))
 
     # If escalation triggered, save alert
     if state.get("escalation_triggered") and state.get("escalation_alert"):
