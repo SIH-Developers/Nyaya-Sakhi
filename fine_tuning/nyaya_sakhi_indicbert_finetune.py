@@ -71,7 +71,7 @@ print("✅ Cell 2 Complete: Config ready")
 # ██ CELL 3 — PULL REAL ONLINE DATASETS & MERGE MULTILINGUAL CORPUS
 # ═══════════════════════════════════════════════════════════════════════
 
-HF_TOKEN = "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"
+HF_TOKEN = "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"
 try:
     login(token=HF_TOKEN)
     print("🔑 Logged in to Hugging Face successfully")
@@ -80,9 +80,46 @@ except Exception as e:
 
 online_frames = []
 
-# ── 1. Real Mental Health & Suicidal Corpus (Reddit & Clinical) ─────────
+# ── 0. Load Local CSV Datasets (dass_synthetic_text.csv, goemotions_cleaned.csv, dreaddit_cleaned.csv) ──
+print("\n[0/6] Loading local CSV datasets provided in fine_tuning/ folder...")
+local_files = [
+    ("dass_synthetic_text.csv", "synthetic_text", "risk_tier"),
+    ("goemotions_cleaned.csv", "text_clean", "risk_tier"),
+    ("dreaddit_cleaned.csv", "text_clean", "label")
+]
+
+tier_map = {
+    "routine": 0, "Routine": 0, 0: 0, "0": 0,
+    "outreach": 1, "watch": 1, "Watch": 1, 1: 1, "1": 1,
+    "urgent": 2, "Urgent": 2, 2: 2, "2": 2,
+    "critical": 3, "Critical": 3, 3: 3, "3": 3
+}
+
+for fname, txt_col, lbl_col in local_files:
+    fpaths = [
+        fname,
+        os.path.join('fine_tuning', fname),
+        os.path.join('/content', fname),
+        os.path.join('/content', 'fine_tuning', fname),
+        os.path.join(os.path.dirname(__file__) if '__file__' in globals() else '.', fname),
+        os.path.join(os.path.dirname(__file__) if '__file__' in globals() else '.', 'fine_tuning', fname)
+    ]
+    found_path = next((p for p in fpaths if os.path.exists(p)), None)
+    if found_path:
+        try:
+            df_loc = pd.read_csv(found_path)
+            if txt_col in df_loc.columns and lbl_col in df_loc.columns:
+                mapped = df_loc[lbl_col].map(tier_map)
+                df_valid = pd.DataFrame({"text": df_loc[txt_col], "label": mapped}).dropna(subset=["label"])
+                df_sampled = df_valid.groupby("label").apply(lambda x: x.sample(min(len(x), 8000), random_state=SEED)).reset_index(drop=True)
+                online_frames.append(df_sampled[["text", "label"]])
+                print(f"   ✅ Loaded {len(df_sampled):,} samples from local dataset '{fname}'!")
+        except Exception as e:
+            print(f"   ⚠️ Could not process local file {fname}: {e}")
 print("\n[1/5] Loading real-world crisis data: ourafla/Mental-Health_Text-Classification_Dataset...")
 try:
+    ds_mh = load_dataset("ourafla/Mental-Health_Text-Classification_Dataset", data_files="mental_heath_unbanlanced.csv", split="train")
+except Exception:
     ds_mh = load_dataset("ourafla/Mental-Health_Text-Classification_Dataset", split="train")
     df_mh = ds_mh.to_pandas()
     text_col = "text" if "text" in df_mh.columns else "statement" if "statement" in df_mh.columns else df_mh.columns[0]

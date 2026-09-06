@@ -45,5 +45,7 @@ Thumbs.db
 *.swp
 *.swo
 
-# Logs
+# Logs and Datasets
 *.log
+*.csv
+scratch/
