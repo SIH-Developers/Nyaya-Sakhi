@@ -24,14 +24,14 @@ API_BASE_URL = f"{BASE_URL}/api"
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
 
 def call_api(method: str, path: str, **kwargs):
-    """Call backend API with automatic fallback between public Render URL and localhost."""
+    """Call backend API with automatic fallback between localhost and public Render URL."""
     candidate_urls = []
-    ext_url = os.getenv("RENDER_EXTERNAL_URL")
-    if ext_url:
-        candidate_urls.append(f"{ext_url.rstrip('/')}/api/{path.lstrip('/')}")
     port = os.getenv("PORT", "8000")
     candidate_urls.append(f"http://127.0.0.1:{port}/api/{path.lstrip('/')}")
     candidate_urls.append(f"http://127.0.0.1:8000/api/{path.lstrip('/')}")
+    ext_url = os.getenv("RENDER_EXTERNAL_URL")
+    if ext_url:
+        candidate_urls.append(f"{ext_url.rstrip('/')}/api/{path.lstrip('/')}")
 
     last_err = None
     for base in candidate_urls:
@@ -206,7 +206,13 @@ def process_telegram_update(update: dict):
                 "channel": "telegram_mobile",
                 "user_name": user_name
             }
-            res = call_api("post", "message", json=payload, timeout=20).json()
+            try:
+                res = call_api("post", "message", json=payload, timeout=6).json()
+            except Exception as api_err:
+                print(f"⚠️ HTTP API call timeout/fallback: {api_err}. Invoking internal pipeline directly...")
+                from api import handle_text_message, ChatbotMessageRequest
+                req = ChatbotMessageRequest(victim_id=victim_id, message_text=text_content, channel="telegram_mobile", user_name=user_name)
+                res = handle_text_message(req)
 
             risk_tier = res.get("risk_tier", "Routine")
             score_pct = int((res.get("fused_risk_score", 0.0)) * 100)
