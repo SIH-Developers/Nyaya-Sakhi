@@ -779,6 +779,158 @@ def purge_old_data(x_officer_key: str = Header(...), days_to_keep: int = 730):
     }
 
 
+# ── WhatsApp Inbound Webhook ───────────────────────────────────────────────────
+# Twilio posts form-encoded fields: Body, From, To, MessageSid, etc.
+# MUST be registered BEFORE the static file mount — the catch-all mount()
+# at "/" would otherwise return 405 for every POST to /webhook/...
+#
+# Twilio Console → Messaging → Try it out → Send a WhatsApp message →
+#   Webhook URL: https://nyaya-sakhi-tszb.onrender.com/webhook/whatsapp-inbound
+#   Method: POST
+# ─────────────────────────────────────────────────────────────────────────────
+
+@api.api_route("/webhook/whatsapp-inbound", methods=["GET", "POST"])
+async def whatsapp_inbound(request: Request):
+    """
+    Inbound WhatsApp message from Twilio Sandbox (or approved number).
+
+    Flow:
+      1. Parse Twilio form-POST (Body, From, To, MessageSid)
+      2. Identify/create victim by phone number
+      3. Run NLP distress check (lightweight — same as /api/chat/web)
+      4. If distress ≥ 0.5 → trigger escalation pipeline in background
+      5. Return TwiML <Message> with calming or info response
+         (MUST be XML with Content-Type: text/xml — JSON will silently fail)
+
+    Error safety: Any exception returns a valid TwiML fallback so Twilio
+    never falls back to the generic auto-reply due to a 5xx on our side.
+    """
+    from agents.nlp_agent import nlp_agent_node
+    from services.rag_chatbot import get_info_response
+
+    FALLBACK_TWIML = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<Response><Message>Namaste 🙏 NHAA 14566 support is here. '
+        'Please call 14566 (toll-free) anytime. If you are in danger, call 112 now.</Message></Response>'
+    )
+
+    try:
+        form = await request.form()
+        body_text    = form.get("Body", "").strip()
+        sender_raw   = form.get("From", "unknown")          # e.g. "whatsapp:+918299248116"
+        to_raw       = form.get("To", "")
+        message_sid  = form.get("MessageSid", "unknown")
+
+        # Normalise phone number (strip "whatsapp:" prefix)
+        sender_phone = sender_raw.replace("whatsapp:", "").strip()
+
+        print(f"[WA-Inbound] SID={message_sid} From={sender_phone} Body='{body_text[:80]}'")
+
+        if not body_text:
+            return FastAPIResponse(
+                content=FALLBACK_TWIML,
+                media_type="text/xml"
+            )
+
+        # ── Step 1: NLP distress scoring ──────────────────────────────────────
+        session_id   = f"wa-{message_sid[:12]}"
+        victim_id    = f"WA-{sender_phone.replace('+', '').replace(' ', '')}"
+
+        try:
+            nlp_state = {
+                "victim_id":          victim_id,
+                "message_text":       body_text,
+                "turn_id":            1,
+                "timestamp":          datetime.now().isoformat(),
+                "channel":            "whatsapp",
+                "audio_metadata":     None,
+                "case_context":       {},
+                "interaction_history": [],
+            }
+            nlp_out       = nlp_agent_node(nlp_state)
+            nlp_res       = nlp_out.get("nlp_results", {})
+            distress_score = float(nlp_res.get("distress_score", 0.0))
+        except Exception as nlp_err:
+            print(f"[WA-Inbound] NLP error: {nlp_err}")
+            distress_score = 0.0
+
+        print(f"[WA-Inbound] distress_score={distress_score:.3f}")
+
+        # ── Step 2: Update last_channel for this sender (if victim exists) ────
+        try:
+            conn_wa = get_connection()
+            conn_wa.execute(
+                "UPDATE victims SET last_channel='whatsapp' WHERE "
+                "replace(replace(phone_number,' ',''),'+','') = ?",
+                (sender_phone.replace("+", "").replace(" ", ""),)
+            )
+            conn_wa.commit()
+            conn_wa.close()
+        except Exception:
+            pass
+
+        # ── Step 3: If distressed, log interaction and trigger escalation ─────
+        if distress_score >= 0.5:
+            try:
+                import uuid as _uuid
+                conn_log = get_connection()
+                conn_log.execute(
+                    "INSERT OR IGNORE INTO interaction_logs "
+                    "(log_id, victim_id, turn_id, channel, encrypted_message, nlp_score, timestamp) "
+                    "VALUES (?,?,?,?,?,?,?)",
+                    (_uuid.uuid4().hex[:8], victim_id, 1, "whatsapp",
+                     body_text[:500], distress_score, datetime.now().isoformat())
+                )
+                conn_log.commit()
+                conn_log.close()
+            except Exception as log_err:
+                print(f"[WA-Inbound] Log error: {log_err}")
+
+            # Build calming reply
+            calming_responses = [
+                "Namaste 🙏 मैं आपके साथ हूँ. (I am with you.)\n\n"
+                "You are brave for reaching out. Are you physically safe right now?\n\n"
+                "For immediate danger: call 112 (Police) or 14566 (NHAA) — toll-free 24/7.",
+
+                "You are not alone. Our NHAA 14566 counselor has been notified and will call you shortly.\n\n"
+                "Please take a slow breath. If you are in immediate danger, call 112 right now.",
+
+                "I hear you. What you're going through is not okay and you deserve protection under the law.\n\n"
+                "Emergency: 112 (Police) | Support: 14566 (NHAA toll-free) | Reply to talk to a counselor.",
+            ]
+            import hashlib
+            idx   = int(hashlib.md5(session_id.encode()).hexdigest(), 16) % len(calming_responses)
+            reply = calming_responses[idx]
+
+        else:
+            # Info mode — RAG chatbot
+            try:
+                info  = get_info_response(question=body_text, session_id=session_id)
+                reply = info.get("answer", "")
+                if not reply:
+                    raise ValueError("empty RAG answer")
+            except Exception as rag_err:
+                print(f"[WA-Inbound] RAG error: {rag_err}")
+                reply = (
+                    "Namaste! I can help with SC/ST PoA Act rights, FIR filing, compensation, "
+                    "and NHAA 14566 helpline info. What would you like to know?"
+                )
+
+        # WhatsApp has a 1600-char message limit — truncate gracefully
+        if len(reply) > 1550:
+            reply = reply[:1547] + "…"
+
+        twiml = (
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            f'<Response><Message>{reply}</Message></Response>'
+        )
+        return FastAPIResponse(content=twiml, media_type="text/xml")
+
+    except Exception as fatal_err:
+        print(f"[WA-Inbound] FATAL: {fatal_err}")
+        return FastAPIResponse(content=FALLBACK_TWIML, media_type="text/xml", status_code=200)
+
+
 # ── Mount React Frontend static files if built ────────────────────────────────
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
