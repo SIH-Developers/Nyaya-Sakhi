@@ -34,19 +34,13 @@ def main():
         time.sleep(2)
 
         # 2. Start React Frontend
-        print("▶️ [2/3] Starting React Dashboard on http://localhost:5173 ...")
+        print("▶️ [2/2] Starting React Dashboard on http://localhost:5173 ...")
         # In Windows, npm is npm.cmd
         npm_cmd = "npm.cmd" if os.name == "nt" else "npm"
         frontend_cmd = [npm_cmd, "run", "dev", "--", "--host", "127.0.0.1", "--port", "5173"]
         frontend_proc = subprocess.Popen(frontend_cmd, cwd=str(FRONTEND_DIR), shell=True)
         processes.append(("React Frontend", frontend_proc))
         time.sleep(2)
-
-        # 3. Start Telegram Bot
-        print("▶️ [3/3] Starting Telegram Voice Bot (@nhaa_14566_sih_bot) ...")
-        bot_cmd = [sys.executable, "telegram_bot.py"]
-        bot_proc = subprocess.Popen(bot_cmd, cwd=str(ROOT_DIR))
-        processes.append(("Telegram Bot", bot_proc))
 
         print("\n" + "=" * 75)
         print("🎉 ALL SYSTEMS ARE ONLINE AND READY!")

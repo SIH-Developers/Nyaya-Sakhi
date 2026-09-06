@@ -277,6 +277,19 @@ def run_bot():
         try:
             url = f"{TELEGRAM_API}/getUpdates?offset={offset}&timeout=30"
             res = requests.get(url, timeout=35).json()
+            
+            if not res.get("ok"):
+                err_code = res.get("error_code")
+                desc = res.get("description", "")
+                if err_code == 409:
+                    print("⚠️ [Telegram Bot] Conflict 409: Another bot worker is actively polling getUpdates. Retrying in 10s...")
+                    time.sleep(10)
+                    continue
+                else:
+                    print(f"⚠️ [Telegram Bot] API warning ({err_code}): {desc}")
+                    time.sleep(5)
+                    continue
+
             updates = res.get("result", [])
 
             for update in updates:
@@ -287,7 +300,7 @@ def run_bot():
             print("\nStopping Telegram Bot.")
             break
         except Exception as e:
-            time.sleep(2)
+            time.sleep(3)
 
 if __name__ == "__main__":
     run_bot()
