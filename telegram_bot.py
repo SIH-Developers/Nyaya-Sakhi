@@ -280,8 +280,10 @@ def process_telegram_update(update: dict):
             _chat_states[chat_id]["step"] = "REG_EMAIL"
             send_telegram_message(
                 chat_id,
-                "Would you like an email added so you can check your case status online on the Patient Portal? "
-                "(optional, reply with your email address or reply '*skip*' if not applicable)"
+                "📧 *Add Email for Citizen & Case Portal Access:*\n\n"
+                "An email address is **required** if you wish to log into the online Citizen & Case Portal (`/patient`) to view your case milestones, court hearing dates, and statutory compensation status.\n\n"
+                "👉 *Please enter your email address now* (e.g. `yourname@gmail.com`).\n\n"
+                "*(If you do not have an email or do not want web access, reply '*skip*'. You can still check in on Telegram anytime, or add an email later with `/email your@email.com`)*"
             )
             return
 
@@ -299,7 +301,14 @@ def process_telegram_update(update: dict):
             victim_id = complete_self_registration(chat_id, user_name, district, fir_filed, email_val)
             _chat_states.pop(chat_id, None)
 
-            email_note = f"\n• *Email for Portal:* `{email_val}`" if email_val else "\n• *Portal Access:* Ask an officer or counselor to link an email anytime."
+            if email_val:
+                email_note = f"\n• 📧 *Portal Email:* `{email_val}` (Active for `/patient` login)"
+            else:
+                email_note = (
+                    "\n• 📧 *Portal Access:* ⚠️ *No email linked yet.* "
+                    "Web portal login requires an email. Send `/email yourname@gmail.com` anytime to enable online portal access."
+                )
+
             confirm_msg = (
                 f"✅ *Registration Completed!*\n\n"
                 f"• *Victim ID:* `{victim_id}`\n"
