@@ -146,12 +146,14 @@ def process_telegram_update(update: dict):
         linked_victim = get_linked_victim(chat_id)
         if linked_victim:
             # Already linked or registered
+            email_info = f"• *Email:* `{linked_victim.get('email')}`" if linked_victim.get('email') else "• *Portal Access:* Send `/email yourname@example.com` to enable web login."
             welcome_msg = (
                 f"🙏 *Namaste {linked_victim.get('name', default_name)}!*\n\n"
                 f"Welcome back to the *MoSJE & NHAA 14566 Atrocity Support System*.\n"
                 f"• *Victim ID:* `{linked_victim.get('victim_id')}`\n"
                 f"• *Case:* `{linked_victim.get('fir_number') or 'Intake Case'}`\n"
-                f"• *Status:* *{linked_victim.get('registration_status', 'verified')}*\n\n"
+                f"• *Status:* *{linked_victim.get('registration_status', 'verified')}*\n"
+                f"{email_info}\n\n"
                 "• 💬 *Text Check-in:* Share how you are coping with your case anytime.\n"
                 "• 🎙️ *Voice Check-in:* Hold the microphone button to send a live voice message."
             )
@@ -169,6 +171,34 @@ def process_telegram_update(update: dict):
         )
         send_telegram_message(chat_id, ask_msg)
         return
+
+    # 1b. Handle /email command to link or update email for Patient Portal access
+    if text_content.startswith("/email"):
+        parts = text_content.split(maxsplit=1)
+        if len(parts) > 1 and "@" in parts[1] and "." in parts[1]:
+            new_email = parts[1].strip()
+            linked_victim = get_linked_victim(chat_id)
+            if linked_victim:
+                from database import update_victim_email
+                update_victim_email(linked_victim["victim_id"], new_email)
+                send_telegram_message(
+                    chat_id,
+                    f"✅ *Email Linked Successfully!*\n\n"
+                    f"• *Linked Email:* `{new_email}`\n"
+                    f"• *Victim ID:* `{linked_victim['victim_id']}`\n\n"
+                    f"You can now log into the *Citizen & Case Portal* at `/patient` using your Victim ID or email.\n"
+                    f"A login verification code will be sent to `{new_email}` whenever you request login."
+                )
+                return
+            else:
+                send_telegram_message(chat_id, "Please use /start to register or link your case first.")
+                return
+        else:
+            send_telegram_message(
+                chat_id,
+                "ℹ️ *To link your email for web portal login*, send:\n`/email yourname@example.com`"
+            )
+            return
 
     # 2. Handle active onboarding state
     state = _chat_states.get(chat_id)
