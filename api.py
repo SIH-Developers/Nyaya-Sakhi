@@ -502,9 +502,11 @@ async def telephony_speech_response(request: Request, background_tasks: Backgrou
     return FastAPIResponse(content=xml_response.strip(), media_type="text/xml")
 
 @api.post("/api/victim/{victim_id}/send-checkin")
+@api.post("/api/victim/{victim_id}/checkin-prompt")
 def send_proactive_checkin(
     victim_id: str,
-    prompt_type: str = Body("routine_wellbeing", embed=True)
+    prompt_type: str = Body("routine_wellbeing", embed=True),
+    custom_message: Optional[str] = Body(None, embed=True)
 ):
     """
     Counselor or automated cron triggers a proactive check-in prompt to victim.
@@ -523,7 +525,7 @@ def send_proactive_checkin(
         "compensation_support": f"Namaste {victim.get('name')}, we are following up on your SC/ST PoA rehabilitation relief. Have you received your pending compensation disbursement?"
     }
 
-    message_text = prompts.get(prompt_type, prompts["routine_wellbeing"])
+    message_text = custom_message.strip() if custom_message and custom_message.strip() else prompts.get(prompt_type, prompts["routine_wellbeing"])
     dispatch_results = {}
     channels_used = []
 
