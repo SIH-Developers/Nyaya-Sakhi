@@ -213,11 +213,11 @@ def process_telegram_update(update: dict):
                     )
                     return
                 else:
-                    _chat_states[chat_id] = {"step": "REG_NAME", "data": {}}
+                    # Allow victim to retry or reply 'no' (up to rate-limit threshold of 5 attempts)
                     send_telegram_message(
                         chat_id,
-                        "I couldn't find that reference. Let's get you registered now instead.\n\n"
-                        "What name (or how you'd like to be addressed) should we register for you?"
+                        "I couldn't find a record for that reference code or FIR.\n\n"
+                        "Please check and re-enter, or reply '*no*' if you'd like to register directly."
                     )
                     return
 
