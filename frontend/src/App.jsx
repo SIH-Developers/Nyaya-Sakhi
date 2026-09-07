@@ -6,6 +6,7 @@ import VictimDetailModal from './components/VictimDetailModal';
 import AlertsFeed from './components/AlertsFeed';
 import LiveSimulator from './components/LiveSimulator';
 import ChatWidget from './components/ChatWidget';
+import PatientPortal from './components/PatientPortal';
 
 import { API_BASE } from './config';
 
@@ -111,8 +112,8 @@ export default function App() {
       />
 
       <main style={{ flex: 1, maxWidth: '1400px', width: '100%', margin: '0 auto', padding: '28px 24px' }}>
-        {/* KPI Statistics */}
-        <KPICards stats={stats} />
+        {/* KPI Statistics - Hidden when in patient portal */}
+        {activeTab !== 'patient' && <KPICards stats={stats} />}
 
         {/* View Switcher */}
         {activeTab === 'dashboard' && (
@@ -120,6 +121,7 @@ export default function App() {
             victims={victims}
             onSelectVictim={handleSelectVictim}
             selectedVictimId={selectedVictimId}
+            userRole={userRole}
           />
         )}
 
@@ -138,6 +140,10 @@ export default function App() {
             onCallSent={handleSendCall}
           />
         )}
+
+        {activeTab === 'patient' && (
+          <PatientPortal />
+        )}
       </main>
 
       {/* Victim Detailed History Modal */}
@@ -145,6 +151,7 @@ export default function App() {
         <VictimDetailModal
           victim={selectedVictimDetails}
           history={selectedVictimHistory}
+          userRole={userRole}
           onClose={handleCloseModal}
           onAcknowledge={handleAcknowledgeAlert}
         />

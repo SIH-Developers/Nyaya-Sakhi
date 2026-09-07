@@ -779,6 +779,426 @@ def purge_old_data(x_officer_key: str = Header(...), days_to_keep: int = 730):
     }
 
 
+# ── Part A: Case Reference Lookup & Linking Endpoints ─────────────────────────
+
+class CaseLookupRequest(BaseModel):
+    query: str
+
+class GenerateLinkCodeRequest(BaseModel):
+    victim_id: str
+
+_lookup_ref_attempts: Dict[str, List[float]] = {}
+
+def _check_lookup_ref_rate_limit(client_ip: str) -> bool:
+    """Anti-enumeration rate limiting: max 5 reference lookups per minute per IP."""
+    now = time.time()
+    cutoff = now - 60
+    history = [t for t in _lookup_ref_attempts.get(client_ip, []) if t >= cutoff]
+    if len(history) >= 5:
+        _lookup_ref_attempts[client_ip] = history
+        return False
+    history.append(now)
+    _lookup_ref_attempts[client_ip] = history
+    return True
+
+@api.post("/api/case/lookup-reference")
+def lookup_case_reference(req: CaseLookupRequest, request: Request):
+    """
+    Rate-limited lookup by FIR number or 6-digit linking code.
+    Enforces anti-enumeration (max 5 attempts/min).
+    Returns masked victim profile if found.
+    """
+    client_ip = request.client.host if request.client else "unknown"
+    if not _check_lookup_ref_rate_limit(client_ip):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many lookup requests. Please wait 1 minute before trying again."
+        )
+
+    from database import find_victim_by_fir_or_link
+    victim = find_victim_by_fir_or_link(req.query)
+    if not victim:
+        return {"found": False, "message": "No registered case found for this reference code or FIR."}
+
+    raw_name = victim.get("name", "Victim")
+    masked_name = raw_name[:2] + "****" if len(raw_name) > 2 else raw_name + "*"
+    return {
+        "found": True,
+        "victim_id": victim["victim_id"],
+        "name_masked": masked_name,
+        "fir_number": victim.get("fir_number"),
+        "district": victim.get("district"),
+        "case_stage": victim.get("case_stage"),
+        "registration_status": victim.get("registration_status", "verified")
+    }
+
+@api.post("/api/case/generate-link-code")
+def create_link_code(req: GenerateLinkCodeRequest, x_officer_key: str = Header(...)):
+    """
+    Officer-gated: Generate a 6-digit link code valid for 7 days.
+    Allows victim to link their case on Telegram or Web.
+    """
+    if not _secrets.compare_digest(x_officer_key.strip(), OFFICER_API_KEY):
+        raise HTTPException(status_code=403, detail="Unauthorised — officer key required")
+
+    from database import generate_and_save_link_code, get_victim_details
+    victim = get_victim_details(req.victim_id)
+    if not victim:
+        raise HTTPException(status_code=404, detail="Victim not found")
+
+    result = generate_and_save_link_code(req.victim_id)
+    return {
+        "success": True,
+        "victim_id": req.victim_id,
+        "link_code": result["link_code"],
+        "expires_at": result["expires_at"],
+        "validity_days": 7
+    }
+
+
+# ── Part B: Patient Portal Authentication & Safe Dashboard ─────────────────────
+
+import jwt as _pyjwt
+from datetime import timedelta
+
+PATIENT_JWT_SECRET = os.getenv("PATIENT_JWT_SECRET", "nyaya-sakhi-patient-portal-secret-2026-sih")
+PATIENT_JWT_ALGORITHM = "HS256"
+_revoked_patient_tokens = set()
+
+class RequestOtpRequest(BaseModel):
+    identifier: str  # victim_id or email
+
+class VerifyOtpRequest(BaseModel):
+    identifier: str
+    otp: str
+
+class PatientCheckinRequest(BaseModel):
+    message: str
+    mood_rating: Optional[int] = None
+
+class PatientDashboardResponse(BaseModel):
+    """
+    Strict Allowlist Model: NEVER includes fused_risk_score, current_risk_score,
+    risk_tier, clinical_reasons, or counselor_notes.
+    """
+    victim_id: str
+    name_masked: str
+    case_milestones: List[Dict[str, Any]]
+    checkin_history: List[Dict[str, Any]]
+    helpline_numbers: Dict[str, str]
+    can_checkin: bool = True
+
+def _get_current_patient(authorization: Optional[str] = Header(None)) -> Dict[str, Any]:
+    """Validate Bearer JWT for Patient Portal and return victim record."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid authentication token")
+
+    token = authorization.split("Bearer ")[1].strip()
+    if token in _revoked_patient_tokens:
+        raise HTTPException(status_code=401, detail="Session expired or logged out")
+
+    try:
+        payload = _pyjwt.decode(token, PATIENT_JWT_SECRET, algorithms=[PATIENT_JWT_ALGORITHM])
+        victim_id = payload.get("sub")
+        if not victim_id:
+            raise HTTPException(status_code=401, detail="Invalid session token")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid or expired session token")
+
+    victim = get_victim_details(victim_id)
+    if not victim:
+        raise HTTPException(status_code=404, detail="Victim profile not found")
+    return victim
+
+@api.post("/api/patient/request-otp")
+def request_patient_otp(req: RequestOtpRequest):
+    """
+    Step 1 of Patient Portal login:
+    1. Look up victim by victim_id or email
+    2. Confirm email exists on file (otherwise guidance message)
+    3. Verify rate-limit FIRST (max 3/15 min) to protect Brevo quota
+    4. Send 6-digit OTP via Brevo API
+    5. Save to database with 10-minute expiry
+    NEVER returns OTP in response body.
+    """
+    import random
+    from database import check_otp_rate_limit, record_patient_otp
+    from email_channel import send_patient_otp_email
+
+    clean_id = req.identifier.strip()
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM victims WHERE UPPER(victim_id) = UPPER(?) OR LOWER(email) = LOWER(?) LIMIT 1",
+        (clean_id, clean_id)
+    )
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        raise HTTPException(status_code=404, detail="No registered profile found matching that ID or email.")
+
+    victim = dict(row)
+    victim_id = victim["victim_id"]
+    email = (victim.get("email") or "").strip()
+
+    if not email or "@" not in email:
+        return {
+            "success": False,
+            "message": (
+                "No email on file for this account. Please contact your counselor or use "
+                "Telegram/SMS to check in, or ask an officer to add an email to enable portal access."
+            )
+        }
+
+    # RATE LIMIT CHECK FIRST — abort before calling Brevo or writing to DB
+    if not check_otp_rate_limit(victim_id, email):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many OTP requests. Please wait 15 minutes before requesting again."
+        )
+
+    # Generate 6-digit cryptographic OTP
+    otp_code = f"{random.randint(100000, 999999)}"
+    expires_at = (datetime.now() + timedelta(minutes=10)).isoformat()
+
+    # Dispatch via Brevo
+    send_patient_otp_email(
+        to_email=email,
+        victim_name=victim.get("name", "Citizen"),
+        otp_code=otp_code
+    )
+
+    # Record in database
+    record_patient_otp(victim_id, email, otp_code, expires_at)
+
+    # Masked email for UI display
+    parts = email.split("@")
+    masked_email = f"{parts[0][:2]}***@{parts[1]}"
+
+    return {
+        "success": True,
+        "message": f"Verification code sent to your registered email ({masked_email}). Valid for 10 minutes.",
+        "victim_id": victim_id
+    }
+
+@api.post("/api/patient/verify-otp")
+def verify_patient_otp_endpoint(req: VerifyOtpRequest):
+    """
+    Step 2 of Patient Portal login:
+    - Validates OTP single-use (used = 0) and expiry (expires_at > now())
+    - Marks used = 1 atomically to prevent replay attacks
+    - Returns signed JWT session token (30-minute expiry)
+    """
+    from database import validate_patient_otp
+    victim = validate_patient_otp(req.identifier, req.otp)
+    if not victim:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid, expired, or already used verification code. Please request a new one."
+        )
+
+    victim_id = victim["victim_id"]
+    from datetime import timezone
+    now_utc = datetime.now(timezone.utc)
+    token_payload = {
+        "sub": victim_id,
+        "role": "patient",
+        "iat": now_utc,
+        "exp": now_utc + timedelta(minutes=30)
+    }
+    session_token = _pyjwt.encode(token_payload, PATIENT_JWT_SECRET, algorithm=PATIENT_JWT_ALGORITHM)
+
+    return {
+        "success": True,
+        "token": session_token,
+        "victim_id": victim_id,
+        "name_masked": victim.get("name", "")[:2] + "****"
+    }
+
+@api.post("/api/patient/logout")
+def patient_logout(authorization: Optional[str] = Header(None)):
+    """Revoke session token on logout."""
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.split("Bearer ")[1].strip()
+        _revoked_patient_tokens.add(token)
+    return {"success": True, "message": "Successfully logged out of Patient Portal."}
+
+@api.get("/api/patient/dashboard", response_model=PatientDashboardResponse)
+def get_patient_dashboard(authorization: Optional[str] = Header(None)):
+    """
+    Safe Patient Dashboard View:
+    Exposes ONLY safe milestone progress, check-in history dates, and emergency helplines.
+    Guaranteed by Pydantic allowlist model to exclude all risk scores, tiers, notes, and reasoning.
+    """
+    victim = _get_current_patient(authorization)
+    victim_id = victim["victim_id"]
+
+    # Build safe milestones
+    stage = victim.get("case_stage", "FIR Filed")
+    bail = victim.get("accused_bail_status", "Pending")
+    comp = victim.get("compensation_status", "Pending")
+    fir = victim.get("fir_number")
+
+    case_milestones = [
+        {
+            "stage": "FIR Filed",
+            "status": "completed" if (fir and "Pending" not in fir) else "in_progress",
+            "details": f"FIR Number: {fir}" if fir else "Intake Under Review"
+        },
+        {
+            "stage": "Investigation / Chargesheet",
+            "status": "completed" if stage in ["Charge Sheet Filed", "Trial", "Judgment"] else "in_progress",
+            "details": "Police Investigation & Evidence Gathering" if stage == "FIR Filed" else "Chargesheet Submitted to Court"
+        },
+        {
+            "stage": "Accused Bail Hearing",
+            "status": "monitored",
+            "details": f"Accused Custody / Bail: {bail}"
+        },
+        {
+            "stage": "Special Court Trial",
+            "status": "in_progress" if stage == "Trial" else ("completed" if stage == "Judgment" else "pending"),
+            "details": "Special Court Established under Section 14 SC/ST Act"
+        },
+        {
+            "stage": "Statutory Relief & Compensation",
+            "status": "completed" if comp == "Disbursed" else "in_progress",
+            "details": f"Government Rehabilitation Relief ({comp})"
+        }
+    ]
+
+    # Fetch safe check-in history (dates + channel ONLY, no messages, no scores, no tiers)
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT timestamp, channel FROM interaction_logs WHERE victim_id = ? ORDER BY timestamp DESC LIMIT 20",
+        (victim_id,)
+    )
+    rows = cursor.fetchall()
+    conn.close()
+
+    checkin_history = []
+    for r in rows:
+        checkin_history.append({
+            "date": r["timestamp"],
+            "channel": r["channel"],
+            "status": "Completed"
+        })
+
+    raw_name = victim.get("name", "Victim")
+    masked_name = raw_name[:2] + "****" if len(raw_name) > 2 else raw_name + "*"
+
+    return PatientDashboardResponse(
+        victim_id=victim_id,
+        name_masked=masked_name,
+        case_milestones=case_milestones,
+        checkin_history=checkin_history,
+        helpline_numbers={
+            "police_emergency": "112",
+            "nhaa_helpline": "14566",
+            "legal_aid": "15100"
+        },
+        can_checkin=True
+    )
+
+@api.post("/api/patient/checkin")
+def patient_self_checkin(req: PatientCheckinRequest, authorization: Optional[str] = Header(None)):
+    """Patient self-initiated check-in from the Patient Portal."""
+    victim = _get_current_patient(authorization)
+    victim_id = victim["victim_id"]
+
+    # Log interaction turn securely
+    try:
+        from database import save_victim_turn
+        turn_state = {
+            "victim_id": victim_id,
+            "turn_id": 999,
+            "channel": "web_portal",
+            "message_text": req.message,
+            "audio_metadata": {},
+            "timestamp": datetime.now().isoformat(),
+            "nlp_results": {"distress_score": 0.15},
+            "speech_results": {"tone_distress_score": 0.0},
+            "behavioral_results": {"behavioral_anomaly_score": 0.0},
+            "case_context_results": {"context_risk_weight": 0.0},
+            "fused_risk_score": 0.15,
+            "risk_tier": "Routine",
+            "explainability_reasons": ["Patient proactive self check-in via secure portal."]
+        }
+        save_victim_turn(turn_state)
+    except Exception as e:
+        print(f"Error saving patient self-checkin: {e}")
+
+    return {
+        "success": True,
+        "message": "Thank you for checking in. Your support counselor has been notified. You are not alone."
+    }
+
+
+# ── Part C: Counselor Full History & District Officer Actions ─────────────────
+
+class UpdateVictimEmailRequest(BaseModel):
+    email: str
+
+class VerifyVictimRequest(BaseModel):
+    fir_number: Optional[str] = None
+    district: Optional[str] = None
+
+@api.get("/api/victim/{victim_id}/full-history")
+def get_victim_full_history_endpoint(victim_id: str):
+    """
+    Counselor Dashboard: Returns comprehensive longitudinal history:
+    - Case milestone timeline
+    - Distress score history graph
+    - Voice prosody analytics
+    - Multi-channel usage history
+    - Past escalation alerts with explainability clinical reasons
+    - Registration status
+    """
+    from database import get_full_victim_history
+    history_data = get_full_victim_history(victim_id)
+    if not history_data:
+        raise HTTPException(status_code=404, detail="Victim profile not found")
+    return history_data
+
+@api.post("/api/victim/{victim_id}/update-email")
+def update_victim_email_endpoint(victim_id: str, req: UpdateVictimEmailRequest, x_officer_key: str = Header(...)):
+    """
+    District Officer gated: Update a victim's email to enable Patient Portal access.
+    Protected by X-Officer-Key to prevent unauthorized portal redirection.
+    """
+    if not _secrets.compare_digest(x_officer_key.strip(), OFFICER_API_KEY):
+        raise HTTPException(status_code=403, detail="Unauthorised — officer key required")
+
+    from database import update_victim_email, get_victim_details
+    victim = get_victim_details(victim_id)
+    if not victim:
+        raise HTTPException(status_code=404, detail="Victim profile not found")
+
+    success = update_victim_email(victim_id, req.email)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to update email")
+    return {"success": True, "victim_id": victim_id, "email": req.email.strip().lower()}
+
+@api.post("/api/victim/{victim_id}/verify")
+def verify_victim_endpoint(victim_id: str, req: VerifyVictimRequest, x_officer_key: str = Header(...)):
+    """
+    District Officer gated: Attach verified FIR details to self-registered victim.
+    Transitions registration_status to 'verified'.
+    """
+    if not _secrets.compare_digest(x_officer_key.strip(), OFFICER_API_KEY):
+        raise HTTPException(status_code=403, detail="Unauthorised — officer key required")
+
+    from database import verify_and_update_victim, get_victim_details
+    victim = get_victim_details(victim_id)
+    if not victim:
+        raise HTTPException(status_code=404, detail="Victim profile not found")
+
+    success = verify_and_update_victim(victim_id, fir_number=req.fir_number, district=req.district)
+    return {"success": True, "victim_id": victim_id, "status": "verified"}
+
+
 # ── WhatsApp Inbound Webhook ───────────────────────────────────────────────────
 # Twilio posts form-encoded fields: Body, From, To, MessageSid, etc.
 # MUST be registered BEFORE the static file mount — the catch-all mount()

@@ -77,7 +77,8 @@ export default function Navbar({ activeTab, setActiveTab, userRole, setUserRole,
           {[
             { id: 'dashboard', label: 'Triage Dashboard' },
             { id: 'alerts', label: 'Live Alerts Feed' },
-            { id: 'simulator', label: 'Live Channel Simulator' }
+            { id: 'simulator', label: 'Live Channel Simulator' },
+            { id: 'patient', label: '👤 Patient Portal' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -141,7 +142,14 @@ export default function Navbar({ activeTab, setActiveTab, userRole, setUserRole,
             <UserCheck size={14} color="#94a3b8" />
             <select
               value={userRole}
-              onChange={(e) => setUserRole(e.target.value)}
+              onChange={(e) => {
+                setUserRole(e.target.value);
+                if (e.target.value === 'patient') {
+                  setActiveTab('patient');
+                } else if (activeTab === 'patient') {
+                  setActiveTab('dashboard');
+                }
+              }}
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -154,6 +162,7 @@ export default function Navbar({ activeTab, setActiveTab, userRole, setUserRole,
             >
               <option value="counselor" style={{ background: '#111726' }}>On-Duty Counselor</option>
               <option value="supervisor" style={{ background: '#111726' }}>District Officer</option>
+              <option value="patient" style={{ background: '#111726' }}>Citizen / Victim (Patient)</option>
               <option value="read_only_investigator" style={{ background: '#111726' }}>Investigator (Masked)</option>
             </select>
           </div>

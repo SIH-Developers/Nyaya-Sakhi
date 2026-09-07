@@ -27,10 +27,13 @@ function ChannelBadge({ channel }) {
   );
 }
 
-export default function TriageRoster({ victims, onSelectVictim, selectedVictimId }) {
-  const [searchTerm, setSearchTerm]     = useState('');
-  const [tierFilter, setTierFilter]     = useState('ALL');
-  const [channelFilter, setChannelFilter] = useState('ALL');
+export default function TriageRoster({ victims, onSelectVictim, selectedVictimId, userRole = 'counselor' }) {
+  const [searchTerm, setSearchTerm]         = useState('');
+  const [tierFilter, setTierFilter]         = useState('ALL');
+  const [channelFilter, setChannelFilter]   = useState('ALL');
+  const [statusFilter, setStatusFilter]     = useState('ALL');
+
+  const pendingCount = victims.filter(v => v.registration_status === 'self_registered_pending_verification').length;
 
   const filteredVictims = victims.filter((v) => {
     const matchesSearch =
@@ -40,7 +43,8 @@ export default function TriageRoster({ victims, onSelectVictim, selectedVictimId
       (v.fir_number && v.fir_number.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesTier    = tierFilter    === 'ALL' || v.current_risk_tier?.toUpperCase() === tierFilter;
     const matchesChannel = channelFilter === 'ALL' || v.last_channel === channelFilter;
-    return matchesSearch && matchesTier && matchesChannel;
+    const matchesStatus  = statusFilter  === 'ALL' || (statusFilter === 'PENDING' ? v.registration_status === 'self_registered_pending_verification' : v.registration_status !== 'self_registered_pending_verification');
+    return matchesSearch && matchesTier && matchesChannel && matchesStatus;
   });
 
   const getBadgeClass = (tier) => {
@@ -154,8 +158,66 @@ export default function TriageRoster({ victims, onSelectVictim, selectedVictimId
               <option key={k} value={k}>{v.icon} {v.label}</option>
             ))}
           </select>
+          {/* Verification Status Filter */}
+          <select
+            id="status-filter-select"
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+            style={{
+              background: 'rgba(255,255,255,0.05)', color: '#fff',
+              border: '1px solid var(--border-subtle)', borderRadius: 8,
+              padding: '7px 12px', fontSize: '0.78rem', cursor: 'pointer', outline: 'none',
+            }}
+          >
+            <option value="ALL">All Records</option>
+            <option value="VERIFIED">✅ Verified Cases</option>
+            <option value="PENDING">⚠️ Pending Verification ({pendingCount})</option>
+          </select>
         </div>
       </div>
+
+      {/* District Officer Pending Review Banner */}
+      {userRole === 'supervisor' && pendingCount > 0 && (
+        <div style={{
+          marginBottom: '20px',
+          padding: '12px 18px',
+          borderRadius: '10px',
+          background: 'rgba(245, 158, 11, 0.12)',
+          border: '1px solid rgba(245, 158, 11, 0.35)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '10px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+            <div>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fbbf24' }}>
+                District Officer Action Required: {pendingCount} Self-Registered Victim{pendingCount > 1 ? 's' : ''} Awaiting Verification
+              </span>
+              <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: '#cbd5e1' }}>
+                Victims registered via Telegram without existing FIR records. Click into any record to attach official FIR and verify.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setStatusFilter('PENDING')}
+            style={{
+              background: '#f59e0b',
+              color: '#000000',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '6px 12px',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+          >
+            View Pending ({pendingCount})
+          </button>
+        </div>
+      )}
 
       {/* Roster Table */}
       <div style={{ overflowX: 'auto' }}>
@@ -176,6 +238,7 @@ export default function TriageRoster({ victims, onSelectVictim, selectedVictimId
               const isSelected = selectedVictimId === v.victim_id;
               const scorePct = Math.round((v.current_risk_score || 0) * 100);
               const scoreColor = getScoreColor(v.current_risk_score || 0);
+              const isPendingVerification = v.registration_status === 'self_registered_pending_verification';
 
               return (
                 <tr
@@ -192,8 +255,23 @@ export default function TriageRoster({ victims, onSelectVictim, selectedVictimId
                 >
                   {/* Name & ID */}
                   <td style={{ padding: '16px' }}>
-                    <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.95rem' }}>
-                      {v.name}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.95rem' }}>
+                        {v.name}
+                      </span>
+                      {isPendingVerification && (
+                        <span style={{
+                          background: 'rgba(245, 158, 11, 0.2)',
+                          color: '#fbbf24',
+                          border: '1px solid rgba(245, 158, 11, 0.4)',
+                          borderRadius: '4px',
+                          padding: '1px 6px',
+                          fontSize: '0.65rem',
+                          fontWeight: 700
+                        }}>
+                          ⚠️ Pending Verification
+                        </span>
+                      )}
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--accent-indigo)', fontWeight: 600 }}>
                       {v.victim_id} • {v.caste_category}
@@ -205,7 +283,7 @@ export default function TriageRoster({ victims, onSelectVictim, selectedVictimId
                     <div style={{ color: 'var(--text-primary)', fontSize: '0.85rem' }}>
                       {v.district}, {v.state}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    <div style={{ fontSize: '0.75rem', color: isPendingVerification ? '#fbbf24' : 'var(--text-muted)' }}>
                       {v.fir_number}
                     </div>
                   </td>

@@ -65,89 +65,225 @@ def get_file_bytes(file_id: str) -> bytes:
     audio_res = requests.get(download_url, timeout=15)
     return audio_res.content
 
-def ensure_victim_registered(chat_id: int, user_name: str) -> str:
-    """Ensure real Telegram user has an active victim profile in the database."""
-    victim_id = f"VIC-TG-{chat_id}"
+# In-memory conversational state and rate-limiting for Telegram intake
+_chat_states: Dict[int, Dict[str, Any]] = {}
+_lookup_attempts: Dict[int, List[float]] = {}
+
+def _check_telegram_lookup_rate_limit(chat_id: int) -> bool:
+    """Enforce max 5 reference lookup attempts per 5 minutes per Telegram chat_id."""
+    now = time.time()
+    cutoff = now - 300  # 5 minutes
+    history = [t for t in _lookup_attempts.get(chat_id, []) if t >= cutoff]
+    if len(history) >= 5:
+        _lookup_attempts[chat_id] = history
+        return False
+    history.append(now)
+    _lookup_attempts[chat_id] = history
+    return True
+
+def get_linked_victim(chat_id: int) -> Optional[Dict[str, Any]]:
+    """Return victim record linked to this Telegram chat_id, if any."""
     try:
-        from database import get_victim_details, get_connection
+        from database import get_connection
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT * FROM victims WHERE telegram_chat_id = ? OR victim_id = ? LIMIT 1",
+            (str(chat_id), f"VIC-TG-{chat_id}")
+        )
+        row = cursor.fetchone()
+        conn.close()
+        return dict(row) if row else None
+    except Exception as e:
+        print(f"Error checking linked victim: {e}")
+        return None
+
+def complete_self_registration(chat_id: int, user_name: str, district: str, fir_filed: bool, email: Optional[str]) -> str:
+    """Create a new self-registered victim record with registration_status='self_registered_pending_verification'."""
+    victim_id = f"VIC-TG-{chat_id}"
+    fir_label = "FIR Pending Verification" if fir_filed else "Intake (Pending FIR)"
+    try:
+        from database import get_connection
         from datetime import datetime
-        if get_victim_details(victim_id):
-            return victim_id
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-        INSERT OR IGNORE INTO victims (
+        INSERT OR REPLACE INTO victims (
             victim_id, name, caste_category, fir_number, police_station,
             district, state, case_stage, accused_bail_status, threat_reported,
-            compensation_status, consent_flag, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+            compensation_status, consent_flag, created_at, telegram_chat_id,
+            registration_status, email, last_channel
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, 'self_registered_pending_verification', ?, 'telegram_mobile')
         """, (
             victim_id, user_name, "Scheduled Caste",
-            f"TG-{str(chat_id)[-4:]}", "Helpline 14566 Intake",
-            "Self-Reported via Telegram", "Delhi", "Helpline Intake", "None", 0, "Pending",
-            datetime.now().isoformat()
+            fir_label, "Helpline 14566 Intake",
+            district or "Self-Reported via Telegram", "Delhi", "Helpline Intake", "None", 0, "Pending",
+            datetime.now().isoformat(), str(chat_id), email
         ))
         conn.commit()
         conn.close()
-        print(f"👤 Auto-registered real user directly in DB: {user_name} ({victim_id})")
-        return victim_id
+        print(f"👤 Self-registered victim: {user_name} ({victim_id}) -> Pending Verification")
     except Exception as e:
-        print(f"Direct DB registration fallback: {e}")
-
-    try:
-        # Fallback via HTTP API
-        check_res = call_api("get", f"victim/{victim_id}", timeout=5)
-        if check_res.status_code == 200:
-            return victim_id
-        
-        payload = {
-            "victim_id": victim_id,
-            "name": user_name,
-            "caste_category": "Scheduled Caste",
-            "fir_number": f"TG-{str(chat_id)[-4:]}",
-            "police_station": "Helpline 14566 Intake",
-            "district": "Self-Reported via Telegram",
-            "state": "National",
-            "case_stage": "Helpline Intake",
-            "accused_bail_status": "None",
-            "threat_reported": False,
-            "compensation_status": "Pending"
-        }
-        res = call_api("post", "victims", json=payload, timeout=5)
-        if res.status_code in [200, 201]:
-            print(f"👤 Auto-registered user via API: {user_name} ({victim_id})")
-    except Exception as e:
-        print(f"API registration notice: {e}")
+        print(f"Self-registration error: {e}")
     return victim_id
 
 def process_telegram_update(update: dict):
-    """Route text or voice note into FastAPI & LangGraph."""
+    """Route text or voice note into FastAPI & LangGraph with interactive onboarding."""
     message = update.get("message", {})
     chat_id = message.get("chat", {}).get("id")
     from_user = message.get("from", {})
     first_name = from_user.get("first_name", "")
     last_name = from_user.get("last_name", "")
-    user_name = f"{first_name} {last_name}".strip() or "Telegram User"
+    default_name = f"{first_name} {last_name}".strip() or "Telegram User"
     
     if not chat_id:
         return
 
-    # Auto-register this real Telegram user in the system
-    victim_id = ensure_victim_registered(chat_id, user_name)
+    text_content = message.get("text", "").strip()
 
-    # 1. Handle /start command
-    if message.get("text") == "/start":
-        welcome_msg = (
-            f"🙏 *Namaste {user_name}!*\n\n"
-            f"You are officially registered in the *MoSJE & NHAA 14566 Atrocity Support System*.\n"
-            f"• *Victim ID:* `{victim_id}`\n"
-            f"• *Status:* Protected under SC/ST (PoA) Act, 1989 & DPDP Act 2023\n\n"
-            "• 💬 *Text Check-in:* Send any message sharing how you are coping with your case.\n"
-            "• 🎙️ *Voice Check-in:* Hold the microphone button on Telegram to send a live voice message.\n\n"
-            "_Our Multi-Agent AI will analyze your voice stress & emotional cues in real time._"
+    # 1. Handle /start command — initiates branching flow
+    if text_content == "/start":
+        linked_victim = get_linked_victim(chat_id)
+        if linked_victim:
+            # Already linked or registered
+            welcome_msg = (
+                f"🙏 *Namaste {linked_victim.get('name', default_name)}!*\n\n"
+                f"Welcome back to the *MoSJE & NHAA 14566 Atrocity Support System*.\n"
+                f"• *Victim ID:* `{linked_victim.get('victim_id')}`\n"
+                f"• *Case:* `{linked_victim.get('fir_number') or 'Intake Case'}`\n"
+                f"• *Status:* *{linked_victim.get('registration_status', 'verified')}*\n\n"
+                "• 💬 *Text Check-in:* Share how you are coping with your case anytime.\n"
+                "• 🎙️ *Voice Check-in:* Hold the microphone button to send a live voice message."
+            )
+            send_telegram_message(chat_id, welcome_msg)
+            _chat_states.pop(chat_id, None)
+            return
+
+        # Not linked: Ask for FIR or Linking Code
+        _chat_states[chat_id] = {"step": "AWAITING_REFERENCE"}
+        ask_msg = (
+            "🙏 *Namaste!*\n"
+            "Welcome to the *MoSJE & NHAA 14566 Legal Protection & Distress Monitoring System*.\n\n"
+            "Do you already have an FIR number or a case reference code from an officer? "
+            "If yes, please share it now. If not, reply '*no*' and I'll help you get started."
         )
-        send_telegram_message(chat_id, welcome_msg)
+        send_telegram_message(chat_id, ask_msg)
         return
+
+    # 2. Handle active onboarding state
+    state = _chat_states.get(chat_id)
+    if state and "text" in message:
+        step = state.get("step")
+
+        # Step A: User replies to FIR / Code prompt
+        if step == "AWAITING_REFERENCE":
+            lower_text = text_content.lower()
+            if lower_text in ["no", "n", "nahi", "nah", "no fir", "not yet", "none"]:
+                # Path 2 — Self-registration
+                _chat_states[chat_id] = {"step": "REG_NAME", "data": {}}
+                send_telegram_message(
+                    chat_id,
+                    "Understood. Let's get you registered for legal protection right now.\n\n"
+                    "What name (or preferred name) should we address you by?"
+                )
+                return
+            else:
+                # Path 1 — Search for FIR or 6-digit Link Code
+                # Check rate limit to prevent code enumeration
+                if not _check_telegram_lookup_rate_limit(chat_id):
+                    send_telegram_message(
+                        chat_id,
+                        "⚠️ Too many lookup attempts. For security, let's get you registered directly.\n\n"
+                        "What name should we address you by?"
+                    )
+                    _chat_states[chat_id] = {"step": "REG_NAME", "data": {}}
+                    return
+
+                from database import find_victim_by_fir_or_link, link_telegram_to_victim
+                found = find_victim_by_fir_or_link(text_content)
+                if found:
+                    link_telegram_to_victim(found["victim_id"], chat_id)
+                    _chat_states.pop(chat_id, None)
+                    fir_num = found.get("fir_number") or found["victim_id"]
+                    send_telegram_message(
+                        chat_id,
+                        f"✅ Thanks, I've found your case (FIR #{fir_num}). "
+                        f"I'm here to check in with you regularly.\n\n"
+                        "You can now send any text message or hold the microphone button to send a live voice note."
+                    )
+                    return
+                else:
+                    _chat_states[chat_id] = {"step": "REG_NAME", "data": {}}
+                    send_telegram_message(
+                        chat_id,
+                        "I couldn't find that reference. Let's get you registered now instead.\n\n"
+                        "What name (or how you'd like to be addressed) should we register for you?"
+                    )
+                    return
+
+        # Step B: Preferred Name
+        if step == "REG_NAME":
+            chosen_name = text_content or default_name
+            _chat_states[chat_id]["data"]["name"] = chosen_name
+            _chat_states[chat_id]["step"] = "REG_DISTRICT"
+            send_telegram_message(
+                chat_id,
+                f"Thank you, {chosen_name}. Which district and state are you located in? (e.g. Lucknow, UP)"
+            )
+            return
+
+        # Step C: District / Location
+        if step == "REG_DISTRICT":
+            _chat_states[chat_id]["data"]["district"] = text_content
+            _chat_states[chat_id]["step"] = "REG_FIR_STATUS"
+            send_telegram_message(
+                chat_id,
+                "Has a formal Police FIR been filed for your case yet? (Reply 'yes' or 'no')"
+            )
+            return
+
+        # Step D: FIR Filed Status
+        if step == "REG_FIR_STATUS":
+            fir_ans = text_content.lower()
+            fir_filed = "yes" in fir_ans or "haan" in fir_ans or "filed" in fir_ans
+            _chat_states[chat_id]["data"]["fir_filed"] = fir_filed
+            _chat_states[chat_id]["step"] = "REG_EMAIL"
+            send_telegram_message(
+                chat_id,
+                "Would you like an email added so you can check your case status online on the Patient Portal? "
+                "(optional, reply with your email address or reply '*skip*' if not applicable)"
+            )
+            return
+
+        # Step E: Optional Email Collection
+        if step == "REG_EMAIL":
+            email_val = None
+            if "@" in text_content and "." in text_content and "skip" not in text_content.lower():
+                email_val = text_content.strip().lower()
+
+            reg_data = _chat_states[chat_id].get("data", {})
+            user_name = reg_data.get("name") or default_name
+            district = reg_data.get("district") or "Self-Reported"
+            fir_filed = reg_data.get("fir_filed", False)
+
+            victim_id = complete_self_registration(chat_id, user_name, district, fir_filed, email_val)
+            _chat_states.pop(chat_id, None)
+
+            email_note = f"\n• *Email for Portal:* `{email_val}`" if email_val else "\n• *Portal Access:* Ask an officer or counselor to link an email anytime."
+            confirm_msg = (
+                f"✅ *Registration Completed!*\n\n"
+                f"• *Victim ID:* `{victim_id}`\n"
+                f"• *Status:* ⚠️ *Pending Officer Verification*{email_note}\n\n"
+                "Your profile has been prioritized on the District Officer Dashboard for review and statutory legal protection under the SC/ST (PoA) Act 1989.\n\n"
+                "You can now share how you're feeling via text, or send a voice message anytime."
+            )
+            send_telegram_message(chat_id, confirm_msg)
+            return
+
+    # 3. Handle Regular Monitoring (Voice or Text) for linked / registered victims
+    linked_victim = get_linked_victim(chat_id)
+    victim_id = linked_victim.get("victim_id") if linked_victim else complete_self_registration(chat_id, default_name, "Self-Reported", False, None)
+    user_name = linked_victim.get("name", default_name) if linked_victim else default_name
 
     # 2. Handle Live Voice Notes from Phone (Microphone)
     if "voice" in message or "audio" in message:
