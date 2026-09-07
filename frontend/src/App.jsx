@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
+import TopHeader from './components/TopHeader';
 import KPICards from './components/KPICards';
 import TriageRoster from './components/TriageRoster';
+import PatientsDirectory from './components/PatientsDirectory';
 import VictimDetailModal from './components/VictimDetailModal';
 import AlertsFeed from './components/AlertsFeed';
 import LiveSimulator from './components/LiveSimulator';
 import ChatWidget from './components/ChatWidget';
 import PatientPortal from './components/PatientPortal';
+import SettingsProfile from './components/SettingsProfile';
 
 import { API_BASE } from './config';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [userRole, setUserRole] = useState('counselor');
+  const [globalSearch, setGlobalSearch] = useState('');
   
   const [stats, setStats] = useState(null);
   const [victims, setVictims] = useState([]);
@@ -53,7 +57,7 @@ export default function App() {
       const res = await fetch(`${API_BASE}/victim/${victimId}/history?role=${userRole}`);
       const data = await res.json();
       setSelectedVictimDetails(data.victim);
-      setSelectedVictimHistory(data.history);
+      setSelectedVictimHistory(data.history || []);
     } catch (err) {
       console.error("Error fetching victim details:", err);
     }
@@ -101,75 +105,131 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+      {/* Left Sidebar Navigation */}
+      <Sidebar
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+          if (tab !== 'patients') {
+            setSelectedVictimDetails(null);
+          }
+        }}
         userRole={userRole}
-        setUserRole={setUserRole}
-        onRefresh={fetchDashboardData}
-        isRefreshing={isRefreshing}
+        alertsCount={alerts.filter(a => !a.acknowledged).length}
+        patientsCount={victims.length}
       />
 
-      <main style={{ flex: 1, maxWidth: '1400px', width: '100%', margin: '0 auto', padding: '28px 24px' }}>
-        {/* KPI Statistics - Hidden when in patient portal */}
-        {activeTab !== 'patient' && <KPICards stats={stats} />}
-
-        {/* View Switcher */}
-        {activeTab === 'dashboard' && (
-          <TriageRoster
-            victims={victims}
-            onSelectVictim={handleSelectVictim}
-            selectedVictimId={selectedVictimId}
-            userRole={userRole}
-          />
-        )}
-
-        {activeTab === 'alerts' && (
-          <AlertsFeed
-            alerts={alerts}
-            onAcknowledgeAlert={handleAcknowledgeAlert}
-            onSelectVictim={handleSelectVictim}
-          />
-        )}
-
-        {activeTab === 'simulator' && (
-          <LiveSimulator
-            victims={victims}
-            onMessageSent={handleSendMessage}
-            onCallSent={handleSendCall}
-          />
-        )}
-
-        {activeTab === 'patient' && (
-          <PatientPortal />
-        )}
-      </main>
-
-      {/* Victim Detailed History Modal */}
-      {selectedVictimDetails && (
-        <VictimDetailModal
-          victim={selectedVictimDetails}
-          history={selectedVictimHistory}
+      {/* Main Content Area */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowX: 'hidden' }}>
+        {/* Top Header Bar */}
+        <TopHeader
+          searchTerm={globalSearch}
+          setSearchTerm={setGlobalSearch}
+          onSearchSubmit={(q) => {
+            setActiveTab('patients');
+          }}
           userRole={userRole}
-          onClose={handleCloseModal}
-          onAcknowledge={handleAcknowledgeAlert}
+          setUserRole={setUserRole}
+          onRefresh={fetchDashboardData}
+          isRefreshing={isRefreshing}
+          alertsCount={alerts.filter(a => !a.acknowledged).length}
+          onOpenAlerts={() => setActiveTab('alerts')}
         />
-      )}
 
-      {/* Footer */}
-      <footer style={{
-        borderTop: '1px solid var(--border-subtle)',
-        padding: '18px 24px',
-        textAlign: 'center',
-        fontSize: '0.8rem',
-        color: 'var(--text-muted)',
-        background: 'rgba(10, 13, 20, 0.9)'
-      }}>
-        Ministry of Social Justice and Empowerment (MoSJE) • National Helpline Against Atrocities (14566) • SIH Problem Statement 26094 • Powered by LangGraph &amp; Hugging Face
-      </footer>
+        {/* View Switcher Main Container */}
+        <main style={{ flex: 1, width: '100%', maxWidth: '1440px', margin: '0 auto', padding: '28px 32px' }}>
+          {/* VIEW 1: Overview Dashboard */}
+          {activeTab === 'dashboard' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+              <KPICards stats={stats} />
+              <TriageRoster
+                victims={victims}
+                onSelectVictim={(id) => {
+                  handleSelectVictim(id);
+                  setActiveTab('patients');
+                }}
+                selectedVictimId={selectedVictimId}
+                userRole={userRole}
+              />
+            </div>
+          )}
 
-      {/* TASK 3 & 4: Floating Chat Widget */}
+          {/* VIEW 2: All Patients Directory (Integrated Master-Detail) */}
+          {activeTab === 'patients' && (
+            <PatientsDirectory
+              victims={victims}
+              selectedVictimId={selectedVictimId}
+              onSelectVictim={handleSelectVictim}
+              onClearSelectedVictim={() => {
+                setSelectedVictimId(null);
+                setSelectedVictimDetails(null);
+              }}
+              userRole={userRole}
+              onRefreshData={fetchDashboardData}
+            />
+          )}
+
+          {/* VIEW 3: Live Alerts Feed */}
+          {activeTab === 'alerts' && (
+            <AlertsFeed
+              alerts={alerts}
+              onAcknowledgeAlert={handleAcknowledgeAlert}
+              onSelectVictim={(id) => {
+                handleSelectVictim(id);
+                setActiveTab('patients');
+              }}
+            />
+          )}
+
+          {/* VIEW 4: Live Channel Simulator */}
+          {activeTab === 'simulator' && (
+            <LiveSimulator
+              victims={victims}
+              onMessageSent={handleSendMessage}
+              onCallSent={handleSendCall}
+            />
+          )}
+
+          {/* VIEW 5: Citizen & Case Portal */}
+          {activeTab === 'patient' && (
+            <PatientPortal />
+          )}
+
+          {/* VIEW 6: Settings & Officer Profile */}
+          {activeTab === 'settings' && (
+            <SettingsProfile
+              userRole={userRole}
+              setUserRole={setUserRole}
+              onRefreshAll={fetchDashboardData}
+            />
+          )}
+        </main>
+
+        {/* Institutional Footer */}
+        <footer style={{
+          borderTop: '1px solid var(--border-subtle)',
+          padding: '16px 32px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: '0.76rem',
+          color: 'var(--text-muted)',
+          background: 'rgba(10, 13, 20, 0.95)',
+          marginTop: 'auto',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div>
+            Ministry of Social Justice and Empowerment (MoSJE) • National Helpline Against Atrocities (14566)
+          </div>
+          <div>
+            SIH Problem Statement 26094 • Section 15A SC/ST (PoA) Act 1989
+          </div>
+        </footer>
+      </div>
+
+      {/* Floating Chat Widget */}
       <ChatWidget />
     </div>
   );
