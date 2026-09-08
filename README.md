@@ -1,7 +1,7 @@
 # 🕊️ Nyaya Sakhi — AI-Powered Multi-Modal Distress Prediction & Escalation System
 
 ### **Ministry of Social Justice and Empowerment (MoSJE) • National Helpline Against Atrocities (NHAA 14566)**
-### *Smart India Hackathon (SIH) — Problem Statement ID: 26094*
+
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg?logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
