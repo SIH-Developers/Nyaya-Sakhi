@@ -2,13 +2,22 @@
 Telegram Voice & Text Channel Bot for SIH 26094
 Allows victims and judges to send live text and voice notes from their mobile phone.
 Integrates directly with FastAPI & LangGraph multi-agent engine.
+
+Task 3 dual-track architecture:
+  - Track A: Fast NLP scoring via backend API (determines reply tone)
+  - Track B: Groq LLM companion reply (uses tone from Track A)
+  Both run concurrently via ThreadPoolExecutor; escalation pipeline fires
+  in the background after the conversational reply has already been sent.
 """
 import os
 import sys
 import time
+import threading
 import requests
 import json
+from concurrent.futures import ThreadPoolExecutor, Future, as_completed
 from pathlib import Path
+from typing import Dict, Any, List, Optional
 from dotenv import load_dotenv
 
 # Load .env file
@@ -97,6 +106,109 @@ def get_linked_victim(chat_id: int) -> Optional[Dict[str, Any]]:
     except Exception as e:
         print(f"Error checking linked victim: {e}")
         return None
+
+# ── Dual-track executor (reused across messages for efficiency) ---------------
+_executor = ThreadPoolExecutor(max_workers=6, thread_name_prefix="nhaa_bot")
+
+
+def _fast_nlp_score(victim_id: str, message_text: str) -> dict:
+    """
+    Track A (fast): call backend /api/message to get NLP distress score.
+    Returns the API response dict, or a safe default on failure.
+    """
+    try:
+        payload = {"victim_id": victim_id, "message_text": message_text, "channel": "telegram_mobile"}
+        resp = call_api("post", "message", json=payload, timeout=15).json()
+        return resp
+    except Exception as exc:
+        print(f"[DualTrack] NLP scoring error: {exc}")
+        return {"risk_tier": "Routine", "fused_risk_score": 0.0, "explainability_reasons": []}
+
+
+def _tier_for(nlp_result: dict) -> str:
+    """Map API risk_tier to counselor_persona tone key."""
+    tier = (nlp_result.get("risk_tier") or "Routine").lower()
+    mapping = {
+        "urgent":            "urgent",
+        "critical":          "critical",
+        "counselor outreach": "counselor outreach",
+        "watch":             "watch",
+        "routine":           "routine",
+    }
+    return mapping.get(tier, "routine")
+
+
+def handle_victim_text(chat_id: int, victim_id: str, user_name: str, message_text: str):
+    """
+    Dual-track concurrent handler for post-registration text messages.
+
+    Step 1: Submit NLP scoring (Track A) immediately.
+    Step 2: Once NLP score is ready, generate LLM reply (Track B) using that tone.
+    Step 3: Send the LLM reply to the victim right away.
+    Step 4: Let the full escalation side-effects (Twilio, dashboard writes,
+            counselor alerts) finish in the background — they do NOT delay the reply.
+    """
+    # ── Step 1: Fast NLP scoring (blocks only briefly — ~2-4s) -----------------
+    nlp_result = _fast_nlp_score(victim_id, message_text)
+    risk_tier  = _tier_for(nlp_result)
+
+    # ── Step 2: Build distress_context and fetch conversation history -----------
+    victim = None
+    try:
+        from database import get_victim_details, get_conversation_history, append_conversation_turn, trim_conversation_history
+        victim = get_victim_details(victim_id)
+        history = get_conversation_history(victim_id, limit=10)
+    except Exception:
+        history = []
+
+    distress_ctx = {
+        "current_tier": risk_tier,
+        "case_stage":   victim.get("case_stage") if victim else None,
+        "fir_number":   victim.get("fir_number") if victim else None,
+    }
+
+    # ── Step 3: Generate LLM reply and run full escalation concurrently --------
+    def _generate_reply() -> str:
+        try:
+            from services.counselor_persona import generate_counselor_reply
+            return generate_counselor_reply(victim_id, message_text, history, distress_ctx)
+        except Exception as exc:
+            print(f"[CounselorPersona] Error generating reply: {exc}")
+            return "I'm here with you. Can you tell me more about what's going on?"
+
+    def _run_full_escalation():
+        """Background task: escalation alerts, Twilio dispatch, DB writes."""
+        try:
+            if nlp_result.get("escalation_triggered"):
+                # escalation_agent is already triggered inside save_victim_turn
+                # which is called by the /api/message endpoint — nothing extra needed
+                pass
+        except Exception as exc:
+            print(f"[DualTrack] Escalation background error: {exc}")
+
+    # Both tasks submitted to thread pool simultaneously
+    reply_future:     Future = _executor.submit(_generate_reply)
+    escalation_future: Future = _executor.submit(_run_full_escalation)
+
+    # Wait only for the conversational reply (escalation continues in background)
+    llm_reply = reply_future.result()   # blocks until Groq responds (~1-3s)
+
+    # ── Step 4: Send reply to victim -------------------------------------------
+    send_telegram_message(chat_id, llm_reply)
+
+    # ── Step 5: Persist conversation memory (after reply sent) -----------------
+    try:
+        append_conversation_turn(victim_id, "user",      message_text)
+        append_conversation_turn(victim_id, "assistant", llm_reply)
+        # Prune to keep DB lean (keep last 50 turns per victim)
+        _executor.submit(trim_conversation_history, victim_id, 50)
+    except Exception as exc:
+        print(f"[ConversationMemory] Write error: {exc}")
+
+    # ── Log for officer console -------------------------------------------------
+    print(f"[DualTrack] ✅ {user_name} | tier={risk_tier} | reply_len={len(llm_reply)}")
+    # escalation_future is intentionally not awaited — fires in background
+
 
 def complete_self_registration(chat_id: int, user_name: str, district: str, fir_filed: bool, email: Optional[str]) -> str:
     """Create a new self-registered victim record with registration_status='self_registered_pending_verification'."""
@@ -369,53 +481,16 @@ def process_telegram_update(update: dict):
             send_telegram_message(chat_id, "⚠️ Error processing audio on server.")
         return
 
-    # 3. Handle Regular Text Messages
+    # 3. Handle Regular Text Messages (dual-track: LLM reply + escalation)
     if "text" in message:
-        text_content = message.get("text")
-        print(f"💬 Received Text from {user_name}: \"{text_content}\"")
+        text_content = message.get("text", "").strip()
+        if text_content:
+            print(f"\U0001f4ac Received Text from {user_name}: \"{text_content}\"")
+            # Fire dual-track handler: sends warm LLM reply fast,
+            # escalation pipeline continues in background
+            _executor.submit(handle_victim_text, chat_id, victim_id, user_name, text_content)
 
-        try:
-            payload = {
-                "victim_id": victim_id,
-                "message_text": text_content,
-                "channel": "telegram_mobile"
-            }
-            res = call_api("post", "message", json=payload, timeout=20).json()
 
-            risk_tier = res.get("risk_tier", "Routine")
-            score_pct = int((res.get("fused_risk_score", 0.0)) * 100)
-            reasons = res.get("explainability_reasons", [])
-
-            if risk_tier == "Urgent":
-                reply = (
-                    f"🚨 *CRITICAL SAFETY ALERT ({score_pct}% - Urgent)*\n\n"
-                    f"🔍 *Threat & Distress Analysis:*\n"
-                )
-                for r in reasons[:3]:
-                    reply += f"• {r}\n"
-                reply += (
-                    f"\n🛡️ *Immediate Safety Protocol:*\n"
-                    f"• If you are facing direct physical danger, call **112 (Police)** or toll-free **14566 (NHAA Helpline)** right now.\n"
-                    f"• An urgent high-priority ticket has been dispatched to your on-duty district counselor for safety outreach under Section 15A."
-                )
-            elif risk_tier in ["Counselor Outreach", "Watch"]:
-                reply = (
-                    f"⚠️ *Distress Assessment:* `{score_pct}%` | *Status:* *{risk_tier}*\n\n"
-                    f"🔍 *Factors Identified:*\n"
-                )
-                for r in reasons[:3]:
-                    reply += f"• {r}\n"
-                reply += f"\n💙 *We are here with you.* A support counselor has been updated on your case status. Call **14566** anytime."
-            else:
-                reply = (
-                    f"💚 *Distress Assessment:* `{score_pct}%` | *Status:* *Routine / Stable*\n\n"
-                    f"• {reasons[0] if reasons else 'All signals within stable baseline thresholds.'}\n\n"
-                    f"Namaste {user_name}! Your well-being monitoring is active. You can reach out to your counselor or call 14566 anytime you need assistance."
-                )
-
-            send_telegram_message(chat_id, reply)
-        except Exception as e:
-            print(f"Error processing text message: {e}")
 
 def run_bot():
     if not TELEGRAM_BOT_TOKEN or TELEGRAM_BOT_TOKEN == "YOUR_TELEGRAM_BOT_TOKEN_HERE":

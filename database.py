@@ -132,8 +132,65 @@ def init_db():
     )
     """)
 
+    # 6. Conversation Memory Table (Groq LLM companion context — Task 4)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS conversation_memory (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        victim_id TEXT NOT NULL,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (victim_id) REFERENCES victims(victim_id)
+    )
+    """)
+
     conn.commit()
     conn.close()
+
+# ── Conversation Memory helpers (Task 4 — Groq LLM context window) -----------
+
+def get_conversation_history(victim_id: str, limit: int = 10) -> List[Dict[str, str]]:
+    """Return the last `limit` conversation turns for a victim as {role, content} dicts."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT role, content FROM conversation_memory
+        WHERE victim_id = ?
+        ORDER BY id DESC LIMIT ?
+    """, (victim_id, limit))
+    rows = cursor.fetchall()
+    conn.close()
+    # Reverse so oldest is first (correct message order for LLM)
+    return [{"role": r["role"], "content": r["content"]} for r in reversed(rows)]
+
+
+def append_conversation_turn(victim_id: str, role: str, content: str):
+    """Append a single user or assistant turn to conversation memory."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO conversation_memory (victim_id, role, content, created_at)
+        VALUES (?, ?, ?, ?)
+    """, (victim_id, role, content, datetime.now().isoformat()))
+    conn.commit()
+    conn.close()
+
+
+def trim_conversation_history(victim_id: str, keep: int = 50):
+    """Prune old turns, keeping only the most recent `keep` entries per victim."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        DELETE FROM conversation_memory
+        WHERE victim_id = ? AND id NOT IN (
+            SELECT id FROM conversation_memory
+            WHERE victim_id = ?
+            ORDER BY id DESC LIMIT ?
+        )
+    """, (victim_id, victim_id, keep))
+    conn.commit()
+    conn.close()
+
 
 def save_victim_turn(state: Dict[str, Any]) -> str:
     """Save completed turn into interaction_logs and update victim summary."""
