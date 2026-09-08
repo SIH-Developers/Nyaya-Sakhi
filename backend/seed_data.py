@@ -1,4 +1,4 @@
-﻿"""
+"""
 Seed Realistic Victim Data and Historical Interactions for SIH 26094
 Populates SQLite with multi-turn victim journeys including the 'Riya' benchmark case.
 """
@@ -198,6 +198,9 @@ def seed_database():
         print(f"   Turn saved: {t['victim_id']} (Turn {t['turn_id']}) -> Risk Score: {state_out['fused_risk_score']:.2f} ({state_out['risk_tier']})")
 
     print("\n✅ Database Seeding Complete!")
+
+# Export alias for backwards-compatibility with deployment scripts
+seed_initial_data = seed_database
 
 if __name__ == "__main__":
     seed_database()
