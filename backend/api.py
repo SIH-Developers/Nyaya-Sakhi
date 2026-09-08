@@ -1,4 +1,4 @@
-﻿"""
+"""
 FastAPI Server for SIH 26094 Multi-Agent Distress Prediction System
 Exposes REST endpoints for Chatbot, IVRS, Mobile App, and Counselor Dashboard.
 """
@@ -1355,8 +1355,18 @@ async def whatsapp_inbound(request: Request):
 
 # ── Mount React Frontend static files if built ────────────────────────────────
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pathlib import Path
-frontend_dist = Path(__file__).parent / "frontend" / "dist"
+
+# Check project root / frontend / dist first, then backend / frontend / dist
+frontend_dist = Path(__file__).parent.parent / "frontend" / "dist"
+if not frontend_dist.exists():
+    frontend_dist = Path(__file__).parent / "frontend" / "dist"
+
 if frontend_dist.exists():
     api.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")
+    print(f"[FastAPI] React frontend mounted from {frontend_dist}")
+else:
+    print(f"[FastAPI] React frontend dist not found at {frontend_dist}")
+
 
