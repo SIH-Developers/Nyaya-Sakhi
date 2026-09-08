@@ -23,14 +23,13 @@ logger = logging.getLogger("counselor_persona")
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-# Use the fastest available model on this Groq account tier.
-# qwen3.6-27b is available and fast; fall back to gpt-oss-20b as secondary.
-GROQ_MODEL   = os.getenv("GROQ_MODEL", "qwen/qwen3.6-27b")
+# Primary model: openai/gpt-oss-20b (available on this Groq account)
+GROQ_MODEL   = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 # Fallback model order if primary is unavailable on this account
 _MODEL_FALLBACKS = [
     GROQ_MODEL,
+    "qwen/qwen3.6-27b",
     "qwen/qwen3.8-27b",
-    "openai/gpt-oss-20b",
     "groq/compound-mini",
 ]
 
