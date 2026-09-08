@@ -1,4 +1,4 @@
-"""
+﻿"""
 tests/test_twilio_live.py
 Live Twilio Sandbox Verification — Real API Test (Not Mocked)
 
@@ -46,7 +46,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-from services import twilio_service as ts
+from backend.services import twilio_service as ts
 
 # ── Test phone numbers from .env ──────────────────────────────────────────────
 LIVE_NUMBER        = os.getenv("TWILIO_TEST_VICTIM_NUMBER", "").strip()

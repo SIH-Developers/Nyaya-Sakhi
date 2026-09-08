@@ -15,7 +15,8 @@ from pathlib import Path
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-ROOT_DIR = Path(__file__).parent.resolve()
+ROOT_DIR = Path(__file__).parent.parent.resolve()
+BACKEND_DIR = Path(__file__).parent.resolve()
 FRONTEND_DIR = ROOT_DIR / "frontend"
 
 def main():
@@ -28,7 +29,7 @@ def main():
     try:
         # 1. Start FastAPI Backend
         print("▶️ [1/3] Starting FastAPI Backend on http://127.0.0.1:8000 ...")
-        backend_cmd = [sys.executable, "-m", "uvicorn", "api:api", "--host", "127.0.0.1", "--port", "8000"]
+        backend_cmd = [sys.executable, "-m", "uvicorn", "backend.api:api", "--host", "127.0.0.1", "--port", "8000"]
         backend_proc = subprocess.Popen(backend_cmd, cwd=str(ROOT_DIR))
         processes.append(("FastAPI Backend", backend_proc))
         time.sleep(2)
@@ -44,7 +45,7 @@ def main():
 
         # 3. Start Telegram Bot
         print("▶️ [3/3] Starting Telegram Voice Bot (@nhaa_14566_sih_bot) ...")
-        bot_cmd = [sys.executable, "telegram_bot.py"]
+        bot_cmd = [sys.executable, "-m", "backend.telegram_bot"]
         bot_proc = subprocess.Popen(bot_cmd, cwd=str(ROOT_DIR))
         processes.append(("Telegram Bot", bot_proc))
 

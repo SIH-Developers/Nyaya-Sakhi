@@ -1,4 +1,4 @@
-"""
+﻿"""
 SQLite Database Layer for SIH 26094
 Stores Victims, Case Context, Encrypted Interaction Logs, and Counselor Alerts.
 """
@@ -8,7 +8,7 @@ import uuid
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional
-from privacy import encrypt_sensitive_field, decrypt_sensitive_field
+from backend.privacy import encrypt_sensitive_field, decrypt_sensitive_field
 
 DB_PATH = Path(__file__).parent / "distress_monitoring.db"
 

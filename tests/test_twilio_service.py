@@ -1,4 +1,4 @@
-"""
+﻿"""
 tests/test_twilio_service.py
 TASK 1 — Tests for services/twilio_service.py
 
@@ -12,7 +12,7 @@ import sys, os, time, json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from unittest.mock import patch, MagicMock
-import services.twilio_service as ts
+import backend.services.twilio_service as ts
 
 PASS = "✅ PASS"
 FAIL = "❌ FAIL"

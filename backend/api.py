@@ -1,4 +1,4 @@
-"""
+﻿"""
 FastAPI Server for SIH 26094 Multi-Agent Distress Prediction System
 Exposes REST endpoints for Chatbot, IVRS, Mobile App, and Counselor Dashboard.
 """
@@ -10,8 +10,8 @@ from datetime import datetime
 import json
 import os
 
-from graph import app as langgraph_app
-from database import (
+from backend.graph import app as langgraph_app
+from backend.database import (
     get_all_victims,
     get_victim_details,
     get_victim_history,
@@ -48,7 +48,7 @@ def launch_telegram_bot_service():
         def _run_bg():
             time.sleep(3)  # Give uvicorn a moment to bind
             try:
-                from telegram_bot import run_bot
+                from backend.telegram_bot import run_bot
                 print("[FastAPI] Launching background Telegram bot worker...")
                 run_bot()
             except Exception as e:
@@ -533,7 +533,7 @@ def send_proactive_checkin(
     if victim_id.startswith("VIC-TG-"):
         try:
             chat_id = int(victim_id.replace("VIC-TG-", ""))
-            from telegram_bot import send_telegram_message
+            from backend.telegram_bot import send_telegram_message
             send_telegram_message(
                 chat_id,
                 f"📋 *NHAA 14566 Check-in Prompt*\n\n{message_text}\n\n_Please reply with how you are feeling or send a voice note._"
@@ -549,7 +549,7 @@ def send_proactive_checkin(
 
     if victim_phone:
         try:
-            from twilio_channel import dispatch_checkin
+            from backend.twilio_channel import dispatch_checkin
             also_call = (prompt_type == "safety_check")
             multi_result = dispatch_checkin(
                 to_number=victim_phone,
@@ -621,7 +621,7 @@ def chat_info(req: InfoChatRequest):
     Rule-based RAG chatbot answering SC/ST PoA Act rights questions.
     Falls back to Llama-3.3 via HF Inference API for unknown questions.
     """
-    from services.rag_chatbot import get_info_response
+    from backend.services.rag_chatbot import get_info_response
     return get_info_response(question=req.question, session_id=req.session_id or "")
 
 
@@ -640,8 +640,8 @@ def chat_web(req: WebChatRequest):
       - Switches to 'calming_companion' if NLP detects distress (score ≥ 0.5)
     Runs the NLP agent on the message to detect distress signals.
     """
-    from services.rag_chatbot import get_info_response
-    from agents.nlp_agent import nlp_agent_node
+    from backend.services.rag_chatbot import get_info_response
+    from backend.agents.nlp_agent import nlp_agent_node
 
     # Quick NLP distress check (lightweight, no full pipeline)
     try:
@@ -817,7 +817,7 @@ def lookup_case_reference(req: CaseLookupRequest, request: Request):
             detail="Too many lookup requests. Please wait 1 minute before trying again."
         )
 
-    from database import find_victim_by_fir_or_link
+    from backend.database import find_victim_by_fir_or_link
     victim = find_victim_by_fir_or_link(req.query)
     if not victim:
         return {"found": False, "message": "No registered case found for this reference code or FIR."}
@@ -843,7 +843,7 @@ def create_link_code(req: GenerateLinkCodeRequest, x_officer_key: str = Header(.
     if not _secrets.compare_digest(x_officer_key.strip(), OFFICER_API_KEY):
         raise HTTPException(status_code=403, detail="Unauthorised — officer key required")
 
-    from database import generate_and_save_link_code, get_victim_details
+    from backend.database import generate_and_save_link_code, get_victim_details
     victim = get_victim_details(req.victim_id)
     if not victim:
         raise HTTPException(status_code=404, detail="Victim not found")
@@ -924,8 +924,8 @@ def request_patient_otp(req: RequestOtpRequest):
     NEVER returns OTP in response body.
     """
     import random
-    from database import check_otp_rate_limit, record_patient_otp
-    from email_channel import send_patient_otp_email
+    from backend.database import check_otp_rate_limit, record_patient_otp
+    from backend.email_channel import send_patient_otp_email
 
     clean_id = req.identifier.strip()
     conn = get_connection()
@@ -992,7 +992,7 @@ def verify_patient_otp_endpoint(req: VerifyOtpRequest):
     - Marks used = 1 atomically to prevent replay attacks
     - Returns signed JWT session token (30-minute expiry)
     """
-    from database import validate_patient_otp
+    from backend.database import validate_patient_otp
     victim = validate_patient_otp(req.identifier, req.otp)
     if not victim:
         raise HTTPException(
@@ -1112,7 +1112,7 @@ def patient_self_checkin(req: PatientCheckinRequest, authorization: Optional[str
 
     # Log interaction turn securely
     try:
-        from database import save_victim_turn
+        from backend.database import save_victim_turn
         turn_state = {
             "victim_id": victim_id,
             "turn_id": 999,
@@ -1158,7 +1158,7 @@ def get_victim_full_history_endpoint(victim_id: str):
     - Past escalation alerts with explainability clinical reasons
     - Registration status
     """
-    from database import get_full_victim_history
+    from backend.database import get_full_victim_history
     history_data = get_full_victim_history(victim_id)
     if not history_data:
         raise HTTPException(status_code=404, detail="Victim profile not found")
@@ -1173,7 +1173,7 @@ def update_victim_email_endpoint(victim_id: str, req: UpdateVictimEmailRequest, 
     if not _secrets.compare_digest(x_officer_key.strip(), OFFICER_API_KEY):
         raise HTTPException(status_code=403, detail="Unauthorised — officer key required")
 
-    from database import update_victim_email, get_victim_details
+    from backend.database import update_victim_email, get_victim_details
     victim = get_victim_details(victim_id)
     if not victim:
         raise HTTPException(status_code=404, detail="Victim profile not found")
@@ -1192,7 +1192,7 @@ def verify_victim_endpoint(victim_id: str, req: VerifyVictimRequest, x_officer_k
     if not _secrets.compare_digest(x_officer_key.strip(), OFFICER_API_KEY):
         raise HTTPException(status_code=403, detail="Unauthorised — officer key required")
 
-    from database import verify_and_update_victim, get_victim_details
+    from backend.database import verify_and_update_victim, get_victim_details
     victim = get_victim_details(victim_id)
     if not victim:
         raise HTTPException(status_code=404, detail="Victim profile not found")
@@ -1227,8 +1227,8 @@ async def whatsapp_inbound(request: Request):
     Error safety: Any exception returns a valid TwiML fallback so Twilio
     never falls back to the generic auto-reply due to a 5xx on our side.
     """
-    from agents.nlp_agent import nlp_agent_node
-    from services.rag_chatbot import get_info_response
+    from backend.agents.nlp_agent import nlp_agent_node
+    from backend.services.rag_chatbot import get_info_response
 
     FALLBACK_TWIML = (
         '<?xml version="1.0" encoding="UTF-8"?>'

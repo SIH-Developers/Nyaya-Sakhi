@@ -3,8 +3,8 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi.testclient import TestClient
-from api import api
-from database import init_db
+from backend.api import api
+from backend.database import init_db
 init_db()
 client = TestClient(api)
 
@@ -80,9 +80,8 @@ if __name__ == "__main__":
 
     # ─── Test 4: interaction_logs row created for distress ─────────────────────
     section("T-WH-4: DB — interaction_logs row created for distress message")
-    import sqlite3
-    DB = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "distress_monitoring.db")
-    conn = sqlite3.connect(DB)
+    from backend.database import get_connection
+    conn = get_connection()
     c = conn.cursor()
     c.execute("SELECT * FROM interaction_logs WHERE victim_id = 'WA-918299248116' ORDER BY timestamp DESC LIMIT 1")
     row = c.fetchone()

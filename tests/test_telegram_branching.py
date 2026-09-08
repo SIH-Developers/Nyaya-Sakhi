@@ -1,4 +1,4 @@
-"""
+﻿"""
 tests/test_telegram_branching.py — Automated verification for Part A:
 - Telegram /start branching logic
 - Case reference lookup (anti-enumeration rate limiting)
@@ -13,9 +13,9 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi.testclient import TestClient
-from api import api, OFFICER_API_KEY
-from database import init_db, get_connection, find_victim_by_fir_or_link
-from telegram_bot import process_telegram_update, _chat_states, _lookup_attempts
+from backend.api import api, OFFICER_API_KEY
+from backend.database import init_db, get_connection, find_victim_by_fir_or_link
+from backend.telegram_bot import process_telegram_update, _chat_states, _lookup_attempts
 
 client = TestClient(api)
 

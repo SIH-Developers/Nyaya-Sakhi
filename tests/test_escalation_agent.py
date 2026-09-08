@@ -18,17 +18,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from unittest.mock import patch, MagicMock
 from datetime import datetime
 
-# Init DB first
-from database import init_db, get_connection
+from backend.database import init_db, get_connection, DB_PATH
 init_db()
 
-from agents.escalation_agent import escalation_agent_node
-from config import RISK_TIERS
+from backend.agents.escalation_agent import escalation_agent_node
+from backend.config import RISK_TIERS
 
 PASS = "✅ PASS"
 FAIL = "❌ FAIL"
-
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "distress_monitoring.db")
 
 def section(title):
     print(f"\n{'='*60}")

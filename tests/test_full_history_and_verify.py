@@ -1,4 +1,4 @@
-"""
+﻿"""
 tests/test_full_history_and_verify.py — Automated verification for Part C:
 - GET /api/victim/{id}/full-history aggregation
 - POST /api/victim/{id}/update-email (Officer gated)
@@ -11,8 +11,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi.testclient import TestClient
-from api import api, OFFICER_API_KEY
-from database import init_db, get_connection
+from backend.api import api, OFFICER_API_KEY
+from backend.database import init_db, get_connection
 
 client = TestClient(api)
 

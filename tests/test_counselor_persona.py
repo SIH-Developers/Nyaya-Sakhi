@@ -1,4 +1,4 @@
-"""
+﻿"""
 tests/test_counselor_persona.py
 Task 6 — Safety Guardrail Tests for services/counselor_persona.py
 
@@ -20,7 +20,7 @@ import requests
 # Ensure project root is on path so services/ can be imported
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from services.counselor_persona import (
+from backend.services.counselor_persona import (
     generate_counselor_reply,
     get_fallback_log,
     _FALLBACK_REPLIES,
@@ -196,7 +196,7 @@ def test_conversation_memory_continuity():
 # ── Test 7: Fallback reply never contains clinical language --------------------
 def test_fallback_replies_are_safe():
     """All fallback replies must pass the same clinical-language filter."""
-    from services.counselor_persona import _FALLBACK_REPLIES, _BLOCKED_PHRASES
+    from backend.services.counselor_persona import _FALLBACK_REPLIES, _BLOCKED_PHRASES
     for fb in _FALLBACK_REPLIES:
         for phrase in _BLOCKED_PHRASES:
             assert phrase.lower() not in fb.lower(), (

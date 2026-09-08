@@ -1,5 +1,5 @@
-from typing import Dict, Any, List, Optional
-from core.state import VictimState
+﻿from typing import Dict, Any, List, Optional
+from backend.core.state import VictimState
 
 def analyze_speech_prosody(audio_meta: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     """

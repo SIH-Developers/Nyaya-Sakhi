@@ -1,4 +1,4 @@
-"""
+﻿"""
 agents/escalation_agent.py — Tier-Based Escalation & Counselor Alerting Agent
 SIH 26094 / NHAA 14566
 
@@ -16,8 +16,8 @@ import uuid
 from datetime import datetime
 from typing import Dict, Any
 
-from config import RISK_TIERS
-from core.state import VictimState
+from backend.config import RISK_TIERS
+from backend.core.state import VictimState
 
 
 def _risk_to_tier_label(risk_tier: str) -> str:
@@ -83,7 +83,7 @@ def _dispatch_twilio_alert(state: VictimState, alert: Dict[str, Any]):
         return
 
     try:
-        from services.twilio_service import dispatch_notification
+        from backend.services.twilio_service import dispatch_notification
         msg = (
             f"NHAA 14566 Alert for {victim_name}: "
             f"Risk tier = {risk_tier} ({int(alert['fused_risk_score'] * 100)}%). "
@@ -105,7 +105,7 @@ def _dispatch_twilio_alert(state: VictimState, alert: Dict[str, Any]):
 def _persist_alert(alert: Dict[str, Any]):
     """Persist alert to the database so the dashboard can display it."""
     try:
-        from database import get_connection
+        from backend.database import get_connection
         conn   = get_connection()
         cursor = conn.cursor()
         import json

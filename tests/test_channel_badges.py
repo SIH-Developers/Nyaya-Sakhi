@@ -1,4 +1,4 @@
-"""
+﻿"""
 tests/test_channel_badges.py
 TASK 5 — Tests for channel badge logic (backend side)
 
@@ -15,8 +15,8 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi.testclient import TestClient
-from api import api
-from database import init_db, get_connection
+from backend.api import api
+from backend.database import init_db, get_connection
 
 init_db()
 

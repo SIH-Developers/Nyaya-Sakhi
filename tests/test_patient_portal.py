@@ -1,4 +1,4 @@
-"""
+﻿"""
 tests/test_patient_portal.py — Automated verification for Part B:
 - Brevo Email OTP delivery
 - Rate limiting (max 3/15 min -> 429)
@@ -15,8 +15,8 @@ from datetime import datetime, timedelta
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi.testclient import TestClient
-from api import api
-from database import init_db, get_connection
+from backend.api import api
+from backend.database import init_db, get_connection
 
 client = TestClient(api)
 

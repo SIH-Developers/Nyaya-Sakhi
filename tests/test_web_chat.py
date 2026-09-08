@@ -1,4 +1,4 @@
-"""
+﻿"""
 tests/test_web_chat.py
 TASK 4 — Integration tests for dual-mode website chat (/api/chat/web)
 
@@ -14,8 +14,8 @@ import sys, os, json, sqlite3, uuid
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi.testclient import TestClient
-from api import api
-from database import init_db
+from backend.api import api
+from backend.database import init_db
 
 init_db()
 

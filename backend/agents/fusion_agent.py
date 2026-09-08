@@ -1,6 +1,6 @@
-from typing import Dict, Any, List
-from config import RISK_TIERS, THRESHOLD_URGENT, THRESHOLD_OUTREACH, THRESHOLD_WATCH
-from core.state import VictimState
+﻿from typing import Dict, Any, List
+from backend.config import RISK_TIERS, THRESHOLD_URGENT, THRESHOLD_OUTREACH, THRESHOLD_WATCH
+from backend.core.state import VictimState
 
 def compute_multimodal_fusion(
     nlp: Dict[str, Any],

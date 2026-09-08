@@ -1,5 +1,5 @@
-from typing import Dict, Any, List
-from core.state import VictimState
+﻿from typing import Dict, Any, List
+from backend.core.state import VictimState
 
 def analyze_behavioral_patterns(history: List[Dict[str, Any]], current_meta: Dict[str, Any]) -> Dict[str, Any]:
     """

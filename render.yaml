@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: sih-distress-monitoring
+    name: nyaya-sakhi-backend
     runtime: python
     buildCommand: bash build.sh
-    startCommand: uvicorn api:api --host 0.0.0.0 --port $PORT
+    startCommand: uvicorn backend.api:api --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
@@ -28,4 +28,12 @@ services:
       - key: SMTP_PASS
         sync: false
       - key: INDICBERT_API_URL
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-20b
+      - key: BREVO_API_KEY
+        sync: false
+      - key: OFFICER_API_KEY
         sync: false

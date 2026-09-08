@@ -1,4 +1,4 @@
-"""
+﻿"""
 tests/test_rag_chatbot.py
 TASK 3 — Tests for services/rag_chatbot.py
 
@@ -9,7 +9,7 @@ Asserts each response is non-empty and contains topic-relevant keywords.
 import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from services.rag_chatbot import get_info_response
+from backend.services.rag_chatbot import get_info_response
 
 PASS = "✅ PASS"
 FAIL = "❌ FAIL"

@@ -1,10 +1,10 @@
-"""
+﻿"""
 LangGraph Multi-Agent Orchestration Workflow
 SIH 26094: Mental Health Monitoring and Distress Prediction System
 """
 from langgraph.graph import StateGraph, START, END
-from core.state import VictimState
-from agents import (
+from backend.core.state import VictimState
+from backend.agents import (
     nlp_agent_node,
     speech_agent_node,
     behavior_agent_node,

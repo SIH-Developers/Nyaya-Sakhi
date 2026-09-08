@@ -1,4 +1,4 @@
-"""
+﻿"""
 Telegram Voice & Text Channel Bot for SIH 26094
 Allows victims and judges to send live text and voice notes from their mobile phone.
 Integrates directly with FastAPI & LangGraph multi-agent engine.
@@ -93,7 +93,7 @@ def _check_telegram_lookup_rate_limit(chat_id: int) -> bool:
 def get_linked_victim(chat_id: int) -> Optional[Dict[str, Any]]:
     """Return victim record linked to this Telegram chat_id, if any."""
     try:
-        from database import get_connection
+        from backend.database import get_connection
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute(
@@ -155,7 +155,7 @@ def handle_victim_text(chat_id: int, victim_id: str, user_name: str, message_tex
     # ── Step 2: Build distress_context and fetch conversation history -----------
     victim = None
     try:
-        from database import get_victim_details, get_conversation_history, append_conversation_turn, trim_conversation_history
+        from backend.database import get_victim_details, get_conversation_history, append_conversation_turn, trim_conversation_history
         victim = get_victim_details(victim_id)
         history = get_conversation_history(victim_id, limit=10)
     except Exception:
@@ -170,7 +170,7 @@ def handle_victim_text(chat_id: int, victim_id: str, user_name: str, message_tex
     # ── Step 3: Generate LLM reply and run full escalation concurrently --------
     def _generate_reply() -> str:
         try:
-            from services.counselor_persona import generate_counselor_reply
+            from backend.services.counselor_persona import generate_counselor_reply
             return generate_counselor_reply(victim_id, message_text, history, distress_ctx)
         except Exception as exc:
             print(f"[CounselorPersona] Error generating reply: {exc}")
@@ -215,7 +215,7 @@ def complete_self_registration(chat_id: int, user_name: str, district: str, fir_
     victim_id = f"VIC-TG-{chat_id}"
     fir_label = "FIR Pending Verification" if fir_filed else "Intake (Pending FIR)"
     try:
-        from database import get_connection
+        from backend.database import get_connection
         from datetime import datetime
         conn = get_connection()
         cursor = conn.cursor()
@@ -291,7 +291,7 @@ def process_telegram_update(update: dict):
             new_email = parts[1].strip()
             linked_victim = get_linked_victim(chat_id)
             if linked_victim:
-                from database import update_victim_email
+                from backend.database import update_victim_email
                 update_victim_email(linked_victim["victim_id"], new_email)
                 send_telegram_message(
                     chat_id,
@@ -341,7 +341,7 @@ def process_telegram_update(update: dict):
                     _chat_states[chat_id] = {"step": "REG_NAME", "data": {}}
                     return
 
-                from database import find_victim_by_fir_or_link, link_telegram_to_victim
+                from backend.database import find_victim_by_fir_or_link, link_telegram_to_victim
                 found = find_victim_by_fir_or_link(text_content)
                 if found:
                     link_telegram_to_victim(found["victim_id"], chat_id)

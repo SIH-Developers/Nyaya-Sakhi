@@ -1,4 +1,4 @@
-"""
+﻿"""
 Seed Realistic Victim Data and Historical Interactions for SIH 26094
 Populates SQLite with multi-turn victim journeys including the 'Riya' benchmark case.
 """
@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-from database import init_db, get_connection, save_victim_turn
-from graph import app
+from backend.database import init_db, get_connection, save_victim_turn
+from backend.graph import app
 
 def seed_database():
     print("🌱 Initializing Database Schema...")

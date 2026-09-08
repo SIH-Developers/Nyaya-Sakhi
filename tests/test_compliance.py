@@ -14,8 +14,8 @@ from datetime import datetime, timedelta
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi.testclient import TestClient
-from api import api
-from database import init_db, get_connection
+from backend.api import api
+from backend.database import init_db, get_connection
 
 init_db()
 
@@ -73,9 +73,7 @@ def seed_old_interaction_logs(victim_id: str, days_ago: int, count: int = 3):
 
 
 def count_interaction_logs(victim_id: str) -> int:
-    conn = sqlite3.connect(
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "distress_monitoring.db")
-    )
+    conn = get_connection()
     c = conn.cursor()
     c.execute("SELECT COUNT(*) FROM interaction_logs WHERE victim_id = ?", (victim_id,))
     result = c.fetchone()[0]

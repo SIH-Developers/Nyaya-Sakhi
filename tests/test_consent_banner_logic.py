@@ -1,4 +1,4 @@
-"""
+﻿"""
 tests/test_consent_banner_logic.py
 FOLLOW-UP B — Consent Gate Unit Tests (backend/logic layer)
 
@@ -16,8 +16,8 @@ import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi.testclient import TestClient
-from api import api
-from database import init_db
+from backend.api import api
+from backend.database import init_db
 
 init_db()
 client = TestClient(api)

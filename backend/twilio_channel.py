@@ -1,4 +1,4 @@
-"""
+﻿"""
 Twilio Channel Integration for SIH 26094 - NHAA 14566
 Handles outbound SMS and Voice IVRS calls to victims' registered mobile numbers.
 
@@ -186,7 +186,7 @@ def dispatch_checkin(
 
     # 4. Email (Twilio SendGrid)
     if send_email_flag or to_email:
-        from email_channel import send_email_alert
+        from backend.email_channel import send_email_alert
         email_res = send_email_alert(
             to_email=to_email,
             subject=f"NHAA 14566 Proactive Check-in: {victim_name}",

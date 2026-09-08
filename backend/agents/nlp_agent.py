@@ -1,10 +1,10 @@
-import os
+﻿import os
 import re
 import requests
 from typing import Dict, Any
 from dotenv import load_dotenv
 from pathlib import Path
-from core.state import VictimState
+from backend.core.state import VictimState
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
