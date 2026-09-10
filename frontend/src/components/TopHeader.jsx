@@ -6,7 +6,8 @@ import {
   Bell,
   PhoneCall,
   UserCheck,
-  ShieldCheck
+  ShieldCheck,
+  Compass
 } from 'lucide-react';
 
 export default function TopHeader({
@@ -18,7 +19,8 @@ export default function TopHeader({
   onRefresh,
   isRefreshing,
   alertsCount = 0,
-  onOpenAlerts
+  onOpenAlerts,
+  onOpenWalkthrough
 }) {
   return (
     <header
@@ -119,6 +121,31 @@ export default function TopHeader({
           <Lock size={12} />
           <span>DPDP Act 2023 AES-256</span>
         </div>
+
+        {/* Guided Tour Walkthrough Launcher Button */}
+        {onOpenWalkthrough && (
+          <button
+            onClick={onOpenWalkthrough}
+            style={{
+              padding: '7px 14px',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)',
+              border: '1px solid rgba(99, 102, 241, 0.4)',
+              color: '#a5b4fc',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s'
+            }}
+            title="Start Interactive Guided Tour"
+          >
+            <Compass size={14} style={{ color: '#818cf8' }} />
+            <span>Guided Tour</span>
+          </button>
+        )}
 
         {/* Refresh Button */}
         <button

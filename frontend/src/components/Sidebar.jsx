@@ -10,7 +10,8 @@ import {
   Circle,
   ExternalLink,
   ChevronRight,
-  BarChart2
+  BarChart2,
+  Compass
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -20,7 +21,8 @@ export default function Sidebar({
   alertsCount = 0,
   patientsCount = 0,
   isCollapsed = false,
-  onToggleCollapse
+  onToggleCollapse,
+  onOpenWalkthrough
 }) {
   const navItems = [
     {
@@ -328,6 +330,37 @@ export default function Sidebar({
           National Helpline Against Atrocities (PoA Act). DPDP Act 2023 AES-256 compliant.
         </p>
       </div>
+
+      {/* Guided Tour Banner Button */}
+      {onOpenWalkthrough && (
+        <div style={{ padding: '0 16px 14px 16px' }}>
+          <button
+            onClick={onOpenWalkthrough}
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)',
+              border: '1px solid rgba(99, 102, 241, 0.35)',
+              color: '#a5b4fc',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+              transition: 'all 0.2s'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Compass size={16} style={{ color: '#818cf8' }} />
+              <span>Take Guided Tour</span>
+            </div>
+            <ChevronRight size={14} style={{ color: '#818cf8' }} />
+          </button>
+        </div>
+      )}
 
       {/* Officer Profile Footer */}
       <div

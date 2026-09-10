@@ -11,6 +11,7 @@ import ChatWidget from './components/ChatWidget';
 import PatientPortal from './components/PatientPortal';
 import SettingsProfile from './components/SettingsProfile';
 import MinistryDashboard from './components/MinistryDashboard';
+import GuidedWalkthrough from './components/GuidedWalkthrough';
 
 import { API_BASE } from './config';
 
@@ -18,6 +19,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [userRole, setUserRole] = useState('counselor');
   const [globalSearch, setGlobalSearch] = useState('');
+  const [isWalkthroughOpen, setIsWalkthroughOpen] = useState(false);
   
   const [stats, setStats] = useState(null);
   const [victims, setVictims] = useState([]);
@@ -119,6 +121,7 @@ export default function App() {
         userRole={userRole}
         alertsCount={alerts.filter(a => !a.acknowledged).length}
         patientsCount={victims.length}
+        onOpenWalkthrough={() => setIsWalkthroughOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -136,6 +139,7 @@ export default function App() {
           isRefreshing={isRefreshing}
           alertsCount={alerts.filter(a => !a.acknowledged).length}
           onOpenAlerts={() => setActiveTab('alerts')}
+          onOpenWalkthrough={() => setIsWalkthroughOpen(true)}
         />
 
         {/* View Switcher Main Container */}
@@ -237,6 +241,14 @@ export default function App() {
 
       {/* Floating Chat Widget */}
       <ChatWidget />
+
+      {/* Guided Walkthrough Feature Tour Modal */}
+      <GuidedWalkthrough
+        isOpen={isWalkthroughOpen}
+        onClose={() => setIsWalkthroughOpen(false)}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
     </div>
   );
 }
