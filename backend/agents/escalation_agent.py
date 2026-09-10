@@ -265,8 +265,12 @@ def trigger_manual_sos(
     dispatch_results = []
     try:
         import os as _os
-        sos_numbers_raw = _os.getenv("SOS_RECIPIENT_NUMBERS", "")
-        sos_numbers = [n.strip() for n in sos_numbers_raw.split(",") if n.strip().startswith("+")]
+        sos_numbers_raw = _os.getenv("SOS_RECIPIENT_NUMBERS", "") or _os.getenv("TWILIO_TO_NUMBER", "") or _os.getenv("TWILIO_TEST_VICTIM_NUMBER", "")
+        raw_list = [n.strip() for n in sos_numbers_raw.split(",") if n.strip()]
+        sos_numbers = []
+        for n in raw_list:
+            formatted = n if n.startswith("+") else "+" + n
+            sos_numbers.append(formatted)
 
         from backend.services.twilio_service import make_voice_call, send_sms
         spoken = (
@@ -283,7 +287,7 @@ def trigger_manual_sos(
                 "sms": sms_res,
             })
         if not sos_numbers:
-            print("[ManualSOS] ⚠️  SOS_RECIPIENT_NUMBERS not configured — skipping voice/SMS dispatch.")
+            print("[ManualSOS] ⚠️  SOS_RECIPIENT_NUMBERS / TWILIO_TO_NUMBER not configured — skipping voice/SMS dispatch.")
     except Exception as e:
         print(f"[ManualSOS] Twilio dispatch error: {e}")
 
