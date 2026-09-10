@@ -1353,6 +1353,72 @@ async def whatsapp_inbound(request: Request):
         return FastAPIResponse(content=FALLBACK_TWIML, media_type="text/xml", status_code=200)
 
 
+
+# ── SOS Panic Button Endpoints ────────────────────────────────────────────────
+
+class SOSTriggerRequest(BaseModel):
+    victim_id: str
+    channel: str = "web_chat"
+    triggered_by: str = "victim"  # 'victim' | 'counselor' | 'telegram'
+
+@api.post("/api/sos/trigger")
+def sos_trigger(req: SOSTriggerRequest):
+    """
+    Manual SOS panic button — P0-EMERGENCY, bypasses NLP pipeline.
+    trigger_type='manual_sos' is stored in DB so dashboard/reports can
+    distinguish this from automated NLP-detected escalations.
+    Twilio Voice goes to SOS_RECIPIENT_NUMBERS, NOT the victim's own phone.
+    """
+    from backend.agents.escalation_agent import trigger_manual_sos
+    result = trigger_manual_sos(
+        victim_id    = req.victim_id,
+        channel      = req.channel,
+        triggered_by = req.triggered_by,
+    )
+    if result.get("deduped"):
+        raise HTTPException(status_code=429, detail=result["message"])
+    return result
+
+@api.post("/api/sos/telegram")
+def sos_telegram(victim_id: str, chat_id: str):
+    """Called internally by Telegram bot when user sends /sos."""
+    from backend.agents.escalation_agent import trigger_manual_sos
+    result = trigger_manual_sos(
+        victim_id    = victim_id,
+        channel      = "telegram",
+        triggered_by = "telegram",
+    )
+    return result
+
+
+# ── Ministry Analytics Endpoints (Read-Only, Aggregate-Only) ──────────────────
+
+@api.get("/api/analytics/overview")
+def analytics_overview():
+    """
+    National KPI overview for Ministry/Officer read-only dashboard.
+    Returns only aggregate counts — zero individual-level data.
+    """
+    from backend.database import get_analytics_overview
+    return get_analytics_overview()
+
+@api.get("/api/analytics/districts")
+def analytics_districts():
+    """
+    District-level breakdown (min-count suppressed).
+    Districts with fewer than 5 victims are excluded for privacy.
+    """
+    from backend.database import get_analytics_by_district
+    return get_analytics_by_district()
+
+@api.get("/api/analytics/timeline")
+def analytics_timeline(days: int = 30):
+    """Daily interaction + alert trend (last N days). Max 90 days."""
+    days = min(days, 90)
+    from backend.database import get_analytics_timeline
+    return get_analytics_timeline(days=days)
+
+
 # ── Mount React Frontend static files if built ────────────────────────────────
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse

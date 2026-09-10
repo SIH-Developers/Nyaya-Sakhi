@@ -10,6 +10,7 @@ import LiveSimulator from './components/LiveSimulator';
 import ChatWidget from './components/ChatWidget';
 import PatientPortal from './components/PatientPortal';
 import SettingsProfile from './components/SettingsProfile';
+import MinistryDashboard from './components/MinistryDashboard';
 
 import { API_BASE } from './config';
 
@@ -203,6 +204,11 @@ export default function App() {
               setUserRole={setUserRole}
               onRefreshAll={fetchDashboardData}
             />
+          )}
+
+          {/* VIEW 7: Ministry Analytics Dashboard */}
+          {activeTab === 'ministry' && (
+            <MinistryDashboard />
           )}
         </main>
 

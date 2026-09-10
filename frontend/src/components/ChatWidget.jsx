@@ -65,7 +65,10 @@ export default function ChatWidget() {
   const [loading, setLoading]       = useState(false);
   const [mode, setMode]             = useState('info');
   const [showEmergency, setShowEmergency] = useState(false);
+  const [sosState, setSosState]     = useState('idle');  // 'idle' | 'sending' | 'sent' | 'cooldown'
+  const [sosCooldown, setSosCooldown] = useState(0);
   const bottomRef = useRef(null);
+  const sosTimerRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -116,6 +119,39 @@ export default function ChatWidget() {
       }]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSOS = async () => {
+    if (sosState === 'sending' || sosState === 'cooldown') return;
+    setSosState('sending');
+    try {
+      const resp = await fetch(`${API_BASE}/sos/trigger`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          victim_id: `WEB-${SESSION_ID}`,
+          channel: 'web_chat',
+          triggered_by: 'victim',
+        }),
+      });
+      setSosState('sent');
+      setShowEmergency(true);
+      // Start 5-min cooldown
+      setSosCooldown(300);
+      sosTimerRef.current = setInterval(() => {
+        setSosCooldown(prev => {
+          if (prev <= 1) {
+            clearInterval(sosTimerRef.current);
+            setSosState('idle');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (e) {
+      setSosState('idle');
+      alert('Network error. Please call 112 (Police) or 14566 (NHAA) immediately.');
     }
   };
 
@@ -222,6 +258,11 @@ export default function ChatWidget() {
           0%,100% { opacity:0.3; transform:scale(0.8); }
           50%      { opacity:1;   transform:scale(1.2); }
         }
+        @keyframes sosPulse {
+          0%   { box-shadow: 0 0 0 0 rgba(211,47,47,0.7); }
+          70%  { box-shadow: 0 0 0 14px rgba(211,47,47,0); }
+          100% { box-shadow: 0 0 0 0 rgba(211,47,47,0); }
+        }
         .chat-chip:hover { background: rgba(144,202,249,0.18) !important; }
       `}</style>
 
@@ -233,6 +274,31 @@ export default function ChatWidget() {
         title={open ? 'Close chat' : 'Open Nyaya-Sakhi Chat'}
       >
         {open ? '✕' : '💬'}
+      </button>
+
+      {/* SOS Floating Button (always visible — safety critical) */}
+      <button
+        id="sos-fab"
+        onClick={handleSOS}
+        disabled={sosState === 'sending' || sosState === 'cooldown'}
+        title="🆘 SOS Emergency Button — sends immediate alert"
+        style={{
+          position: 'fixed', bottom: 100, right: 96, zIndex: 10000,
+          width: 56, height: 56, borderRadius: '50%',
+          background: sosState === 'sent' || sosState === 'cooldown' ? '#4caf50' : '#d32f2f',
+          color: '#fff', border: '3px solid rgba(255,255,255,0.35)',
+          cursor: sosState === 'cooldown' ? 'not-allowed' : 'pointer',
+          fontWeight: 900, fontSize: '0.68rem', letterSpacing: '-0.5px',
+          boxShadow: sosState === 'idle' ? '0 0 0 0 rgba(211,47,47,0.7)' : 'none',
+          animation: sosState === 'idle' ? 'sosPulse 2s infinite' : 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexDirection: 'column', lineHeight: 1.1, transition: 'background 0.3s',
+        }}
+      >
+        {sosState === 'sending' ? '…' : sosState === 'sent' || sosState === 'cooldown' ? '✓' : '🆘'}
+        <span style={{ fontSize: '0.55rem', marginTop: 1 }}>
+          {sosState === 'cooldown' ? `${sosCooldown}s` : 'SOS'}
+        </span>
       </button>
 
       {open && (

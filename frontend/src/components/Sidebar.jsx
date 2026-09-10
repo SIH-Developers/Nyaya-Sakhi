@@ -9,7 +9,8 @@ import {
   Shield,
   Circle,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  BarChart2
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -65,6 +66,15 @@ export default function Sidebar({
       badge: 'Self-Serve',
       badgeColor: 'rgba(6, 182, 212, 0.15)',
       badgeTextColor: '#67e8f9'
+    },
+    {
+      id: 'ministry',
+      label: 'Ministry Analytics',
+      description: 'Aggregate KPIs, district trends',
+      icon: BarChart2,
+      badge: 'Read-Only',
+      badgeColor: 'rgba(92,107,192,0.2)',
+      badgeTextColor: '#9fa8da'
     },
     {
       id: 'settings',

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Telegram Voice & Text Channel Bot for SIH 26094
 Allows victims and judges to send live text and voice notes from their mobile phone.
 Integrates directly with FastAPI & LangGraph multi-agent engine.
@@ -312,7 +312,53 @@ def process_telegram_update(update: dict):
             )
             return
 
-    # 2. Handle active onboarding state
+    # 1c. Handle /sos command — Manual SOS Panic Button
+    if text_content == "/sos":
+        linked_victim = get_linked_victim(chat_id)
+        if linked_victim:
+            victim_id = linked_victim["victim_id"]
+            try:
+                from backend.agents.escalation_agent import trigger_manual_sos
+                result = trigger_manual_sos(
+                    victim_id    = victim_id,
+                    channel      = "telegram",
+                    triggered_by = "telegram",
+                )
+                if result.get("deduped"):
+                    send_telegram_message(
+                        chat_id,
+                        f"⚠️ *SOS already sent!*\n\nYour earlier SOS is still active. "
+                        f"A counselor will contact you shortly.\n\n"
+                        f"🚨 *Immediate help:* Call *112* (Police) or *14566* (NHAA toll-free)"
+                    )
+                else:
+                    send_telegram_message(
+                        chat_id,
+                        "🆘 *SOS ALERT SENT!*\n\n"
+                        "Your emergency has been flagged as *P0-EMERGENCY*.\n"
+                        "A counselor is being dispatched to contact you right now.\n\n"
+                        "📞 *Immediate help while you wait:*\n"
+                        "• Police: *112*\n"
+                        "• NHAA Helpline: *14566* (toll-free, 24/7)\n\n"
+                        "_Stay somewhere safe. You are not alone._"
+                    )
+            except Exception as sos_err:
+                print(f"[SOS Telegram] Error: {sos_err}")
+                send_telegram_message(
+                    chat_id,
+                    "🆘 *EMERGENCY NUMBERS:*\n• Police: *112*\n• NHAA: *14566* (toll-free)"
+                )
+        else:
+            # Unregistered — give hotline numbers immediately
+            send_telegram_message(
+                chat_id,
+                "🆘 *EMERGENCY HELP:*\n\n"
+                "• Police: *112*\n"
+                "• NHAA Helpline: *14566* (toll-free, 24/7)\n\n"
+                "Please use /start to register so we can dispatch a counselor to you directly."
+            )
+        return
+
     state = _chat_states.get(chat_id)
     if state and "text" in message:
         step = state.get("step")

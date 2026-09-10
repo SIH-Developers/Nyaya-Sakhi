@@ -1,4 +1,4 @@
-﻿"""
+"""
 agents/escalation_agent.py — Tier-Based Escalation & Counselor Alerting Agent
 SIH 26094 / NHAA 14566
 
@@ -172,4 +172,128 @@ def escalation_agent_node(state: VictimState) -> Dict[str, Any]:
     return {
         "escalation_triggered": True,
         "escalation_alert":     alert,
+    }
+
+
+# ── Manual SOS Panic Button Entry Point ───────────────────────────────────────
+
+import time as _time
+_sos_dedup: dict = {}          # victim_id → last trigger timestamp
+_SOS_DEDUP_WINDOW = 300        # 5 minutes (seconds)
+
+
+def trigger_manual_sos(
+    victim_id: str,
+    channel: str = "web_chat",
+    session_id: str = None,
+    triggered_by: str = "victim",
+) -> dict:
+    """
+    Manual SOS Panic Button — skips NLP scoring entirely.
+
+    Differences from NLP-detected escalation:
+      • trigger_type = 'manual_sos'  (distinct in DB for dashboard / reports)
+      • triggered_by = caller identity (victim / counselor / telegram)
+      • Goes straight to P0-EMERGENCY priority
+      • Calls Twilio Voice on SOS_RECIPIENT_NUMBERS (pre-verified list)
+        rather than the victim's own phone
+      • 5-minute deduplication window (prevents accidental double-press)
+    """
+    # ── Deduplication (5-min window) ──────────────────────────────────────────
+    now = _time.time()
+    last = _sos_dedup.get(victim_id, 0)
+    if now - last < _SOS_DEDUP_WINDOW:
+        remaining = int(_SOS_DEDUP_WINDOW - (now - last))
+        print(f"[ManualSOS] Dedup skip for {victim_id} — retry in {remaining}s")
+        return {
+            "success": False,
+            "deduped": True,
+            "retry_in_seconds": remaining,
+            "message": f"SOS already triggered. Please wait {remaining}s before re-triggering.",
+        }
+    _sos_dedup[victim_id] = now
+
+    # ── Build P0 alert payload ────────────────────────────────────────────────
+    alert_id = f"SOS-{uuid.uuid4().hex[:8].upper()}"
+    alert = {
+        "alert_id":                  alert_id,
+        "victim_id":                 victim_id,
+        "timestamp":                 datetime.now().isoformat(),
+        "priority":                  "P0-EMERGENCY",
+        "risk_tier":                 "Urgent",
+        "fused_risk_score":          1.0,
+        "recommended_action":        (
+            "MANUAL SOS ACTIVATED — Immediate call dispatch. "
+            "Contact victim within 5 minutes. Notify District Officer."
+        ),
+        "clinical_reasons":          ["Manual SOS panic button pressed by victim"],
+        "human_in_the_loop_status":  "Awaiting Counselor Review",
+        "acknowledged_by_counselor": False,
+        "channel":                   channel,
+        "trigger_type":              "manual_sos",
+        "triggered_by":              triggered_by,
+    }
+
+    # ── Persist to escalation_alerts with trigger_type ───────────────────────
+    try:
+        from backend.database import get_connection
+        import json as _json
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT OR IGNORE INTO escalation_alerts (
+                alert_id, victim_id, timestamp, priority, risk_tier,
+                fused_risk_score, recommended_action, clinical_reasons,
+                human_in_the_loop_status, acknowledged, channel,
+                trigger_type, triggered_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)
+        """, (
+            alert["alert_id"], victim_id, alert["timestamp"],
+            alert["priority"], alert["risk_tier"], alert["fused_risk_score"],
+            alert["recommended_action"],
+            _json.dumps(alert["clinical_reasons"]),
+            alert["human_in_the_loop_status"],
+            channel, "manual_sos", triggered_by,
+        ))
+        conn.commit()
+        conn.close()
+        print(f"[ManualSOS] ✅ Alert persisted: {alert_id}")
+    except Exception as e:
+        print(f"[ManualSOS] DB persist error: {e}")
+
+    # ── Twilio Voice — call SOS_RECIPIENT_NUMBERS (not victim's own phone) ───
+    dispatch_results = []
+    try:
+        import os as _os
+        sos_numbers_raw = _os.getenv("SOS_RECIPIENT_NUMBERS", "")
+        sos_numbers = [n.strip() for n in sos_numbers_raw.split(",") if n.strip().startswith("+")]
+
+        from backend.services.twilio_service import make_voice_call, send_sms
+        spoken = (
+            f"EMERGENCY SOS alert from NHAA 14566. "
+            f"Victim ID {victim_id} has pressed the SOS panic button. "
+            f"Please respond immediately."
+        )
+        for number in sos_numbers:
+            voice_res = make_voice_call(number, spoken)
+            sms_res   = send_sms(number, f"🆘 NHAA 14566 MANUAL SOS — Victim {victim_id} needs immediate help. {datetime.now().strftime('%H:%M IST')}")
+            dispatch_results.append({
+                "number": number[-4:] + "****",   # mask for logs
+                "voice": voice_res,
+                "sms": sms_res,
+            })
+        if not sos_numbers:
+            print("[ManualSOS] ⚠️  SOS_RECIPIENT_NUMBERS not configured — skipping voice/SMS dispatch.")
+    except Exception as e:
+        print(f"[ManualSOS] Twilio dispatch error: {e}")
+
+    print(f"[ManualSOS] 🆘 SOS triggered for {victim_id} via {channel} by {triggered_by}")
+    return {
+        "success": True,
+        "alert_id": alert_id,
+        "priority": "P0-EMERGENCY",
+        "trigger_type": "manual_sos",
+        "dispatched_to": len(dispatch_results),
+        "dispatch_results": dispatch_results,
+        "message": "SOS alert sent. A counselor will contact you very shortly. Stay safe.",
     }

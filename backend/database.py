@@ -1,4 +1,4 @@
-﻿"""
+"""
 SQLite Database Layer for SIH 26094
 Stores Victims, Case Context, Encrypted Interaction Logs, and Counselor Alerts.
 """
@@ -95,6 +95,9 @@ def init_db():
         ("link_code_expiry",   "ALTER TABLE victims ADD COLUMN link_code_expiry TEXT"),
         ("email",              "ALTER TABLE victims ADD COLUMN email TEXT"),
         ("phone_number",       "ALTER TABLE victims ADD COLUMN phone_number TEXT"),
+        # escalation_alerts migrations
+        ("trigger_type",       "ALTER TABLE escalation_alerts ADD COLUMN trigger_type TEXT DEFAULT 'nlp_detected'"),
+        ("triggered_by",       "ALTER TABLE escalation_alerts ADD COLUMN triggered_by TEXT DEFAULT 'system'"),
     ]:
         try:
             cursor.execute(col_def[1])
@@ -663,3 +666,135 @@ def get_full_victim_history(victim_id: str) -> Optional[Dict[str, Any]]:
         "registration_status": victim.get("registration_status", "verified")
     }
 
+
+
+# --- Ministry Analytics (Privacy-Safe Aggregates) ------------------------------
+
+
+
+_SUPPRESSION_MIN = 5  # never reveal buckets with fewer than this many victims
+
+
+def get_analytics_overview():
+    """National-level aggregate KPIs for Ministry Dashboard (no individual data)."""
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM victims")
+    total_victims = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM victims WHERE current_risk_tier = 'Urgent'")
+    urgent = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM victims WHERE current_risk_tier = 'Counselor Outreach'")
+    outreach = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM victims WHERE current_risk_tier = 'Watch'")
+    watch = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM escalation_alerts WHERE trigger_type = 'manual_sos'")
+    sos_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM escalation_alerts WHERE trigger_type != 'manual_sos' OR trigger_type IS NULL")
+    nlp_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM interaction_logs")
+    interactions = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM escalation_alerts WHERE acknowledged = 1")
+    resolved = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM escalation_alerts")
+    total_alerts = cursor.fetchone()[0]
+    conn.close()
+
+    return {
+        "total_monitored_victims": total_victims,
+        "risk_distribution": {
+            "urgent": urgent,
+            "counselor_outreach": outreach,
+            "watch": watch,
+            "routine": max(0, total_victims - urgent - outreach - watch),
+        },
+        "alerts": {
+            "total": total_alerts,
+            "manual_sos": sos_count,
+            "nlp_detected": nlp_count,
+            "resolved": resolved,
+            "resolution_rate": round(resolved / total_alerts * 100, 1) if total_alerts else 0,
+        },
+        "total_interactions": interactions,
+    }
+
+
+def get_analytics_by_district():
+    """District-level aggregates. Suppresses districts with < SUPPRESSION_MIN victims."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT
+            v.district,
+            v.state,
+            COUNT(v.victim_id)          AS victim_count,
+            AVG(v.current_risk_score)   AS avg_risk_score,
+            SUM(CASE WHEN v.current_risk_tier = 'Urgent' THEN 1 ELSE 0 END)             AS urgent_count,
+            SUM(CASE WHEN v.current_risk_tier = 'Counselor Outreach' THEN 1 ELSE 0 END) AS outreach_count,
+            COUNT(ea.alert_id)          AS total_alerts,
+            SUM(CASE WHEN ea.trigger_type = 'manual_sos' THEN 1 ELSE 0 END)             AS sos_alerts
+        FROM victims v
+        LEFT JOIN escalation_alerts ea ON ea.victim_id = v.victim_id
+        GROUP BY v.district, v.state
+        HAVING COUNT(v.victim_id) >= ?
+        ORDER BY avg_risk_score DESC
+    """, (_SUPPRESSION_MIN,))
+    rows = cursor.fetchall()
+    conn.close()
+    return [
+        {
+            "district":       r["district"] or "Unknown",
+            "state":          r["state"] or "Unknown",
+            "victim_count":   r["victim_count"],
+            "avg_risk_score": round((r["avg_risk_score"] or 0), 3),
+            "urgent_count":   r["urgent_count"],
+            "outreach_count": r["outreach_count"],
+            "total_alerts":   r["total_alerts"],
+            "sos_alerts":     r["sos_alerts"],
+        }
+        for r in rows
+    ]
+
+
+def get_analytics_timeline(days: int = 30):
+    """Daily interaction + alert counts for trend sparklines. Suppresses low-count days."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT DATE(timestamp) AS day, COUNT(*) AS interactions, AVG(fused_risk_score) AS avg_risk
+        FROM interaction_logs
+        WHERE timestamp >= DATE('now', ?)
+        GROUP BY DATE(timestamp)
+        HAVING COUNT(*) >= ?
+        ORDER BY day ASC
+    """, (f"-{days} days", _SUPPRESSION_MIN))
+    i_rows = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DATE(timestamp) AS day, COUNT(*) AS alerts,
+               SUM(CASE WHEN trigger_type = 'manual_sos' THEN 1 ELSE 0 END) AS sos
+        FROM escalation_alerts
+        WHERE timestamp >= DATE('now', ?)
+        GROUP BY DATE(timestamp)
+        ORDER BY day ASC
+    """, (f"-{days} days",))
+    a_rows = cursor.fetchall()
+    conn.close()
+
+    day_map = {}
+    for r in i_rows:
+        day_map[r["day"]] = {
+            "day": r["day"], "interactions": r["interactions"],
+            "avg_risk": round((r["avg_risk"] or 0), 3), "alerts": 0, "sos": 0,
+        }
+    for r in a_rows:
+        if r["day"] in day_map:
+            day_map[r["day"]]["alerts"] = r["alerts"]
+            day_map[r["day"]]["sos"] = r["sos"]
+        else:
+            day_map[r["day"]] = {
+                "day": r["day"], "interactions": 0,
+                "avg_risk": 0, "alerts": r["alerts"], "sos": r["sos"],
+            }
+
+    return sorted(day_map.values(), key=lambda x: x["day"])
