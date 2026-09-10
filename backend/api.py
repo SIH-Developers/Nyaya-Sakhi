@@ -42,7 +42,16 @@ import time
 
 @api.on_event("startup")
 def launch_telegram_bot_service():
-    """Launch Telegram polling bot in a background daemon thread so it runs 24/7 on Render and locally."""
+    """Run DB migrations then launch Telegram polling bot in background."""
+    # ── 1. Run DB migrations (safe on every restart — ALTER TABLE is idempotent) ──
+    try:
+        from backend.database import init_db
+        init_db()
+        print("[FastAPI] ✅ Database migrations applied (init_db complete).")
+    except Exception as e:
+        print(f"[FastAPI] ⚠️  init_db error (non-fatal): {e}")
+
+    # ── 2. Launch Telegram bot worker ──────────────────────────────────────────
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
     if bot_token and bot_token != "YOUR_TELEGRAM_BOT_TOKEN_HERE":
         def _run_bg():

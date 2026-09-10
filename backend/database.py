@@ -688,16 +688,23 @@ def get_analytics_overview():
     outreach = cursor.fetchone()[0]
     cursor.execute("SELECT COUNT(*) FROM victims WHERE current_risk_tier = 'Watch'")
     watch = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM escalation_alerts WHERE trigger_type = 'manual_sos'")
-    sos_count = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM escalation_alerts WHERE trigger_type != 'manual_sos' OR trigger_type IS NULL")
-    nlp_count = cursor.fetchone()[0]
     cursor.execute("SELECT COUNT(*) FROM interaction_logs")
     interactions = cursor.fetchone()[0]
     cursor.execute("SELECT COUNT(*) FROM escalation_alerts WHERE acknowledged = 1")
     resolved = cursor.fetchone()[0]
     cursor.execute("SELECT COUNT(*) FROM escalation_alerts")
     total_alerts = cursor.fetchone()[0]
+
+    # trigger_type column may not exist on old DBs — use COALESCE fallback
+    try:
+        cursor.execute("SELECT COUNT(*) FROM escalation_alerts WHERE COALESCE(trigger_type,'nlp_detected') = 'manual_sos'")
+        sos_count = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM escalation_alerts WHERE COALESCE(trigger_type,'nlp_detected') != 'manual_sos'")
+        nlp_count = cursor.fetchone()[0]
+    except Exception:
+        sos_count = 0
+        nlp_count = total_alerts
+
     conn.close()
 
     return {
@@ -723,23 +730,42 @@ def get_analytics_by_district():
     """District-level aggregates. Suppresses districts with < SUPPRESSION_MIN victims."""
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("""
-        SELECT
-            v.district,
-            v.state,
-            COUNT(v.victim_id)          AS victim_count,
-            AVG(v.current_risk_score)   AS avg_risk_score,
-            SUM(CASE WHEN v.current_risk_tier = 'Urgent' THEN 1 ELSE 0 END)             AS urgent_count,
-            SUM(CASE WHEN v.current_risk_tier = 'Counselor Outreach' THEN 1 ELSE 0 END) AS outreach_count,
-            COUNT(ea.alert_id)          AS total_alerts,
-            SUM(CASE WHEN ea.trigger_type = 'manual_sos' THEN 1 ELSE 0 END)             AS sos_alerts
-        FROM victims v
-        LEFT JOIN escalation_alerts ea ON ea.victim_id = v.victim_id
-        GROUP BY v.district, v.state
-        HAVING COUNT(v.victim_id) >= ?
-        ORDER BY avg_risk_score DESC
-    """, (_SUPPRESSION_MIN,))
-    rows = cursor.fetchall()
+    try:
+        cursor.execute("""
+            SELECT
+                v.district,
+                v.state,
+                COUNT(v.victim_id)          AS victim_count,
+                AVG(v.current_risk_score)   AS avg_risk_score,
+                SUM(CASE WHEN v.current_risk_tier = 'Urgent' THEN 1 ELSE 0 END)             AS urgent_count,
+                SUM(CASE WHEN v.current_risk_tier = 'Counselor Outreach' THEN 1 ELSE 0 END) AS outreach_count,
+                COUNT(ea.alert_id)          AS total_alerts,
+                SUM(CASE WHEN COALESCE(ea.trigger_type,'nlp_detected') = 'manual_sos' THEN 1 ELSE 0 END) AS sos_alerts
+            FROM victims v
+            LEFT JOIN escalation_alerts ea ON ea.victim_id = v.victim_id
+            GROUP BY v.district, v.state
+            HAVING COUNT(v.victim_id) >= ?
+            ORDER BY avg_risk_score DESC
+        """, (_SUPPRESSION_MIN,))
+        rows = cursor.fetchall()
+    except Exception:
+        # Fallback: query without trigger_type if column missing
+        cursor.execute("""
+            SELECT
+                v.district, v.state,
+                COUNT(v.victim_id) AS victim_count,
+                AVG(v.current_risk_score) AS avg_risk_score,
+                SUM(CASE WHEN v.current_risk_tier = 'Urgent' THEN 1 ELSE 0 END) AS urgent_count,
+                SUM(CASE WHEN v.current_risk_tier = 'Counselor Outreach' THEN 1 ELSE 0 END) AS outreach_count,
+                COUNT(ea.alert_id) AS total_alerts,
+                0 AS sos_alerts
+            FROM victims v
+            LEFT JOIN escalation_alerts ea ON ea.victim_id = v.victim_id
+            GROUP BY v.district, v.state
+            HAVING COUNT(v.victim_id) >= ?
+            ORDER BY avg_risk_score DESC
+        """, (_SUPPRESSION_MIN,))
+        rows = cursor.fetchall()
     conn.close()
     return [
         {
@@ -770,15 +796,26 @@ def get_analytics_timeline(days: int = 30):
     """, (f"-{days} days", _SUPPRESSION_MIN))
     i_rows = cursor.fetchall()
 
-    cursor.execute("""
-        SELECT DATE(timestamp) AS day, COUNT(*) AS alerts,
-               SUM(CASE WHEN trigger_type = 'manual_sos' THEN 1 ELSE 0 END) AS sos
-        FROM escalation_alerts
-        WHERE timestamp >= DATE('now', ?)
-        GROUP BY DATE(timestamp)
-        ORDER BY day ASC
-    """, (f"-{days} days",))
-    a_rows = cursor.fetchall()
+    try:
+        cursor.execute("""
+            SELECT DATE(timestamp) AS day, COUNT(*) AS alerts,
+                   SUM(CASE WHEN COALESCE(trigger_type,'nlp_detected') = 'manual_sos' THEN 1 ELSE 0 END) AS sos
+            FROM escalation_alerts
+            WHERE timestamp >= DATE('now', ?)
+            GROUP BY DATE(timestamp)
+            ORDER BY day ASC
+        """, (f"-{days} days",))
+        a_rows = cursor.fetchall()
+    except Exception:
+        # Fallback: no trigger_type column yet
+        cursor.execute("""
+            SELECT DATE(timestamp) AS day, COUNT(*) AS alerts, 0 AS sos
+            FROM escalation_alerts
+            WHERE timestamp >= DATE('now', ?)
+            GROUP BY DATE(timestamp)
+            ORDER BY day ASC
+        """, (f"-{days} days",))
+        a_rows = cursor.fetchall()
     conn.close()
 
     day_map = {}
