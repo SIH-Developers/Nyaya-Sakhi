@@ -1,4 +1,4 @@
-﻿"""
+"""
 Twilio Channel Integration for SIH 26094 - NHAA 14566
 Handles outbound SMS and Voice IVRS calls to victims' registered mobile numbers.
 
@@ -103,7 +103,7 @@ def send_whatsapp(to_number: str, message: str) -> dict:
 
 
 # 3. Outbound IVRS Voice Call
-def make_voice_call(to_number: str, spoken_message: str) -> dict:
+def make_voice_call(to_number: str, spoken_message: str, is_sos: bool = False) -> dict:
     """
     Make an automated outbound voice call to the victim.
     Auto-detects:
@@ -122,18 +122,19 @@ def make_voice_call(to_number: str, spoken_message: str) -> dict:
         render_url = os.getenv("RENDER_EXTERNAL_URL", "").strip()
         twiml_bin  = os.getenv("TWIML_BIN_URL", "").strip()
         ngrok_url  = os.getenv("NGROK_URL", "").strip()
+        path = "/twiml/sos" if is_sos else "/twiml"
 
         if render_url:
-            twiml_url = f"{render_url.rstrip('/')}/twiml"
+            twiml_url = f"{render_url.rstrip('/')}{path}"
             print(f"[Twilio Voice] Using Render deployed URL: {twiml_url}")
-        elif twiml_bin:
+        elif twiml_bin and not is_sos:
             twiml_url = twiml_bin
             print(f"[Twilio Voice] Using TwiML Bin: {twiml_url}")
         elif ngrok_url:
-            twiml_url = f"{ngrok_url.rstrip('/')}/twiml"
+            twiml_url = f"{ngrok_url.rstrip('/')}{path}"
             print(f"[Twilio Voice] Using tunnel URL: {twiml_url}")
         else:
-            twiml_url = "http://localhost:8000/twiml"
+            twiml_url = f"http://localhost:8000{path}"
 
         call = client.calls.create(
             url=twiml_url,

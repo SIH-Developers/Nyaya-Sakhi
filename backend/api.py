@@ -470,8 +470,18 @@ def telephony_incoming_call(request: Request):
     return FastAPIResponse(content=xml_response.strip(), media_type="text/xml")
 
 @api.api_route("/twiml", methods=["GET", "POST"])
+@api.api_route("/twiml/sos", methods=["GET", "POST"])
 def twiml_simple(request: Request):
-    """Simple TwiML endpoint with absolute action URL and text/xml."""
+    """Simple TwiML endpoint with absolute action URL and text/xml for check-ins and emergency SOS alerts."""
+    is_sos = request.url.path.endswith("/sos") or request.query_params.get("type") == "sos"
+    
+    if is_sos:
+        xml_response = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Say voice="alice" language="en-IN">EMERGENCY S O S ALERT from National Helpline Against Atrocities 14566. A victim has triggered the manual S O S panic button and requires immediate emergency assistance. Please check your dashboard and respond immediately. Repeating: EMERGENCY S O S ALERT from N H A A 14566. Victim requires urgent support.</Say>
+</Response>"""
+        return FastAPIResponse(content=xml_response.strip(), media_type="text/xml")
+
     base_url = os.getenv("RENDER_EXTERNAL_URL", "https://nyaya-sakhi-tszb.onrender.com").rstrip("/")
     action_url = f"{base_url}/api/telephony/speech-response"
     xml_response = f"""<?xml version="1.0" encoding="UTF-8"?>

@@ -279,7 +279,7 @@ def trigger_manual_sos(
             f"Please respond immediately."
         )
         for number in sos_numbers:
-            voice_res = make_voice_call(number, spoken)
+            voice_res = make_voice_call(number, spoken, is_sos=True)
             sms_res   = send_sms(number, f"🆘 NHAA 14566 MANUAL SOS — Victim {victim_id} needs immediate help. {datetime.now().strftime('%H:%M IST')}")
             dispatch_results.append({
                 "number": number[-4:] + "****",   # mask for logs

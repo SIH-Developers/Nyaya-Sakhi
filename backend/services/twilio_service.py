@@ -124,16 +124,17 @@ def send_sms(to_number: str, message: str) -> dict:
 
 
 # ── Channel 3: Voice ────────────────────────────────────────────────────────────
-def _twiml_url() -> str:
+def _twiml_url(is_sos: bool = False) -> str:
+    path = "/twiml/sos" if is_sos else "/twiml"
     if RENDER_URL:
-        return f"{RENDER_URL}/twiml"
-    if TWIML_BIN_URL:
+        return f"{RENDER_URL}{path}"
+    if TWIML_BIN_URL and not is_sos:
         return TWIML_BIN_URL
     if NGROK_URL:
-        return f"{NGROK_URL}/twiml"
-    return "http://localhost:8000/twiml"
+        return f"{NGROK_URL}{path}"
+    return f"http://localhost:8000{path}"
 
-def make_voice_call(to_number: str, spoken_message: str) -> dict:
+def make_voice_call(to_number: str, spoken_message: str, is_sos: bool = False) -> dict:
     """Initiate an outbound TwiML voice call."""
     if not _is_configured():
         print(f"[DEMO][Voice] → {to_number}: {spoken_message[:80]}…")
@@ -141,9 +142,9 @@ def make_voice_call(to_number: str, spoken_message: str) -> dict:
 
     try:
         client = _get_client()
-        url = _twiml_url()
+        url = _twiml_url(is_sos=is_sos)
         call = client.calls.create(url=url, from_=FROM_NUMBER, to=to_number)
-        print(f"[Voice] ✅ Call → {to_number} | SID={call.sid} Status={call.status}")
+        print(f"[Voice] ✅ Call → {to_number} (is_sos={is_sos}) | SID={call.sid} Status={call.status}")
         return {"success": True, "channel": "voice", "call_sid": call.sid, "status": call.status}
     except Exception as e:
         print(f"[Voice] ❌ {e}")
