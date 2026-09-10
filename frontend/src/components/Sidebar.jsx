@@ -332,35 +332,33 @@ export default function Sidebar({
       </div>
 
       {/* Guided Tour Banner Button */}
-      {onOpenWalkthrough && (
-        <div style={{ padding: '0 16px 14px 16px' }}>
-          <button
-            onClick={onOpenWalkthrough}
-            style={{
-              width: '100%',
-              padding: '10px 14px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)',
-              border: '1px solid rgba(99, 102, 241, 0.35)',
-              color: '#a5b4fc',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-              transition: 'all 0.2s'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Compass size={16} style={{ color: '#818cf8' }} />
-              <span>Take Guided Tour</span>
-            </div>
-            <ChevronRight size={14} style={{ color: '#818cf8' }} />
-          </button>
-        </div>
-      )}
+      <div style={{ padding: '0 16px 14px 16px' }}>
+        <button
+          onClick={() => onOpenWalkthrough && onOpenWalkthrough()}
+          style={{
+            width: '100%',
+            padding: '10px 14px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)',
+            border: '1px solid rgba(99, 102, 241, 0.45)',
+            color: '#c7d2fe',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            transition: 'all 0.2s'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Compass size={16} style={{ color: '#818cf8' }} />
+            <span>Take Guided Tour</span>
+          </div>
+          <ChevronRight size={14} style={{ color: '#818cf8' }} />
+        </button>
+      </div>
 
       {/* Officer Profile Footer */}
       <div

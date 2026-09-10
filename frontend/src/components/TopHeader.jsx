@@ -123,29 +123,28 @@ export default function TopHeader({
         </div>
 
         {/* Guided Tour Walkthrough Launcher Button */}
-        {onOpenWalkthrough && (
-          <button
-            onClick={onOpenWalkthrough}
-            style={{
-              padding: '7px 14px',
-              fontSize: '0.78rem',
-              fontWeight: 600,
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)',
-              border: '1px solid rgba(99, 102, 241, 0.4)',
-              color: '#a5b4fc',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s'
-            }}
-            title="Start Interactive Guided Tour"
-          >
-            <Compass size={14} style={{ color: '#818cf8' }} />
-            <span>Guided Tour</span>
-          </button>
-        )}
+        <button
+          onClick={() => onOpenWalkthrough && onOpenWalkthrough()}
+          style={{
+            padding: '7px 14px',
+            fontSize: '0.78rem',
+            fontWeight: 600,
+            borderRadius: '8px',
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(139, 92, 246, 0.25) 100%)',
+            border: '1px solid rgba(99, 102, 241, 0.5)',
+            color: '#c7d2fe',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s',
+            boxShadow: '0 0 12px rgba(99, 102, 241, 0.2)'
+          }}
+          title="Start Interactive Guided Tour"
+        >
+          <Compass size={14} style={{ color: '#818cf8' }} />
+          <span>Guided Tour</span>
+        </button>
 
         {/* Refresh Button */}
         <button
