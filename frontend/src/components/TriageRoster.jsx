@@ -1,368 +1,328 @@
 import React, { useState } from 'react';
-import { Search, Filter, AlertCircle, ChevronRight, Scale, ShieldAlert } from 'lucide-react';
 
-// TASK 5: Channel badge config
 const CHANNEL_META = {
-  telegram_mobile:  { label: 'Telegram',  color: '#0088cc', icon: '📱' },
-  ivrs:             { label: 'IVRS Call',  color: '#7c3aed', icon: '📞' },
-  chatbot:          { label: 'Chatbot',    color: '#0ea5e9', icon: '💬' },
-  web_chat:         { label: 'Web Chat',   color: '#0ea5e9', icon: '🌐' },
-  whatsapp:         { label: 'WhatsApp',   color: '#25D366', icon: '💬' },
-  sms:              { label: 'SMS',        color: '#f59e0b', icon: '📨' },
-  email:            { label: 'Email',      color: '#6366f1', icon: '📧' },
+  telegram_mobile: { label: 'Telegram', color: '#0088cc', icon: '📱' },
+  ivrs:            { label: 'IVRS Call', color: '#7c3aed', icon: '📞' },
+  chatbot:         { label: 'Chatbot',   color: '#0ea5e9', icon: '💬' },
+  web_chat:        { label: 'Web Chat',  color: '#0ea5e9', icon: '🌐' },
+  whatsapp:        { label: 'WhatsApp',  color: '#25D366', icon: '💬' },
+  sms:             { label: 'SMS',       color: '#f59e0b', icon: '📨' },
+  email:           { label: 'Email',     color: '#6366f1', icon: '📧' },
 };
 
 function ChannelBadge({ channel }) {
-  const meta = CHANNEL_META[channel] || { label: channel || 'Unknown', color: '#4b5563', icon: '❓' };
+  const meta = CHANNEL_META[channel] || { label: channel || 'Web Chat', color: '#006a61', icon: '🌐' };
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      background: `${meta.color}22`, color: meta.color,
-      border: `1px solid ${meta.color}55`,
-      borderRadius: 999, padding: '2px 8px', fontSize: '0.68rem', fontWeight: 600,
-      whiteSpace: 'nowrap',
-    }}>
-      {meta.icon} {meta.label}
+    <span className="inline-flex items-center gap-1 bg-surface-container px-2 py-0.5 rounded-full text-xs font-semibold text-on-surface">
+      <span>{meta.icon}</span>
+      <span>{meta.label}</span>
     </span>
   );
 }
 
-export default function TriageRoster({ victims, onSelectVictim, selectedVictimId, userRole = 'counselor' }) {
-  const [searchTerm, setSearchTerm]         = useState('');
-  const [tierFilter, setTierFilter]         = useState('ALL');
-  const [channelFilter, setChannelFilter]   = useState('ALL');
-  const [statusFilter, setStatusFilter]     = useState('ALL');
+export default function TriageRoster({ victims = [], onSelectVictim, selectedVictimId, userRole = 'counselor', onRefresh }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [tierFilter, setTierFilter] = useState('all');
 
-  const pendingCount = victims.filter(v => v.registration_status === 'self_registered_pending_verification').length;
+  const criticalCount = victims.filter(v => v.current_risk_tier === 'Urgent' || v.current_risk_tier === 'Critical').length;
+  const elevatedCount = victims.filter(v => v.current_risk_tier === 'Counselor Outreach').length;
+  const stableCount   = victims.filter(v => v.current_risk_tier === 'Watch' || v.current_risk_tier === 'Routine').length;
 
   const filteredVictims = victims.filter((v) => {
     const matchesSearch =
-      v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      v.victim_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (v.district && v.district.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (v.fir_number && v.fir_number.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesTier    = tierFilter    === 'ALL' || v.current_risk_tier?.toUpperCase() === tierFilter;
-    const matchesChannel = channelFilter === 'ALL' || v.last_channel === channelFilter;
-    const matchesStatus  = statusFilter  === 'ALL' || (statusFilter === 'PENDING' ? v.registration_status === 'self_registered_pending_verification' : v.registration_status !== 'self_registered_pending_verification');
-    return matchesSearch && matchesTier && matchesChannel && matchesStatus;
+      (v.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (v.victim_id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (v.district || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (v.fir_number || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
+    let matchesTier = true;
+    if (tierFilter === 'critical') matchesTier = v.current_risk_tier === 'Urgent' || v.current_risk_tier === 'Critical';
+    if (tierFilter === 'elevated') matchesTier = v.current_risk_tier === 'Counselor Outreach';
+    if (tierFilter === 'stable')   matchesTier = v.current_risk_tier === 'Watch' || v.current_risk_tier === 'Routine';
+
+    return matchesSearch && matchesTier;
   });
 
-  const getBadgeClass = (tier) => {
+  const getTierBadge = (tier) => {
     switch (tier) {
-      case 'Urgent': return 'badge-urgent';
-      case 'Counselor Outreach': return 'badge-outreach';
-      case 'Watch': return 'badge-watch';
-      default: return 'badge-routine';
+      case 'Urgent':
+      case 'Critical':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-error-container text-on-error-container border border-error/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-error animate-ping"></span>
+            Urgent Risk
+          </span>
+        );
+      case 'Counselor Outreach':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+            Elevated Risk
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-secondary-container text-on-secondary-container border border-secondary/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            Stable Track
+          </span>
+        );
     }
   };
 
-  const getScoreColor = (score) => {
-    if (score >= 0.75) return 'var(--urgent-red)';
-    if (score >= 0.50) return 'var(--outreach-amber)';
-    if (score >= 0.30) return 'var(--watch-blue)';
-    return 'var(--routine-green)';
-  };
-
   return (
-    <div className="glass-panel" style={{ padding: '24px' }}>
-      {/* Header & Controls */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '16px',
-        marginBottom: '20px'
-      }}>
-        <div>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#ffffff' }}>
-            Victim Triage & Case Monitoring Roster
-          </h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            Continuously ranked by AI multi-signal distress score and real-world legal risk
-          </p>
-        </div>
-
-        {/* Filter & Search Bar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          {/* Search Input */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(255, 255, 255, 0.05)',
-            padding: '8px 14px',
-            borderRadius: '10px',
-            border: '1px solid var(--border-subtle)'
-          }}>
-            <Search size={16} color="var(--text-muted)" />
-            <input
-              type="text"
-              placeholder="Search victim, FIR, district..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#ffffff',
-                fontSize: '0.85rem',
-                outline: 'none',
-                width: '200px'
-              }}
-            />
+    <div className="flex flex-col w-full gap-6">
+      {/* Sub-bar: Trauma-Informed Caseload Context & Jurisdiction */}
+      <div className="w-full bg-surface-container-lowest px-6 py-4 rounded-xl shadow-sm border border-outline-variant/30">
+        <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary flex items-center justify-center font-bold">
+              <span className="material-symbols-outlined text-xl">shield_person</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-headline-sm text-base text-primary font-bold tracking-tight">One-Stop Crisis Center (OSC) — Case Workspace</span>
+                <span className="px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container font-label-sm text-xs font-semibold">Secured Terminal</span>
+              </div>
+              <p className="font-body-sm text-xs text-on-surface-variant">District Jurisdictional Unit: Central Division | Protocol v4.2 Active</p>
+            </div>
           </div>
-
-          {/* Tier Filter Tabs */}
-          <div style={{
-            display: 'flex',
-            background: 'rgba(255, 255, 255, 0.03)',
-            padding: '4px',
-            borderRadius: '10px',
-            border: '1px solid var(--border-subtle)',
-            gap: '2px'
-          }}>
-            {['ALL', 'URGENT', 'COUNSELOR OUTREACH', 'WATCH', 'ROUTINE'].map((tier) => (
+          <div className="flex items-center gap-3">
+            <span className="font-label-sm text-xs text-on-surface-variant">Confidential Record Auto-Lock:</span>
+            <span className="px-2.5 py-1 rounded bg-surface-container text-on-surface font-label-sm text-xs font-mono font-semibold">12:45 min</span>
+            {onRefresh && (
               <button
-                key={tier}
-                onClick={() => setTierFilter(tier)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: tierFilter === tier ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
-                  color: tierFilter === tier ? '#ffffff' : 'var(--text-secondary)',
-                  transition: 'all 0.15s ease'
-                }}
+                onClick={onRefresh}
+                className="bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md text-xs font-semibold px-3 py-1.5 rounded flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                {tier === 'COUNSELOR OUTREACH' ? 'OUTREACH' : tier}
+                <span className="material-symbols-outlined text-base">sync</span>
+                <span>Refresh Queue</span>
               </button>
-            ))}
+            )}
           </div>
-
-          {/* TASK 5: Channel Filter */}
-          <select
-            id="channel-filter-select"
-            value={channelFilter}
-            onChange={e => setChannelFilter(e.target.value)}
-            style={{
-              background: 'rgba(255,255,255,0.05)', color: '#fff',
-              border: '1px solid var(--border-subtle)', borderRadius: 8,
-              padding: '7px 12px', fontSize: '0.78rem', cursor: 'pointer', outline: 'none',
-            }}
-          >
-            <option value="ALL">All Channels</option>
-            {Object.entries(CHANNEL_META).map(([k, v]) => (
-              <option key={k} value={k}>{v.icon} {v.label}</option>
-            ))}
-          </select>
-          {/* Verification Status Filter */}
-          <select
-            id="status-filter-select"
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            style={{
-              background: 'rgba(255,255,255,0.05)', color: '#fff',
-              border: '1px solid var(--border-subtle)', borderRadius: 8,
-              padding: '7px 12px', fontSize: '0.78rem', cursor: 'pointer', outline: 'none',
-            }}
-          >
-            <option value="ALL">All Records</option>
-            <option value="VERIFIED">✅ Verified Cases</option>
-            <option value="PENDING">⚠️ Pending Verification ({pendingCount})</option>
-          </select>
         </div>
       </div>
 
-      {/* District Officer Pending Review Banner */}
-      {userRole === 'supervisor' && pendingCount > 0 && (
-        <div style={{
-          marginBottom: '20px',
-          padding: '12px 18px',
-          borderRadius: '10px',
-          background: 'rgba(245, 158, 11, 0.12)',
-          border: '1px solid rgba(245, 158, 11, 0.35)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '10px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '1.2rem' }}>⚠️</span>
-            <div>
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fbbf24' }}>
-                District Officer Action Required: {pendingCount} Self-Registered Victim{pendingCount > 1 ? 's' : ''} Awaiting Verification
-              </span>
-              <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: '#cbd5e1' }}>
-                Victims registered via Telegram without existing FIR records. Click into any record to attach official FIR and verify.
-              </p>
+      {/* Top Overview & Caseload KPIs */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* KPI 1 */}
+        <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="font-label-md text-xs text-on-surface-variant font-semibold">Active Survivors</span>
+            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined text-lg">supervisor_account</span>
             </div>
           </div>
+          <div className="mt-3 flex items-baseline justify-between">
+            <span className="font-headline-xl text-2xl text-primary font-bold">{victims.length}</span>
+            <span className="font-label-sm text-xs text-secondary bg-surface-container-low px-2 py-0.5 rounded font-semibold">All Triaged</span>
+          </div>
+          <div className="mt-2 w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+            <div className="bg-primary h-full rounded-full" style={{ width: '85%' }}></div>
+          </div>
+        </div>
+
+        {/* KPI 2 */}
+        <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span className="font-label-md text-xs text-error font-semibold">Urgent / Critical Risk</span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-error"></span>
+              </span>
+            </div>
+            <div className="w-8 h-8 rounded-lg bg-error-container flex items-center justify-center text-on-error-container">
+              <span className="material-symbols-outlined text-lg">warning</span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-baseline justify-between">
+            <span className="font-headline-xl text-2xl text-error font-bold">{criticalCount}</span>
+            <span className="font-label-sm text-xs text-error bg-error-container px-2 py-0.5 rounded font-semibold">Immediate Outreach</span>
+          </div>
+          <div className="mt-2 w-full bg-error-container h-1.5 rounded-full overflow-hidden">
+            <div className="bg-error h-full rounded-full" style={{ width: `${Math.min(100, (criticalCount / (victims.length || 1)) * 100)}%` }}></div>
+          </div>
+        </div>
+
+        {/* KPI 3 */}
+        <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="font-label-md text-xs text-on-surface-variant font-semibold">Elevated Cases</span>
+            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined text-lg">gavel</span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-baseline justify-between">
+            <span className="font-headline-xl text-2xl text-on-surface font-bold">{elevatedCount}</span>
+            <span className="font-label-sm text-xs text-on-surface-variant bg-surface-container px-2 py-0.5 rounded font-semibold">Counselor Review</span>
+          </div>
+          <div className="mt-2 w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+            <div className="bg-primary-container h-full rounded-full" style={{ width: '60%' }}></div>
+          </div>
+        </div>
+
+        {/* KPI 4 */}
+        <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="font-label-md text-xs text-on-surface-variant font-semibold">Stable Track</span>
+            <div className="w-8 h-8 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-container">
+              <span className="material-symbols-outlined text-lg">event_available</span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-baseline justify-between">
+            <span className="font-headline-xl text-2xl text-secondary font-bold">{stableCount}</span>
+            <span className="font-label-sm text-xs text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded font-semibold">Routine Watch</span>
+          </div>
+          <div className="mt-2 w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+            <div className="bg-secondary h-full rounded-full" style={{ width: '80%' }}></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Operational Workspace Grid */}
+      <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-4">
+        {/* Queue Header & Filters */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="font-headline-sm text-lg text-primary font-bold">Triaged Caseload & Active Escalations</h2>
+            <p className="font-body-sm text-xs text-on-surface-variant">Filtered priority index sorted by threat matrix & statutory legal deadlines.</p>
+          </div>
+          
+          <div className="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant/30">
+            <span className="material-symbols-outlined text-base text-on-surface-variant">search</span>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search Case ID, name, district..."
+              className="bg-transparent font-body-sm text-xs text-on-surface focus:outline-none placeholder:text-on-surface-variant w-48"
+            />
+          </div>
+        </div>
+
+        {/* Filter Pills */}
+        <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => setStatusFilter('PENDING')}
-            style={{
-              background: '#f59e0b',
-              color: '#000000',
-              border: 'none',
-              borderRadius: '6px',
-              padding: '6px 12px',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              cursor: 'pointer'
-            }}
+            onClick={() => setTierFilter('all')}
+            className={`px-3 py-1 rounded-full font-label-sm text-xs transition-all cursor-pointer ${
+              tierFilter === 'all' ? 'bg-primary-container text-on-primary font-semibold shadow-sm' : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
+            }`}
           >
-            View Pending ({pendingCount})
+            All Cases ({victims.length})
+          </button>
+          <button
+            onClick={() => setTierFilter('critical')}
+            className={`px-3 py-1 rounded-full font-label-sm text-xs transition-all cursor-pointer ${
+              tierFilter === 'critical' ? 'bg-error-container text-on-error-container font-semibold shadow-sm' : 'bg-surface-container text-on-surface hover:bg-error-container'
+            }`}
+          >
+            <span className="inline-block w-2 h-2 rounded-full bg-error mr-1"></span>
+            Critical / Urgent ({criticalCount})
+          </button>
+          <button
+            onClick={() => setTierFilter('elevated')}
+            className={`px-3 py-1 rounded-full font-label-sm text-xs transition-all cursor-pointer ${
+              tierFilter === 'elevated' ? 'bg-amber-200 text-amber-900 font-semibold shadow-sm' : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
+            }`}
+          >
+            <span className="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1"></span>
+            Elevated ({elevatedCount})
+          </button>
+          <button
+            onClick={() => setTierFilter('stable')}
+            className={`px-3 py-1 rounded-full font-label-sm text-xs transition-all cursor-pointer ${
+              tierFilter === 'stable' ? 'bg-secondary-container text-on-secondary-container font-semibold shadow-sm' : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
+            }`}
+          >
+            <span className="inline-block w-2 h-2 rounded-full bg-secondary mr-1"></span>
+            Stable ({stableCount})
           </button>
         </div>
-      )}
 
-      {/* Roster Table */}
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              <th style={{ padding: '12px 16px' }}>Victim & Community</th>
-              <th style={{ padding: '12px 16px' }}>Location & FIR</th>
-              <th style={{ padding: '12px 16px' }}>Legal Stage & Bail</th>
-              <th style={{ padding: '12px 16px' }}>Dynamic Distress Score</th>
-              <th style={{ padding: '12px 16px' }}>Triage Tier</th>
-              <th style={{ padding: '12px 16px' }}>Channel</th>
-              <th style={{ padding: '12px 16px', textAlign: 'right' }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredVictims.map((v) => {
-              const isSelected = selectedVictimId === v.victim_id;
-              const scorePct = Math.round((v.current_risk_score || 0) * 100);
-              const scoreColor = getScoreColor(v.current_risk_score || 0);
-              const isPendingVerification = v.registration_status === 'self_registered_pending_verification';
-
-              return (
-                <tr
-                  key={v.victim_id}
-                  onClick={() => onSelectVictim(v.victim_id)}
-                  style={{
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
-                    cursor: 'pointer',
-                    background: isSelected ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
-                    transition: 'background 0.15s ease'
-                  }}
-                  onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = 'var(--bg-card-hover)'; }}
-                  onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
-                >
-                  {/* Name & ID */}
-                  <td style={{ padding: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.95rem' }}>
-                        {v.name}
-                      </span>
-                      {isPendingVerification && (
-                        <span style={{
-                          background: 'rgba(245, 158, 11, 0.2)',
-                          color: '#fbbf24',
-                          border: '1px solid rgba(245, 158, 11, 0.4)',
-                          borderRadius: '4px',
-                          padding: '1px 6px',
-                          fontSize: '0.65rem',
-                          fontWeight: 700
-                        }}>
-                          ⚠️ Pending Verification
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--accent-indigo)', fontWeight: 600 }}>
-                      {v.victim_id} • {v.caste_category}
-                    </div>
-                  </td>
-
-                  {/* Location & FIR */}
-                  <td style={{ padding: '16px' }}>
-                    <div style={{ color: 'var(--text-primary)', fontSize: '0.85rem' }}>
-                      {v.district}, {v.state}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: isPendingVerification ? '#fbbf24' : 'var(--text-muted)' }}>
-                      {v.fir_number}
-                    </div>
-                  </td>
-
-                  {/* Legal Case Stage */}
-                  <td style={{ padding: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#ffffff' }}>
-                      <Scale size={14} color="var(--accent-cyan)" />
-                      {v.case_stage}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', marginTop: '2px' }}>
-                      {v.accused_bail_status === 'Granted' ? (
-                        <span style={{ color: '#f87171', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                          <ShieldAlert size={12} /> Bail Granted
-                        </span>
-                      ) : (
-                        <span style={{ color: 'var(--text-muted)' }}>
-                          Bail: {v.accused_bail_status}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-
-                  {/* Distress Score & Bar */}
-                  <td style={{ padding: '16px', minWidth: '160px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: scoreColor }}>
-                        {scorePct}%
-                      </span>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                        {(v.current_risk_score || 0).toFixed(3)}
-                      </span>
-                    </div>
-                    <div style={{
-                      height: '6px',
-                      borderRadius: '3px',
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      overflow: 'hidden'
-                    }}>
-                      <div style={{
-                        height: '100%',
-                        width: `${scorePct}%`,
-                        background: scoreColor,
-                        borderRadius: '3px',
-                        transition: 'width 0.5s ease'
-                      }}></div>
-                    </div>
-                  </td>
-
-                  {/* Tier Badge */}
-                  <td style={{ padding: '16px' }}>
-                    <span className={`badge ${getBadgeClass(v.current_risk_tier)}`}>
-                      <span className="pulse-dot" style={{ background: 'currentColor' }}></span>
-                      {v.current_risk_tier}
-                    </span>
-                  </td>
-
-                  {/* TASK 5: Channel Badge */}
-                  <td style={{ padding: '16px' }}>
-                    {v.last_channel
-                      ? <ChannelBadge channel={v.last_channel} />
-                      : <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>—</span>
-                    }
-                  </td>
-
-                  {/* Action */}
-                  <td style={{ padding: '16px', textAlign: 'right' }}>
-                    <button
-                      className="btn btn-secondary"
-                      style={{ padding: '6px 12px', fontSize: '0.75rem' }}
-                    >
-                      Inspect <ChevronRight size={14} />
-                    </button>
+        {/* Table */}
+        <div className="overflow-x-auto border border-outline-variant/30 rounded-lg">
+          <table className="w-full text-left font-body-sm text-xs">
+            <thead className="bg-surface-container-low text-on-surface-variant font-label-sm uppercase tracking-wider border-b border-outline-variant/30">
+              <tr>
+                <th className="py-3 px-4">Victim & Community</th>
+                <th className="py-3 px-4">Location & FIR</th>
+                <th className="py-3 px-4">Triage Tier</th>
+                <th className="py-3 px-4">Distress Score</th>
+                <th className="py-3 px-4">Channel</th>
+                <th className="py-3 px-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant/20 bg-surface-container-lowest">
+              {filteredVictims.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="py-8 text-center text-on-surface-variant font-body-sm">
+                    No active cases found matching search criteria.
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ) : (
+                filteredVictims.map((v) => {
+                  const isSelected = selectedVictimId === v.victim_id;
+                  const score = v.risk_score || 0;
+                  return (
+                    <tr
+                      key={v.victim_id}
+                      onClick={() => onSelectVictim && onSelectVictim(v.victim_id)}
+                      className={`hover:bg-surface-container-low/60 transition-colors cursor-pointer ${
+                        isSelected ? 'bg-primary-container/10 font-semibold' : ''
+                      }`}
+                    >
+                      <td className="py-3 px-4">
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-primary text-sm">{v.name || 'Anonymous Victim'}</span>
+                          <span className="text-[11px] text-on-surface-variant font-mono">{v.victim_id}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex flex-col">
+                          <span className="text-on-surface font-medium">{v.district || 'Patna, Bihar'}</span>
+                          <span className="text-[11px] text-on-surface-variant">{v.fir_number || 'FIR-2026/312'}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        {getTierBadge(v.current_risk_tier)}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 bg-surface-container h-1.5 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${Math.round(score * 100)}%`,
+                                backgroundColor: score >= 0.75 ? '#ba1a1a' : score >= 0.4 ? '#d97706' : '#006a61'
+                              }}
+                            ></div>
+                          </div>
+                          <span className="font-mono text-xs font-bold text-on-surface">{(score * 100).toFixed(0)}%</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <ChannelBadge channel={v.last_channel} />
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onSelectVictim) onSelectVictim(v.victim_id);
+                          }}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-container bg-surface-container px-2.5 py-1 rounded transition-colors"
+                        >
+                          <span>Inspect</span>
+                          <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

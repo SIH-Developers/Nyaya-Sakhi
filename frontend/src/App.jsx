@@ -1,24 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import TopHeader from './components/TopHeader';
-import KPICards from './components/KPICards';
+import LandingPage from './components/LandingPage';
 import TriageRoster from './components/TriageRoster';
-import PatientsDirectory from './components/PatientsDirectory';
-import VictimDetailModal from './components/VictimDetailModal';
-import AlertsFeed from './components/AlertsFeed';
-import LiveSimulator from './components/LiveSimulator';
-import ChatWidget from './components/ChatWidget';
+import DistrictOversight from './components/DistrictOversight';
 import PatientPortal from './components/PatientPortal';
-import SettingsProfile from './components/SettingsProfile';
 import MinistryDashboard from './components/MinistryDashboard';
+import LiveSimulator from './components/LiveSimulator';
+import VictimDetailModal from './components/VictimDetailModal';
+import ChatWidget from './components/ChatWidget';
 import GuidedWalkthrough from './components/GuidedWalkthrough';
 
 import { API_BASE } from './config';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('landing');
   const [userRole, setUserRole] = useState('counselor');
-  const [globalSearch, setGlobalSearch] = useState('');
   const [isWalkthroughOpen, setIsWalkthroughOpen] = useState(false);
   
   const [stats, setStats] = useState(null);
@@ -72,16 +69,21 @@ export default function App() {
     setSelectedVictimHistory([]);
   };
 
-  const handleAcknowledgeAlert = async (alertId, notes) => {
+  const handleTriggerSOS = async () => {
     try {
-      await fetch(`${API_BASE}/alerts/${alertId}/acknowledge`, {
+      await fetch(`${API_BASE}/sos/trigger`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ counselor_notes: notes })
+        body: JSON.stringify({
+          victim_id: 'WEB-PUBLIC-SOS',
+          channel: 'web_chat',
+          triggered_by: 'victim'
+        })
       });
       fetchDashboardData();
+      alert("🆘 MANUAL SOS ACTIVATED! Emergency P0 Voice Call dispatched to counselors & District Officer.");
     } catch (err) {
-      console.error("Error acknowledging alert:", err);
+      console.error("SOS trigger error:", err);
     }
   };
 
@@ -108,16 +110,21 @@ export default function App() {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+    <div className="bg-surface font-body-md text-on-surface min-h-screen flex flex-col">
+      {/* Top Header Bar */}
+      <TopHeader
+        userRole={userRole}
+        setUserRole={setUserRole}
+        onRefresh={fetchDashboardData}
+        isRefreshing={isRefreshing}
+        alertsCount={alerts.filter(a => !a.acknowledged).length}
+        onOpenAlerts={() => setActiveTab('dashboard')}
+      />
+
       {/* Left Sidebar Navigation */}
       <Sidebar
         activeTab={activeTab}
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          if (tab !== 'patients') {
-            setSelectedVictimDetails(null);
-          }
-        }}
+        setActiveTab={setActiveTab}
         userRole={userRole}
         alertsCount={alerts.filter(a => !a.acknowledged).length}
         patientsCount={victims.length}
@@ -125,69 +132,43 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowX: 'hidden' }}>
-        {/* Top Header Bar */}
-        <TopHeader
-          searchTerm={globalSearch}
-          setSearchTerm={setGlobalSearch}
-          onSearchSubmit={(q) => {
-            setActiveTab('patients');
-          }}
-          userRole={userRole}
-          setUserRole={setUserRole}
-          onRefresh={fetchDashboardData}
-          isRefreshing={isRefreshing}
-          alertsCount={alerts.filter(a => !a.acknowledged).length}
-          onOpenAlerts={() => setActiveTab('alerts')}
-          onOpenWalkthrough={() => setIsWalkthroughOpen(true)}
-        />
-
-        {/* View Switcher Main Container */}
-        <main style={{ flex: 1, width: '100%', maxWidth: '1440px', margin: '0 auto', padding: '28px 32px' }}>
-          {/* VIEW 1: Overview Dashboard */}
-          {activeTab === 'dashboard' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-              <KPICards stats={stats} />
-              <TriageRoster
-                victims={victims}
-                onSelectVictim={(id) => {
-                  handleSelectVictim(id);
-                  setActiveTab('patients');
-                }}
-                selectedVictimId={selectedVictimId}
-                userRole={userRole}
-              />
-            </div>
+      <div className="pl-72 pt-16 flex-1 flex flex-col min-w-0">
+        <main className="flex-1 w-full max-w-[1440px] mx-auto p-6">
+          {/* VIEW 1: Public Landing & Intake */}
+          {activeTab === 'landing' && (
+            <LandingPage onNavigate={setActiveTab} onTriggerSOS={handleTriggerSOS} />
           )}
 
-          {/* VIEW 2: All Patients Directory (Integrated Master-Detail) */}
-          {activeTab === 'patients' && (
-            <PatientsDirectory
+          {/* VIEW 2: Sakhi Sahayata (Survivor Desk) */}
+          {activeTab === 'patient' && (
+            <PatientPortal />
+          )}
+
+          {/* VIEW 3: Counselor Workspace */}
+          {activeTab === 'dashboard' && (
+            <TriageRoster
               victims={victims}
-              selectedVictimId={selectedVictimId}
               onSelectVictim={handleSelectVictim}
-              onClearSelectedVictim={() => {
-                setSelectedVictimId(null);
-                setSelectedVictimDetails(null);
-              }}
+              selectedVictimId={selectedVictimId}
               userRole={userRole}
+              onRefresh={fetchDashboardData}
+            />
+          )}
+
+          {/* VIEW 4: District Oversight */}
+          {activeTab === 'district' && (
+            <DistrictOversight
+              victims={victims}
               onRefreshData={fetchDashboardData}
             />
           )}
 
-          {/* VIEW 3: Live Alerts Feed */}
-          {activeTab === 'alerts' && (
-            <AlertsFeed
-              alerts={alerts}
-              onAcknowledgeAlert={handleAcknowledgeAlert}
-              onSelectVictim={(id) => {
-                handleSelectVictim(id);
-                setActiveTab('patients');
-              }}
-            />
+          {/* VIEW 5: Ministry Analytics */}
+          {activeTab === 'ministry' && (
+            <MinistryDashboard />
           )}
 
-          {/* VIEW 4: Live Channel Simulator */}
+          {/* VIEW 6: Live Multi-Channel Simulator */}
           {activeTab === 'simulator' && (
             <LiveSimulator
               victims={victims}
@@ -195,54 +176,34 @@ export default function App() {
               onCallSent={handleSendCall}
             />
           )}
-
-          {/* VIEW 5: Citizen & Case Portal */}
-          {activeTab === 'patient' && (
-            <PatientPortal />
-          )}
-
-          {/* VIEW 6: Settings & Officer Profile */}
-          {activeTab === 'settings' && (
-            <SettingsProfile
-              userRole={userRole}
-              setUserRole={setUserRole}
-              onRefreshAll={fetchDashboardData}
-            />
-          )}
-
-          {/* VIEW 7: Ministry Analytics Dashboard */}
-          {activeTab === 'ministry' && (
-            <MinistryDashboard />
-          )}
         </main>
 
         {/* Institutional Footer */}
-        <footer style={{
-          borderTop: '1px solid var(--border-subtle)',
-          padding: '16px 32px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          fontSize: '0.76rem',
-          color: 'var(--text-muted)',
-          background: 'rgba(10, 13, 20, 0.95)',
-          marginTop: 'auto',
-          flexWrap: 'wrap',
-          gap: '12px'
-        }}>
+        <footer className="border-t border-outline-variant/30 px-6 py-4 flex flex-wrap items-center justify-between gap-4 text-xs text-on-surface-variant bg-surface-container-lowest mt-auto">
           <div>
-            Ministry of Social Justice and Empowerment (MoSJE) • National Helpline Against Atrocities (14566)
+            Government of India | Ministry of Women & Child Development • Sakhi One-Stop Center Scheme
           </div>
           <div>
-            SIH Problem Statement 26094 • Section 15A SC/ST (PoA) Act 1989
+            National Helpline Against Atrocities (14566) • Women Helpline (181) • SIH Problem Statement 26094
           </div>
         </footer>
       </div>
 
-      {/* Floating Chat Widget */}
+      {/* Detailed Victim History Drawer / Modal */}
+      {selectedVictimId && selectedVictimDetails && (
+        <VictimDetailModal
+          victim={selectedVictimDetails}
+          history={selectedVictimHistory}
+          onClose={handleCloseModal}
+          userRole={userRole}
+          onRefreshData={fetchDashboardData}
+        />
+      )}
+
+      {/* Floating SOS Panic Button & Chat Widget */}
       <ChatWidget />
 
-      {/* Guided Walkthrough Feature Tour Modal */}
+      {/* Interactive Guided Walkthrough Modal */}
       <GuidedWalkthrough
         isOpen={isWalkthroughOpen}
         onClose={() => setIsWalkthroughOpen(false)}

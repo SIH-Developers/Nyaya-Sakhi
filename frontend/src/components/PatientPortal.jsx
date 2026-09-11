@@ -1,8 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Shield, KeyRound, Mail, CheckCircle2, AlertCircle, PhoneCall,
-  Heart, Send, LogOut, Clock, ArrowRight, RefreshCw, FileText
-} from 'lucide-react';
 import { API_BASE } from '../config';
 
 export default function PatientPortal() {
@@ -13,6 +9,9 @@ export default function PatientPortal() {
   const [statusMsg, setStatusMsg] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Discreet Mode & Screen Masking
+  const [isDiscreetMask, setIsDiscreetMask] = useState(false);
 
   // Authenticated dashboard data
   const [dashboard, setDashboard] = useState(null);
@@ -101,33 +100,23 @@ export default function PatientPortal() {
       const data = await res.json();
 
       if (!res.ok) {
-        setErrorMsg(data.detail || "Invalid or expired verification code.");
+        setErrorMsg(data.detail || "Invalid or expired OTP.");
         return;
       }
 
-      if (data.success && data.token) {
-        localStorage.setItem('patient_token', data.token);
-        setSessionToken(data.token);
+      if (data.access_token) {
+        localStorage.setItem('patient_token', data.access_token);
+        setSessionToken(data.access_token);
       }
     } catch (err) {
       console.error(err);
-      setErrorMsg("Error verifying code.");
+      setErrorMsg("Network error verifying code.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      if (sessionToken) {
-        await fetch(`${API_BASE}/patient/logout`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${sessionToken}` }
-        });
-      }
-    } catch (e) {
-      // Ignore
-    }
+  const handleLogout = () => {
     localStorage.removeItem('patient_token');
     setSessionToken(null);
     setDashboard(null);
@@ -137,7 +126,7 @@ export default function PatientPortal() {
     setErrorMsg(null);
   };
 
-  const handleSendCheckin = async (e) => {
+  const handleCheckinSubmit = async (e) => {
     e.preventDefault();
     if (!checkinText.trim()) return;
     setIsSubmittingCheckin(true);
@@ -147,583 +136,272 @@ export default function PatientPortal() {
       const res = await fetch(`${API_BASE}/patient/checkin`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionToken}`
+          'Authorization': `Bearer ${sessionToken}`,
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ message: checkinText.trim() })
+        body: JSON.stringify({ note: checkinText.trim() })
       });
       const data = await res.json();
-      if (data.success) {
-        setCheckinSuccess(data.message);
+      if (res.ok) {
+        setCheckinSuccess(data.message || "Check-in logged successfully!");
         setCheckinText('');
         fetchDashboard(sessionToken);
+      } else {
+        setErrorMsg(data.detail || "Unable to log check-in.");
       }
     } catch (err) {
       console.error(err);
+      setErrorMsg("Network error logging check-in.");
     } finally {
       setIsSubmittingCheckin(false);
     }
   };
 
-  // ─────────────────────────────────────────────────────────────
-  // 1. Unauthenticated Login Screen
-  // ─────────────────────────────────────────────────────────────
-  if (!sessionToken || !dashboard) {
-    return (
-      <div style={{ maxWidth: '480px', margin: '40px auto', padding: '0 16px' }}>
-        <div className="glass-panel" style={{
-          padding: '36px',
-          background: 'rgba(17, 24, 39, 0.85)',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
-          borderRadius: '16px',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)'
-        }}>
-          {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <div style={{
-              width: '56px',
-              height: '56px',
-              background: 'linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)',
-              borderRadius: '14px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 0 24px rgba(79, 70, 229, 0.4)',
-              marginBottom: '16px'
-            }}>
-              <Shield size={28} color="#ffffff" />
-            </div>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', marginBottom: '6px' }}>
-              Citizen & Case Portal
-            </h2>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-              MoSJE NHAA 14566 • Secure, Confidential Case Status & Milestone Tracking
+  return (
+    <div className="flex flex-col w-full relative">
+      {/* Discreet Mode Neutral Mask Screen */}
+      {isDiscreetMask && (
+        <div className="fixed inset-0 z-[100] bg-surface p-8 flex flex-col justify-center items-center text-center">
+          <div className="max-w-md w-full bg-surface-container-lowest p-8 rounded-xl shadow-xl border border-outline-variant/30 flex flex-col items-center">
+            <span className="material-symbols-outlined text-primary text-5xl mb-3">local_library</span>
+            <h2 className="font-headline-md text-xl text-primary font-bold mb-1">Daily Weather & News Digest</h2>
+            <p className="font-body-md text-sm text-on-surface-variant mb-6">
+              Current temperature: 28°C. Mild breeze from North-East. All city metro lines functioning on standard schedule.
             </p>
+            <button
+              className="px-6 py-2.5 bg-primary-container text-on-primary font-label-md text-sm font-semibold rounded shadow hover:bg-primary transition-colors cursor-pointer"
+              onClick={() => setIsDiscreetMask(false)}
+            >
+              Return to Safety Portal
+            </button>
           </div>
+        </div>
+      )}
 
-          {/* Feedback messages */}
-          {statusMsg && (
-            <div style={{
-              padding: '12px 16px',
-              background: 'rgba(16, 185, 129, 0.12)',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              borderRadius: '10px',
-              color: '#34d399',
-              fontSize: '0.82rem',
-              marginBottom: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
-              <span>{statusMsg}</span>
-            </div>
-          )}
-
-          {errorMsg && (
-            <div style={{
-              padding: '12px 16px',
-              background: 'rgba(239, 68, 68, 0.12)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '10px',
-              color: '#f87171',
-              fontSize: '0.82rem',
-              marginBottom: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
-              <span>{errorMsg}</span>
-            </div>
-          )}
-
-          {/* Step 1: Identifier Input */}
-          {step === 'identifier' ? (
-            <form onSubmit={handleRequestOtp}>
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '8px' }}>
-                  Victim ID or Registered Email
-                </label>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
-                  borderRadius: '10px',
-                  padding: '10px 14px'
-                }}>
-                  <Mail size={18} color="#94a3b8" />
-                  <input
-                    type="text"
-                    placeholder="e.g. VIC-AMIT-102 or name@example.com"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    required
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#ffffff',
-                      fontSize: '0.9rem',
-                      width: '100%',
-                      outline: 'none'
-                    }}
-                  />
-                </div>
+      <div className="max-w-7xl mx-auto w-full flex flex-col gap-6">
+        {/* 1. Safety-first Header & Calm Reassurance Banner */}
+        <section className="relative overflow-hidden bg-surface-container-lowest rounded-xl shadow-md p-6 border border-outline-variant/30">
+          <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="flex items-start gap-4 max-w-3xl">
+              <div className="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>security</span>
               </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)',
-                  color: '#ffffff',
-                  border: 'none',
-                  fontWeight: 700,
-                  fontSize: '0.9rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
-                }}
-              >
-                {isLoading ? <RefreshCw size={16} className="spin-anim" /> : <KeyRound size={16} />}
-                Send Login Verification Code
-              </button>
-            </form>
-          ) : (
-            /* Step 2: OTP Verification */
-            <form onSubmit={handleVerifyOtp}>
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '8px' }}>
-                  Enter 6-Digit Email Verification Code
-                </label>
-                <input
-                  type="text"
-                  maxLength={6}
-                  placeholder="123456"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  autoFocus
-                  required
-                  style={{
-                    width: '100%',
-                    boxSizing: 'border-box',
-                    textAlign: 'center',
-                    fontFamily: 'monospace',
-                    fontSize: '1.8rem',
-                    letterSpacing: '8px',
-                    fontWeight: 800,
-                    padding: '12px',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '2px solid #4f46e5',
-                    borderRadius: '10px',
-                    color: '#38bdf8',
-                    outline: 'none'
-                  }}
-                />
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px', textAlign: 'center' }}>
-                  Single-use code valid for 10 minutes. Delivered via Brevo Email.
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-label-sm text-xs text-secondary bg-secondary-container/40 px-2 py-0.5 rounded font-semibold">Safe & Sovereign Space</span>
+                  <span className="font-label-sm text-xs text-on-surface-variant">• Section 327 CrPC / Section 366 BNSS Compliant</span>
+                </div>
+                <h1 className="font-headline-lg text-2xl text-primary font-bold tracking-tight">Sakhi Sahayata Survivor Desk</h1>
+                <p className="font-body-md text-xs text-on-surface-variant leading-relaxed">
+                  Welcome to your private safety space. Your identity is strictly encrypted and protected by statutory law. No digital footprint is stored without explicit consent.
                 </p>
               </div>
+            </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  type="button"
-                  onClick={() => { setStep('identifier'); setOtp(''); }}
-                  style={{
-                    flex: 1,
-                    padding: '12px',
-                    borderRadius: '10px',
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    color: '#94a3b8',
-                    border: 'none',
-                    fontWeight: 600,
-                    fontSize: '0.85rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  style={{
-                    flex: 2,
-                    padding: '12px',
-                    borderRadius: '10px',
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    color: '#ffffff',
-                    border: 'none',
-                    fontWeight: 700,
-                    fontSize: '0.9rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  {isLoading ? <RefreshCw size={16} className="spin-anim" /> : <ArrowRight size={16} />}
-                  Verify & Enter
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Privacy Note */}
-          <div style={{
-            marginTop: '24px',
-            paddingTop: '16px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            textAlign: 'center'
-          }}>
-            <p style={{ fontSize: '0.72rem', color: '#64748b', lineHeight: '1.4' }}>
-              🔒 Protected under DPDP Act 2023 & SC/ST (PoA) Act 1989 Section 15A.<br />
-              Emergency helpline: <strong>14566</strong> (Toll-Free 24x7)
-            </p>
+            {/* Safety Triggers Toolbar */}
+            <div className="flex sm:flex-row flex-col items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
+              <button
+                onClick={() => setIsDiscreetMask(true)}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-md text-xs font-semibold rounded-lg border border-outline-variant/30 transition-all cursor-pointer shadow-sm"
+              >
+                <span className="material-symbols-outlined text-lg text-primary">visibility_off</span>
+                <span>Discreet Mode</span>
+              </button>
+              <button
+                onClick={() => window.location.href = 'https://www.google.com'}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-tertiary-container hover:bg-tertiary text-on-tertiary font-label-md text-xs font-semibold rounded-lg transition-all cursor-pointer shadow-sm"
+              >
+                <span className="material-symbols-outlined text-lg">tab_close</span>
+                <span>Hide Screen (Esc)</span>
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
-    );
-  }
+        </section>
 
-  // ─────────────────────────────────────────────────────────────
-  // 2. Authenticated Patient Dashboard View
-  // ─────────────────────────────────────────────────────────────
-  return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 16px 40px 16px' }}>
-      {/* Top Banner: Emergency Helplines Pinned */}
-      <div style={{
-        background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(185, 28, 28, 0.25) 100%)',
-        border: '1px solid rgba(239, 68, 68, 0.35)',
-        borderRadius: '14px',
-        padding: '16px 24px',
-        marginBottom: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '12px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            background: '#dc2626',
-            color: '#ffffff',
-            padding: '8px',
-            borderRadius: '10px'
-          }}>
-            <PhoneCall size={20} />
+        {/* Status / Error Notifications */}
+        {statusMsg && (
+          <div className="p-3 bg-secondary-container text-on-secondary-container rounded-lg text-xs font-semibold">
+            {statusMsg}
           </div>
-          <div>
-            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#fca5a5' }}>
-              Emergency Safety & Atrocity Helpline Support:
-            </span>
-            <p style={{ fontSize: '0.8rem', color: '#cbd5e1', margin: '2px 0 0 0' }}>
-              If you are facing active threats or danger, call immediately for statutory police intervention.
-            </p>
+        )}
+        {errorMsg && (
+          <div className="p-3 bg-error-container text-on-error-container rounded-lg text-xs font-semibold">
+            {errorMsg}
           </div>
-        </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <a
-            href="tel:112"
-            style={{
-              background: '#dc2626',
-              color: '#ffffff',
-              padding: '6px 14px',
-              borderRadius: '8px',
-              fontWeight: 700,
-              fontSize: '0.85rem',
-              textDecoration: 'none'
-            }}
-          >
-            Police: 112
-          </a>
-          <a
-            href="tel:14566"
-            style={{
-              background: 'rgba(255, 255, 255, 0.15)',
-              color: '#ffffff',
-              padding: '6px 14px',
-              borderRadius: '8px',
-              fontWeight: 700,
-              fontSize: '0.85rem',
-              textDecoration: 'none',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
-            }}
-          >
-            NHAA: 14566 (Toll-Free)
-          </a>
-        </div>
-      </div>
+        )}
 
-      {/* Header Profile Bar */}
-      <div className="glass-panel" style={{
-        padding: '20px 24px',
-        marginBottom: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '16px'
-      }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h1 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-              Namaste, {dashboard.name_masked}
-            </h1>
-            <span style={{
-              background: 'rgba(99, 102, 241, 0.2)',
-              color: '#a5b4fc',
-              border: '1px solid rgba(99, 102, 241, 0.4)',
-              borderRadius: '6px',
-              padding: '2px 8px',
-              fontSize: '0.75rem',
-              fontWeight: 700
-            }}>
-              {dashboard.victim_id}
-            </span>
-          </div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-            Active Case Monitoring • Section 15A Witness Protection
-          </p>
-        </div>
+        {/* 2. Confidential Case Tracking & Access Form */}
+        {!sessionToken ? (
+          <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            {/* PIN / OTP Verification Card */}
+            <div className="lg:col-span-6 bg-surface-container-lowest p-6 rounded-xl shadow-md border border-outline-variant/30 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-label-sm text-xs uppercase tracking-wider text-secondary font-semibold">Private Status Check</span>
+                  <span className="material-symbols-outlined text-outline">key</span>
+                </div>
+                <h2 className="font-headline-sm text-lg text-primary font-bold mb-1">Confidential Safety Docket</h2>
+                <p className="font-body-sm text-xs text-on-surface-variant mb-4">
+                  Enter your Victim ID, 6-Digit Link Code, or registered email/phone to access case milestones and check-in logs.
+                </p>
 
-        <button
-          onClick={handleLogout}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            background: 'rgba(255, 255, 255, 0.06)',
-            border: '1px solid var(--border-subtle)',
-            color: 'var(--text-secondary)',
-            padding: '8px 14px',
-            borderRadius: '8px',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            cursor: 'pointer'
-          }}
-        >
-          <LogOut size={14} />
-          Logout
-        </button>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
-        {/* Left Column: Visual Milestone Progress */}
-        <div className="glass-panel" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <FileText size={18} color="#38bdf8" />
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
-              Legal Case Milestones
-            </h2>
-          </div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
-            Official trial and statutory relief progress under SC/ST (PoA) Act 1989
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {dashboard.case_milestones.map((m, idx) => {
-              const isCompleted = m.status === 'completed';
-              const isInProgress = m.status === 'in_progress';
-              const isMonitored = m.status === 'monitored';
-
-              return (
-                <div
-                  key={idx}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '14px',
-                    padding: '14px',
-                    borderRadius: '10px',
-                    background: isCompleted ? 'rgba(16, 185, 129, 0.08)' : (isInProgress ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.03)'),
-                    border: `1px solid ${isCompleted ? 'rgba(16, 185, 129, 0.25)' : (isInProgress ? 'rgba(99, 102, 241, 0.3)' : 'rgba(255, 255, 255, 0.06)')}`
-                  }}
-                >
-                  <div style={{
-                    marginTop: '2px',
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    background: isCompleted ? '#10b981' : (isInProgress ? '#6366f1' : '#334155'),
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#ffffff',
-                    fontSize: '0.75rem',
-                    fontWeight: 700
-                  }}>
-                    {isCompleted ? '✓' : idx + 1}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#f8fafc' }}>
-                        {m.stage}
-                      </span>
-                      <span style={{
-                        fontSize: '0.7rem',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        background: isCompleted ? 'rgba(16, 185, 129, 0.2)' : (isInProgress ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255, 255, 255, 0.05)'),
-                        color: isCompleted ? '#34d399' : (isInProgress ? '#a5b4fc' : '#94a3b8')
-                      }}>
-                        {m.status.replace('_', ' ')}
-                      </span>
+                {step === 'identifier' ? (
+                  <form onSubmit={handleRequestOtp} className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-1">
+                      <label className="font-label-sm text-xs text-on-surface font-semibold">Victim ID, 6-Digit PIN, or Safe Email</label>
+                      <input
+                        type="text"
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
+                        placeholder="e.g. VIC-AMIT-102, 423898, or survivor@email.com"
+                        className="w-full h-10 px-3 text-xs bg-surface-container-low rounded border border-outline-variant/30 text-on-surface focus:outline-none focus:border-primary"
+                        required
+                      />
                     </div>
-                    <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '4px 0 0 0' }}>
-                      {m.details}
-                    </p>
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full py-2.5 bg-primary-container text-on-primary font-label-md text-xs font-semibold rounded shadow hover:bg-primary transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-base">travel_explore</span>
+                      <span>{isLoading ? 'Sending Verification Code...' : 'Request Secure Access OTP'}</span>
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleVerifyOtp} className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-1">
+                      <label className="font-label-sm text-xs text-on-surface font-semibold">Enter 6-Digit OTP</label>
+                      <input
+                        type="text"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        placeholder="Enter 6-digit OTP"
+                        className="w-full h-10 px-3 text-center tracking-widest font-mono text-base bg-surface-container-low rounded border border-outline-variant/30 text-on-surface focus:outline-none focus:border-primary"
+                        maxLength={6}
+                        required
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setStep('identifier')}
+                        className="w-1/3 py-2 bg-surface-container text-on-surface font-label-md text-xs font-semibold rounded hover:bg-surface-container-high transition-colors"
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-2/3 py-2 bg-secondary text-on-secondary font-label-md text-xs font-semibold rounded shadow hover:bg-secondary-container transition-colors disabled:opacity-50"
+                      >
+                        {isLoading ? 'Verifying...' : 'Verify OTP & Access Docket'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+
+            {/* Reassurance Info Panel */}
+            <div className="lg:col-span-6 bg-surface-container-low p-6 rounded-xl border border-outline-variant/20 flex flex-col justify-between">
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-secondary font-semibold text-xs">
+                  <span className="material-symbols-outlined text-base">verified</span>
+                  <span>Allowlisted Privacy Fields Only</span>
+                </div>
+                <h3 className="font-headline-sm text-base text-primary font-bold">What You Will See</h3>
+                <ul className="flex flex-col gap-2 font-body-sm text-xs text-on-surface-variant">
+                  <li className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-secondary text-base">check_circle</span>
+                    <span>Masked Profile Identifier & Legal Reference Code</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-secondary text-base">check_circle</span>
+                    <span>Case Milestone Timeline (FIR, Protection Orders, Hearing Dates)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-secondary text-base">check_circle</span>
+                    <span>Self-Service Well-being Check-in Log</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-secondary text-base">check_circle</span>
+                    <span>Verified Emergency Helpline Directory</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        ) : (
+          /* Authenticated Survivor Dashboard (Allowlisted Fields ONLY) */
+          dashboard && (
+            <section className="flex flex-col gap-6">
+              {/* Profile Bar */}
+              <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold">
+                    <span className="material-symbols-outlined text-xl">person</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-headline-sm text-base text-primary font-bold">{dashboard.name_masked || 'Survivor Record'}</span>
+                    <span className="font-mono text-xs text-on-surface-variant">Victim ID: {dashboard.victim_id}</span>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Right Column: Proactive Check-in & History */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {/* Check-in Widget */}
-          <div className="glass-panel" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-              <Heart size={18} color="#ec4899" />
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
-                How are you feeling today?
-              </h2>
-            </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '14px' }}>
-              You can check in anytime to update your support counselor on your well-being.
-            </p>
-
-            {checkinSuccess && (
-              <div style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                background: 'rgba(16, 185, 129, 0.12)',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
-                color: '#34d399',
-                fontSize: '0.8rem',
-                marginBottom: '12px'
-              }}>
-                {checkinSuccess}
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                >
+                  Logout Session
+                </button>
               </div>
-            )}
 
-            <form onSubmit={handleSendCheckin}>
-              <textarea
-                placeholder="Share anything on your mind — how you are coping, if you feel safe, or need assistance..."
-                value={checkinText}
-                onChange={(e) => setCheckinText(e.target.value)}
-                rows={3}
-                style={{
-                  width: '100%',
-                  boxSizing: 'border-box',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
-                  borderRadius: '10px',
-                  padding: '10px 14px',
-                  color: '#ffffff',
-                  fontSize: '0.85rem',
-                  outline: 'none',
-                  resize: 'none',
-                  marginBottom: '10px'
-                }}
-              />
-              <button
-                type="submit"
-                disabled={isSubmittingCheckin || !checkinText.trim()}
-                style={{
-                  float: 'right',
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  background: 'var(--accent-indigo)',
-                  color: '#ffffff',
-                  border: 'none',
-                  fontWeight: 600,
-                  fontSize: '0.82rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                {isSubmittingCheckin ? <RefreshCw size={14} className="spin-anim" /> : <Send size={14} />}
-                Send Check-in
-              </button>
-              <div style={{ clear: 'both' }}></div>
-            </form>
-          </div>
-
-          {/* Safe Check-in History */}
-          <div className="glass-panel" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-              <Clock size={18} color="#a855f7" />
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
-                Recent Check-ins
-              </h2>
-            </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-              Log of your interactions across Telegram, SMS, WhatsApp, and Web Portal
-            </p>
-
-            {dashboard.checkin_history.length === 0 ? (
-              <p style={{ fontSize: '0.82rem', color: '#64748b', fontStyle: 'italic' }}>
-                No past check-ins recorded yet. You can submit one above anytime!
-              </p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {dashboard.checkin_history.slice(0, 5).map((log, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '10px 14px',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      borderRadius: '8px',
-                      border: '1px solid rgba(255, 255, 255, 0.06)'
-                    }}
-                  >
-                    <div>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1' }}>
-                        {new Date(log.date).toLocaleDateString(undefined, {
-                          day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                        })}
-                      </span>
-                      <span style={{
-                        marginLeft: '8px',
-                        fontSize: '0.7rem',
-                        color: '#94a3b8',
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        padding: '2px 6px',
-                        borderRadius: '4px'
-                      }}>
-                        {log.channel}
-                      </span>
+              {/* Case Milestones Timeline */}
+              <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-4">
+                <h3 className="font-headline-sm text-base text-primary font-bold">Legal Case Milestones</h3>
+                <div className="flex flex-col gap-3">
+                  {(dashboard.case_milestones || []).map((m, idx) => (
+                    <div key={idx} className="flex items-start gap-3 p-3 bg-surface-container-low rounded-lg border border-outline-variant/20">
+                      <span className="material-symbols-outlined text-secondary text-lg mt-0.5">task_alt</span>
+                      <div className="flex flex-col">
+                        <span className="font-label-sm text-xs font-semibold text-primary">{m.title || m.stage || `Milestone #${idx+1}`}</span>
+                        <span className="font-body-sm text-xs text-on-surface-variant">{m.status || m.description || 'In Progress'}</span>
+                      </div>
                     </div>
-                    <span style={{
-                      fontSize: '0.72rem',
-                      color: '#34d399',
-                      fontWeight: 600
-                    }}>
-                      ✓ {log.status}
-                    </span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            )}
-          </div>
-        </div>
+
+              {/* Self Check-in Submission Form */}
+              {dashboard.can_checkin && (
+                <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-4">
+                  <h3 className="font-headline-sm text-base text-primary font-bold">Log Confidential Well-being Check-in</h3>
+                  {checkinSuccess && (
+                    <div className="p-3 bg-secondary-container text-on-secondary-container rounded-lg text-xs font-semibold">
+                      {checkinSuccess}
+                    </div>
+                  )}
+                  <form onSubmit={handleCheckinSubmit} className="flex flex-col gap-3">
+                    <textarea
+                      value={checkinText}
+                      onChange={(e) => setCheckinText(e.target.value)}
+                      placeholder="Share how you are feeling or request a call-back..."
+                      className="w-full p-3 bg-surface-container-low rounded-lg border border-outline-variant/30 text-xs text-on-surface focus:outline-none focus:border-primary h-24"
+                      required
+                    />
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={isSubmittingCheckin}
+                        className="px-5 py-2 bg-primary text-on-primary font-semibold text-xs rounded-lg shadow hover:bg-primary-container transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        {isSubmittingCheckin ? 'Submitting...' : 'Submit Confidential Check-in'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </section>
+          )
+        )}
       </div>
     </div>
   );
