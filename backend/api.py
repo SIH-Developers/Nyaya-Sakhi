@@ -949,15 +949,22 @@ def request_patient_otp(req: RequestOtpRequest):
     clean_id = req.identifier.strip()
     conn = get_connection()
     cursor = conn.cursor()
+    # Match by victim_id, registered email, OR valid unexpired 6-digit link code
+    now_iso = datetime.now().isoformat()
     cursor.execute(
-        "SELECT * FROM victims WHERE UPPER(victim_id) = UPPER(?) OR LOWER(email) = LOWER(?) LIMIT 1",
-        (clean_id, clean_id)
+        """SELECT * FROM victims
+           WHERE UPPER(victim_id) = UPPER(?)
+              OR LOWER(email) = LOWER(?)
+              OR (link_code = ? AND link_code_expiry >= ?)
+           LIMIT 1""",
+        (clean_id, clean_id, clean_id, now_iso)
     )
     row = cursor.fetchone()
     conn.close()
 
     if not row:
-        raise HTTPException(status_code=404, detail="No registered profile found matching that ID or email.")
+        raise HTTPException(status_code=404, detail="No registered profile found matching that ID, email, or 6-digit link code.")
+
 
     victim = dict(row)
     victim_id = victim["victim_id"]

@@ -530,7 +530,8 @@ def record_patient_otp(victim_id: str, email: str, otp_code: str, expires_at: st
 
 def validate_patient_otp(identifier: str, otp_code: str) -> Optional[Dict[str, Any]]:
     """
-    Validates OTP for victim_id or email:
+    Validates OTP for victim_id, email, or 6-digit in-person link code:
+    - Resolves link_code -> victim_id first if applicable
     - Enforces used = 0 (single-use)
     - Enforces expires_at > now() (unexpired)
     - Atomically marks used = 1 on success to prevent replay attacks
@@ -542,14 +543,26 @@ def validate_patient_otp(identifier: str, otp_code: str) -> Optional[Dict[str, A
 
     conn = get_connection()
     cursor = conn.cursor()
+
+    # Step 0: If identifier looks like a 6-digit link code, resolve to victim_id
+    resolved_id = clean_id
+    if clean_id.isdigit() and len(clean_id) == 6:
+        cursor.execute(
+            "SELECT victim_id FROM victims WHERE link_code = ? AND link_code_expiry >= ? LIMIT 1",
+            (clean_id, now_iso)
+        )
+        link_row = cursor.fetchone()
+        if link_row:
+            resolved_id = link_row["victim_id"]
+
     cursor.execute(
         """SELECT id, victim_id, email, expires_at, used
            FROM patient_otps
-           WHERE (UPPER(victim_id) = UPPER(?) OR LOWER(email) = LOWER(?))
+           WHERE (UPPER(victim_id) = UPPER(?) OR LOWER(email) = LOWER(?) OR UPPER(victim_id) = UPPER(?))
              AND otp_code = ?
              AND used = 0
            ORDER BY id DESC LIMIT 1""",
-        (clean_id, clean_id, clean_otp)
+        (resolved_id, resolved_id, clean_id, clean_otp)
     )
     row = cursor.fetchone()
     if not row:
