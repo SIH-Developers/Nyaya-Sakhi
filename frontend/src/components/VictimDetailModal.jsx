@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   X, Activity, Scale, ShieldAlert, PhoneCall, HeartPulse, 
   FileText, ShieldCheck, AlertTriangle, ArrowUpRight, Check, Send, MessageSquarePlus, MessageCircle,
@@ -105,7 +105,7 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
       });
       const data = await res.json();
       if (data.success) {
-        const channels = (data.channels_used || []).join(' • ') || 'Voice + SMS + WhatsApp';
+        const channels = (data.channels_used || []).join(' â€¢ ') || 'Voice + SMS + WhatsApp';
         setActionSuccess(`Dispatched via ${channels}!`);
       } else {
         setActionSuccess('Check-in request processed.');
@@ -145,7 +145,7 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
 
   return (
     <div className="w-full bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm" style={{ minHeight: '80vh' }}>
-      {/* ── Inline Back-breadcrumb toolbar ── */}
+      {/* â”€â”€ Inline Back-breadcrumb toolbar â”€â”€ */}
       <div className="flex items-center gap-3 px-6 py-3.5 border-b border-outline-variant/30 bg-surface-container-low rounded-t-xl">
         <button
           onClick={onClose}
@@ -159,21 +159,21 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
         <span className="text-xs text-on-surface-variant font-mono ml-1">({victim.victim_id})</span>
       </div>
 
-      <div className="overflow-y-auto rounded-b-xl" style={{ maxHeight: 'calc(100vh - 280px)', background: '#0d1322', padding: '28px 28px 32px 28px' }}>
+      <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
 
         {/* Header Profile */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#ffffff' }}>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a' }}>
                 {victim.name}
               </h2>
               <span className={`badge ${victim.current_risk_tier === 'Urgent' ? 'badge-urgent' : victim.current_risk_tier === 'Counselor Outreach' ? 'badge-outreach' : 'badge-watch'}`}>
                 {victim.current_risk_tier}
               </span>
             </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>
-              Victim ID: <strong style={{ color: '#a5b4fc' }}>{victim.victim_id}</strong> • Community: {victim.caste_category} • {victim.district}, {victim.state}
+            <p style={{ color: '#475569', fontSize: '0.85rem', marginTop: '4px' }}>
+              Victim ID: <strong style={{ color: '#4f46e5' }}>{victim.victim_id}</strong> â€¢ Community: {victim.caste_category} â€¢ {victim.district}, {victim.state}
             </p>
           </div>
         </div>
@@ -181,9 +181,9 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
         {/* Action Success Toast */}
         {actionSuccess && (
           <div style={{
-            background: 'rgba(16, 185, 129, 0.2)',
+            background: 'rgba(16, 185, 129, 0.12)',
             border: '1px solid rgba(16, 185, 129, 0.5)',
-            color: '#6ee7b7',
+            color: '#047857',
             padding: '12px 18px',
             borderRadius: '10px',
             marginBottom: '20px',
@@ -201,9 +201,9 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
         {/* Officer Message Toast */}
         {officerMsg && (
           <div style={{
-            background: 'rgba(59, 130, 246, 0.2)',
-            border: '1px solid rgba(59, 130, 246, 0.5)',
-            color: '#93c5fd',
+            background: 'rgba(59, 130, 246, 0.1)',
+            border: '1px solid rgba(59, 130, 246, 0.4)',
+            color: '#1d4ed8',
             padding: '12px 18px',
             borderRadius: '10px',
             marginBottom: '20px',
@@ -221,7 +221,7 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
         {/* Pending Verification Banner */}
         {victim.registration_status === 'self_registered_pending_verification' && (
           <div style={{
-            background: 'rgba(245, 158, 11, 0.15)',
+            background: 'rgba(245, 158, 11, 0.1)',
             border: '1px solid rgba(245, 158, 11, 0.4)',
             borderRadius: '12px',
             padding: '14px 18px',
@@ -232,12 +232,12 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
             gap: '12px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <AlertTriangle size={20} color="#fbbf24" />
+              <AlertTriangle size={20} color="#b45309" />
               <div>
-                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#fbbf24' }}>
-                  ⚠️ Self-Registered Victim (Pending Verification)
+                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#92400e' }}>
+                  âš ï¸ Self-Registered Victim (Pending Verification)
                 </span>
-                <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: '#cbd5e1' }}>
+                <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: '#78350f' }}>
                   Registered via Telegram mobile channel. Formal police FIR and case details have not been verified yet.
                 </p>
               </div>
@@ -248,11 +248,11 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
         {/* Channels Engaged Badges */}
         {fullHistory?.channels_used && fullHistory.channels_used.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Multi-Channel Activity:</span>
+            <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Multi-Channel Activity:</span>
             {fullHistory.channels_used.map(ch => (
               <span key={ch} style={{
-                background: 'rgba(99, 102, 241, 0.15)',
-                color: '#a5b4fc',
+                background: 'rgba(99, 102, 241, 0.1)',
+                color: '#4338ca',
                 border: '1px solid rgba(99, 102, 241, 0.3)',
                 padding: '2px 8px',
                 borderRadius: '6px',
@@ -269,19 +269,19 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '24px' }}>
           {/* Longitudinal Trend Chart */}
           <div style={{
-            background: 'rgba(255, 255, 255, 0.02)',
-            border: '1px solid var(--border-subtle)',
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
             borderRadius: '14px',
             padding: '20px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Activity size={16} color="var(--accent-indigo)" />
-                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>
+                <Activity size={16} color="#4f46e5" />
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a' }}>
                   Longitudinal Distress Curve Over Turns
                 </span>
               </div>
-              <span style={{ fontSize: '0.75rem', color: '#f87171', fontWeight: 600 }}>
+              <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 600 }}>
                 - - Urgent Threshold (0.75)
               </span>
             </div>
@@ -332,7 +332,7 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                     <text
                       x={p.x}
                       y={p.y - 12}
-                      fill="#ffffff"
+                      fill="#0f172a"
                       fontSize="10"
                       textAnchor="middle"
                       fontWeight="bold"
@@ -343,46 +343,46 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                 ))}
               </svg>
             ) : (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No interaction logs recorded yet.</p>
+              <p style={{ color: '#64748b', fontSize: '0.85rem' }}>No interaction logs recorded yet.</p>
             )}
           </div>
 
           {/* Legal & Case Context Card */}
           <div style={{
-            background: 'rgba(255, 255, 255, 0.02)',
-            border: '1px solid var(--border-subtle)',
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
             borderRadius: '14px',
             padding: '20px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-              <Scale size={16} color="var(--accent-cyan)" />
-              <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>
+              <Scale size={16} color="#0369a1" />
+              <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a' }}>
                 SC/ST PoA Legal Case Record
               </span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.8rem' }}>
               <div>
-                <span style={{ color: 'var(--text-muted)' }}>FIR & Station:</span>
-                <p style={{ fontWeight: 600, color: '#ffffff' }}>{victim.fir_number}</p>
-                <p style={{ color: 'var(--text-secondary)' }}>{victim.police_station}</p>
+                <span style={{ color: '#64748b' }}>FIR &amp; Station:</span>
+                <p style={{ fontWeight: 600, color: '#0f172a' }}>{victim.fir_number}</p>
+                <p style={{ color: '#475569' }}>{victim.police_station}</p>
               </div>
 
               <div>
-                <span style={{ color: 'var(--text-muted)' }}>Trial Stage:</span>
-                <p style={{ fontWeight: 600, color: '#ffffff' }}>{victim.case_stage}</p>
+                <span style={{ color: '#64748b' }}>Trial Stage:</span>
+                <p style={{ fontWeight: 600, color: '#0f172a' }}>{victim.case_stage}</p>
               </div>
 
               <div>
-                <span style={{ color: 'var(--text-muted)' }}>Accused Bail Status:</span>
-                <p style={{ fontWeight: 700, color: victim.accused_bail_status === 'Granted' ? '#f87171' : '#34d399' }}>
+                <span style={{ color: '#64748b' }}>Accused Bail Status:</span>
+                <p style={{ fontWeight: 700, color: victim.accused_bail_status === 'Granted' ? '#dc2626' : '#059669' }}>
                   {victim.accused_bail_status}
                 </p>
               </div>
 
               <div>
-                <span style={{ color: 'var(--text-muted)' }}>Compensation Relief:</span>
-                <p style={{ fontWeight: 600, color: '#fbbf24' }}>{victim.compensation_status}</p>
+                <span style={{ color: '#64748b' }}>Compensation Relief:</span>
+                <p style={{ fontWeight: 600, color: '#b45309' }}>{victim.compensation_status}</p>
               </div>
             </div>
 
@@ -390,11 +390,11 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
               <div style={{
                 marginTop: '12px',
                 padding: '8px 12px',
-                background: 'rgba(239, 68, 68, 0.15)',
-                border: '1px solid rgba(239, 68, 68, 0.4)',
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
                 borderRadius: '8px',
                 fontSize: '0.75rem',
-                color: '#fca5a5',
+                color: '#b91c1c',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px'
@@ -408,34 +408,34 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
 
         {/* Explainability Matrix */}
         <div style={{ marginBottom: '24px' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff', marginBottom: '12px' }}>
-            🔍 Multi-Agent Explainability Drivers (Latest Turn)
+          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '12px' }}>
+            ðŸ” Multi-Agent Explainability Drivers (Latest Turn)
           </h3>
           <div style={{
-            background: 'rgba(255, 255, 255, 0.03)',
+            background: '#f8fafc',
             padding: '16px',
             borderRadius: '12px',
-            border: '1px solid var(--border-subtle)'
+            border: '1px solid #e2e8f0'
           }}>
             {latestTurn.explainability_reasons && latestTurn.explainability_reasons.length > 0 ? (
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {latestTurn.explainability_reasons.map((r, i) => (
-                  <li key={i} style={{ fontSize: '0.85rem', color: '#f1f5f9', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                    <span style={{ color: 'var(--accent-indigo)', fontWeight: 800 }}>•</span>
+                  <li key={i} style={{ fontSize: '0.85rem', color: '#1e293b', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                    <span style={{ color: '#4f46e5', fontWeight: 800 }}>â€¢</span>
                     {r}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Baseline stable metrics.</p>
+              <p style={{ color: '#64748b', fontSize: '0.85rem' }}>Baseline stable metrics.</p>
             )}
           </div>
         </div>
 
         {/* SC/ST PoA Action Center Buttons */}
         <div>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff', marginBottom: '12px' }}>
-            ⚡ Deployable SC/ST PoA Interventions & Emergency Actions
+          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '12px' }}>
+            âš¡ Deployable SC/ST PoA Interventions &amp; Emergency Actions
           </h3>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '24px' }}>
             <button
@@ -469,18 +469,18 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
 
           {/* Proactive Automated Check-in Section */}
           <div style={{
-            background: 'rgba(99, 102, 241, 0.06)',
-            border: '1px solid rgba(99, 102, 241, 0.3)',
+            background: 'rgba(99, 102, 241, 0.05)',
+            border: '1px solid rgba(99, 102, 241, 0.25)',
             padding: '20px',
             borderRadius: '14px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-              <MessageSquarePlus size={18} color="#818cf8" />
-              <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
+              <MessageSquarePlus size={18} color="#4f46e5" />
+              <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>
                 Proactive Outbound Check-in (IVRS / SMS / Bot)
               </span>
             </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '14px' }}>
+            <p style={{ fontSize: '0.8rem', color: '#475569', marginBottom: '14px' }}>
               Dispatch a clinically designed well-being check-in to this victim's phone via Voice, SMS, Email, and 1-Click WhatsApp.
             </p>
 
@@ -493,21 +493,21 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                   minWidth: '240px',
                   padding: '10px 14px',
                   borderRadius: '8px',
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid var(--border-subtle)',
-                  color: '#ffffff',
+                  background: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  color: '#0f172a',
                   fontSize: '0.85rem',
                   outline: 'none'
                 }}
               >
-                <option value="routine_wellbeing" style={{ background: '#111726' }}>
-                  1. Routine Well-being Check (Daily routine & emotional state)
+                <option value="routine_wellbeing">
+                  1. Routine Well-being Check (Daily routine &amp; emotional state)
                 </option>
-                <option value="safety_check" style={{ background: '#111726' }}>
-                  2. Post-Hearing Safety & Threat Check (Bail & intimidation probe)
+                <option value="safety_check">
+                  2. Post-Hearing Safety &amp; Threat Check (Bail &amp; intimidation probe)
                 </option>
-                <option value="compensation_support" style={{ background: '#111726' }}>
-                  3. SC/ST Rehabilitation & Compensation Claim Follow-up
+                <option value="compensation_support">
+                  3. SC/ST Rehabilitation &amp; Compensation Claim Follow-up
                 </option>
               </select>
 
@@ -525,10 +525,10 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                 const rawDigits = (victim.phone_number || '918299248116').replace(/[^0-9]/g, '');
                 const waPhone = rawDigits.length === 10 ? `91${rawDigits}` : rawDigits;
                 const waMsg = promptType === 'safety_check'
-                  ? `🏛️ *MoSJE • NHAA 14566 Post-Hearing Safety Check*\n\nNamaste ${victim.name}, regarding your recent court hearing for case ${victim.fir_number || 'FIR-2026/894'}, our support counselor is checking in. Do you or your family feel safe in your locality? If you have received any threats or intimidation, reply to this message or call toll-free 14566.`
+                  ? `ðŸ›ï¸ *MoSJE â€¢ NHAA 14566 Post-Hearing Safety Check*\n\nNamaste ${victim.name}, regarding your recent court hearing for case ${victim.fir_number || 'FIR-2026/894'}, our support counselor is checking in. Do you or your family feel safe in your locality? If you have received any threats or intimidation, reply to this message or call toll-free 14566.`
                   : promptType === 'compensation_support'
-                  ? `🏛️ *MoSJE • NHAA 14566 Relief Compensation Follow-up*\n\nNamaste ${victim.name}, we are following up on your SC/ST PoA rehabilitation relief disbursement. Please let us know if your pending relief has arrived or reply with any difficulties.`
-                  : `🏛️ *MoSJE • NHAA 14566 Routine Well-Being Check*\n\nNamaste ${victim.name}, this is an official routine check-in from your NHAA support counselor. How are you and your family feeling today? Reply here or call 14566 anytime.`;
+                  ? `ðŸ›ï¸ *MoSJE â€¢ NHAA 14566 Relief Compensation Follow-up*\n\nNamaste ${victim.name}, we are following up on your SC/ST PoA rehabilitation relief disbursement. Please let us know if your pending relief has arrived or reply with any difficulties.`
+                  : `ðŸ›ï¸ *MoSJE â€¢ NHAA 14566 Routine Well-Being Check*\n\nNamaste ${victim.name}, this is an official routine check-in from your NHAA support counselor. How are you and your family feeling today? Reply here or call 14566 anytime.`;
 
                 return (
                   <a
@@ -556,18 +556,18 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
 
             {/* Custom Message Preview */}
             <div style={{
-              background: 'rgba(0, 0, 0, 0.25)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              background: '#f1f5f9',
+              border: '1px solid #e2e8f0',
               borderRadius: '8px',
               padding: '10px 14px',
               fontSize: '0.8rem',
-              color: 'var(--text-secondary)'
+              color: '#475569'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.72rem', color: '#94a3b8' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.72rem', color: '#64748b' }}>
                 <span style={{ fontWeight: 600 }}>Message Content Preview:</span>
-                <span>Channels: <strong style={{ color: '#10b981' }}>WhatsApp (1-Click)</strong> • <strong style={{ color: '#60a5fa' }}>Email (SMTP)</strong> • <strong style={{ color: '#a78bfa' }}>Voice / SMS</strong></span>
+                <span>Channels: <strong style={{ color: '#059669' }}>WhatsApp (1-Click)</strong> â€¢ <strong style={{ color: '#2563eb' }}>Email (SMTP)</strong> â€¢ <strong style={{ color: '#7c3aed' }}>Voice / SMS</strong></span>
               </div>
-              <span style={{ fontStyle: 'italic', color: '#e2e8f0' }}>
+              <span style={{ fontStyle: 'italic', color: '#334155' }}>
                 {promptType === 'safety_check'
                   ? `\"Namaste ${victim.name}, regarding your recent court hearing for case ${victim.fir_number || 'FIR-2026/894'}, our support counselor is checking in. Do you or your family feel safe in your locality? If you have received any threats or intimidation, reply to this message or call toll-free 14566.\"`
                   : promptType === 'compensation_support'
@@ -580,20 +580,21 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
 
           {/* Past Escalation Explainability (Part C) */}
           {fullHistory?.escalation_alerts && fullHistory.escalation_alerts.length > 0 && (
-            <div className="glass-panel" style={{
-              background: 'rgba(239, 68, 68, 0.05)',
-              border: '1px solid rgba(239, 68, 68, 0.25)',
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.04)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
               padding: '20px',
               borderRadius: '14px',
+              marginTop: '20px',
               marginBottom: '20px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                <ShieldAlert size={18} color="#ef4444" />
-                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
-                  Past Escalation Alerts & Clinical Explainability Reasons ({fullHistory.escalation_alerts.length})
+                <ShieldAlert size={18} color="#dc2626" />
+                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>
+                  Past Escalation Alerts &amp; Clinical Explainability Reasons ({fullHistory.escalation_alerts.length})
                 </span>
               </div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '14px' }}>
+              <p style={{ fontSize: '0.8rem', color: '#475569', marginBottom: '14px' }}>
                 Multi-agent fusion triggers that required human-in-the-loop counselor intervention:
               </p>
 
@@ -602,26 +603,26 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                   <div key={idx} style={{
                     padding: '12px 16px',
                     borderRadius: '8px',
-                    background: 'rgba(0, 0, 0, 0.3)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)'
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{
                           padding: '2px 8px',
                           borderRadius: '4px',
-                          background: alert.priority === 'P1-CRITICAL' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                          color: alert.priority === 'P1-CRITICAL' ? '#f87171' : '#fbbf24',
+                          background: alert.priority === 'P1-CRITICAL' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                          color: alert.priority === 'P1-CRITICAL' ? '#b91c1c' : '#92400e',
                           fontWeight: 700,
                           fontSize: '0.72rem'
                         }}>
                           {alert.priority}
                         </span>
-                        <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#334155' }}>
                           {alert.recommended_action}
                         </span>
                       </div>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                      <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
                         {new Date(alert.timestamp).toLocaleString()}
                       </span>
                     </div>
@@ -631,12 +632,12 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
                         {alert.clinical_reasons.map((reason, rIdx) => (
                           <span key={rIdx} style={{
-                            background: 'rgba(255, 255, 255, 0.06)',
-                            color: '#e2e8f0',
+                            background: '#f1f5f9',
+                            color: '#334155',
                             padding: '2px 8px',
                             borderRadius: '4px',
                             fontSize: '0.72rem',
-                            border: '1px solid rgba(255, 255, 255, 0.1)'
+                            border: '1px solid #e2e8f0'
                           }}>
                             {reason}
                           </span>
@@ -650,31 +651,32 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
           )}
 
           {/* District Officer Actions (Part A & C) */}
-          <div className="glass-panel" style={{
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid var(--border-subtle)',
+          <div style={{
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
             padding: '20px',
-            borderRadius: '14px'
+            borderRadius: '14px',
+            marginTop: '20px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <ShieldCheck size={18} color="#06b6d4" />
-              <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
-                District Officer & Case Intake Management
+              <ShieldCheck size={18} color="#0369a1" />
+              <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>
+                District Officer &amp; Case Intake Management
               </span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
               {/* 1. Generate 7-Day Link Code */}
               <div style={{
-                background: 'rgba(0, 0, 0, 0.25)',
+                background: '#ffffff',
                 padding: '14px',
                 borderRadius: '10px',
-                border: '1px solid rgba(255, 255, 255, 0.08)'
+                border: '1px solid #e2e8f0'
               }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#e2e8f0', display: 'block', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: '4px' }}>
                   In-Person 7-Day Linking Code
                 </span>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px' }}>
+                <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '10px' }}>
                   Generate a temporary 6-digit code for the victim to connect their Telegram or mobile.
                 </p>
 
@@ -682,24 +684,24 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                   <div style={{
                     padding: '8px 12px',
                     borderRadius: '8px',
-                    background: 'rgba(6, 182, 212, 0.15)',
-                    border: '1px solid rgba(6, 182, 212, 0.4)',
+                    background: 'rgba(6, 182, 212, 0.1)',
+                    border: '1px solid rgba(6, 182, 212, 0.35)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between'
                   }}>
-                    <span style={{ fontFamily: 'monospace', fontSize: '1.2rem', fontWeight: 800, color: '#38bdf8', letterSpacing: '4px' }}>
+                    <span style={{ fontFamily: 'monospace', fontSize: '1.2rem', fontWeight: 800, color: '#0369a1', letterSpacing: '4px' }}>
                       {generatedCode}
                     </span>
-                    <span style={{ fontSize: '0.7rem', color: '#67e8f9' }}>Valid 7 Days</span>
+                    <span style={{ fontSize: '0.7rem', color: '#0e7490' }}>Valid 7 Days</span>
                   </div>
                 ) : (
                   <button
                     onClick={handleGenerateLinkCode}
                     style={{
-                      background: 'rgba(6, 182, 212, 0.2)',
-                      border: '1px solid rgba(6, 182, 212, 0.4)',
-                      color: '#67e8f9',
+                      background: 'rgba(6, 182, 212, 0.1)',
+                      border: '1px solid rgba(6, 182, 212, 0.35)',
+                      color: '#0369a1',
                       padding: '8px 14px',
                       borderRadius: '8px',
                       fontSize: '0.8rem',
@@ -717,15 +719,15 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
 
               {/* 2. Update Email for Patient Portal */}
               <div style={{
-                background: 'rgba(0, 0, 0, 0.25)',
+                background: '#ffffff',
                 padding: '14px',
                 borderRadius: '10px',
-                border: '1px solid rgba(255, 255, 255, 0.08)'
+                border: '1px solid #e2e8f0'
               }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#e2e8f0', display: 'block', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: '4px' }}>
                   Link Email for Portal Access
                 </span>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px' }}>
+                <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '10px' }}>
                   Add or update victim email so they can log into the Patient Portal via Brevo OTP.
                 </p>
                 <form onSubmit={handleUpdateEmail} style={{ display: 'flex', gap: '8px' }}>
@@ -736,11 +738,11 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                     onChange={(e) => setNewEmail(e.target.value)}
                     style={{
                       flex: 1,
-                      background: 'rgba(255, 255, 255, 0.06)',
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      background: '#f8fafc',
+                      border: '1px solid #cbd5e1',
                       borderRadius: '6px',
                       padding: '6px 10px',
-                      color: '#ffffff',
+                      color: '#0f172a',
                       fontSize: '0.8rem',
                       outline: 'none'
                     }}
@@ -748,7 +750,7 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                   <button
                     type="submit"
                     style={{
-                      background: 'var(--accent-indigo)',
+                      background: '#4f46e5',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: '6px',
@@ -766,16 +768,16 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
               {/* 3. Verify & Attach FIR (if pending) */}
               {victim.registration_status === 'self_registered_pending_verification' && (
                 <div style={{
-                  background: 'rgba(245, 158, 11, 0.08)',
+                  background: 'rgba(245, 158, 11, 0.06)',
                   padding: '14px',
                   borderRadius: '10px',
                   border: '1px solid rgba(245, 158, 11, 0.3)',
                   gridColumn: '1 / -1'
                 }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fbbf24', display: 'block', marginBottom: '4px' }}>
-                    Verify & Attach Official Police FIR
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#92400e', display: 'block', marginBottom: '4px' }}>
+                    Verify &amp; Attach Official Police FIR
                   </span>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px' }}>
+                  <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '10px' }}>
                     Confirm this self-registered victim and link the formal Police FIR number.
                   </p>
                   <form onSubmit={handleVerifyVictim} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -788,11 +790,11 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                       style={{
                         flex: 1,
                         minWidth: '200px',
-                        background: 'rgba(255, 255, 255, 0.06)',
-                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                        background: '#ffffff',
+                        border: '1px solid #cbd5e1',
                         borderRadius: '6px',
                         padding: '8px 12px',
-                        color: '#ffffff',
+                        color: '#0f172a',
                         fontSize: '0.8rem',
                         outline: 'none'
                       }}
@@ -804,11 +806,11 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                       onChange={(e) => setNewDistrict(e.target.value)}
                       style={{
                         width: '150px',
-                        background: 'rgba(255, 255, 255, 0.06)',
-                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                        background: '#ffffff',
+                        border: '1px solid #cbd5e1',
                         borderRadius: '6px',
                         padding: '8px 12px',
-                        color: '#ffffff',
+                        color: '#0f172a',
                         fontSize: '0.8rem',
                         outline: 'none'
                       }}
@@ -826,7 +828,7 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                         cursor: 'pointer'
                       }}
                     >
-                      Verify & Attach FIR
+                      Verify &amp; Attach FIR
                     </button>
                   </form>
                 </div>
