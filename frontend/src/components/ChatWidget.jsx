@@ -2,23 +2,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { API_BASE } from '../config';
 
 /**
- * ChatWidget — Dual-mode floating chat widget (TASK 3 + 4)
+ * ChatWidget — Dual-mode floating chat widget with GOI MoSJE Design System
  *
  * Modes:
  *   'info'              → RAG chatbot (SC/ST rights Q&A)
- *   'calming_companion' → Switches automatically when NLP detects distress ≥ 50%
- *
- * Features:
- *  - Consent banner before first message
- *  - Emergency banner (112 / 14566) when distress ≥ 75%
- *  - Suggested quick-reply chips
- *  - Smooth fade-in animations
+ *   'calming_companion' → Automatic switch when NLP detects distress ≥ 50%
  */
 
 const SESSION_ID = `web-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
-// Crisis keywords that trigger the safety bypass (consent NOT required — safety first).
-// Per design: calming response + 112/14566 must never be blocked by consent UX.
 const EMERGENCY_KEYWORDS = [
   'suicide', 'kill myself', 'want to die', 'end my life',
   'attack', 'knife', 'weapon', 'gun', 'help me', 'emergency',
@@ -27,18 +19,10 @@ const EMERGENCY_KEYWORDS = [
 const isEmergencyMessage = (text) =>
   EMERGENCY_KEYWORDS.some(kw => text.toLowerCase().includes(kw));
 
-// Consent persisted per browser session (not per page load).
 const SESSION_KEY = 'nyaya_consent_given';
 
-const COLORS = {
-  info:    { header: 'linear-gradient(135deg,#1a237e,#283593)', accent: '#5c6bc0' },
-  calming: { header: 'linear-gradient(135deg,#1b5e20,#2e7d32)', accent: '#66bb6a' },
-};
-
 export default function ChatWidget() {
-  const [open, setOpen]             = useState(false);
-  // sessionStorage-backed consent: persists across page reloads within the same browser session,
-  // but resets when the user closes the tab (appropriate for a sensitive mental-health context).
+  const [open, setOpen] = useState(false);
   const [consentGiven, setConsentState] = useState(
     () => sessionStorage.getItem(SESSION_KEY) === 'true'
   );
@@ -47,11 +31,11 @@ export default function ChatWidget() {
     setConsentState(val);
   };
 
-  const [messages, setMessages]     = useState([
+  const [messages, setMessages] = useState([
     {
       id: 0,
       role: 'bot',
-      text: 'Namaste 🙏 I can help you with your rights under the SC/ST (Prevention of Atrocities) Act, NHAA 14566 helpline, compensation, and mental health support.\n\nWhat would you like to know?',
+      text: 'Namaste 🙏 I am your Nyaya-Sakhi assistant. I can guide you on your legal rights under the SC/ST (Prevention of Atrocities) Act, NHAA 14566 helpline, victim compensation schemes, and confidential emotional support.\n\nHow can I help you today?',
       mode: 'info',
       suggestions: [
         'How do I file an FIR?',
@@ -61,11 +45,11 @@ export default function ChatWidget() {
       ],
     }
   ]);
-  const [input, setInput]           = useState('');
-  const [loading, setLoading]       = useState(false);
-  const [mode, setMode]             = useState('info');
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState('info');
   const [showEmergency, setShowEmergency] = useState(false);
-  const [sosState, setSosState]     = useState('idle');  // 'idle' | 'sending' | 'sent' | 'cooldown'
+  const [sosState, setSosState] = useState('idle'); // 'idle' | 'sending' | 'sent' | 'cooldown'
   const [sosCooldown, setSosCooldown] = useState(0);
   const bottomRef = useRef(null);
   const sosTimerRef = useRef(null);
@@ -74,16 +58,10 @@ export default function ChatWidget() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  const themeColors = mode === 'calming_companion' ? COLORS.calming : COLORS.info;
-
   const sendMessage = async (text) => {
     const isEmergency = isEmergencyMessage(text);
-    // SAFETY FIRST: emergency messages bypass the consent gate so the
-    // calming response + 112/14566 banner always fires, even pre-consent.
-    // For non-emergency messages, the textarea is disabled anyway,
-    // but we guard here as a defence-in-depth check.
     if (!text.trim() || loading) return;
-    if (!consentGiven && !isEmergency) return;  // blocked — not an emergency
+    if (!consentGiven && !isEmergency) return;
 
     const userMsg = { id: Date.now(), role: 'user', text };
     setMessages(prev => [...prev, userMsg]);
@@ -113,7 +91,7 @@ export default function ChatWidget() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         role: 'bot',
-        text: '⚠️ Network error. Please call NHAA **14566** directly.',
+        text: '⚠️ Network error. Please call NHAA 14566 directly.',
         mode: 'info',
         suggestions: [],
       }]);
@@ -126,7 +104,7 @@ export default function ChatWidget() {
     if (sosState === 'sending' || sosState === 'cooldown') return;
     setSosState('sending');
     try {
-      const resp = await fetch(`${API_BASE}/sos/trigger`, {
+      await fetch(`${API_BASE}/sos/trigger`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -137,7 +115,6 @@ export default function ChatWidget() {
       });
       setSosState('sent');
       setShowEmergency(true);
-      // Start 5-min cooldown
       setSosCooldown(300);
       sosTimerRef.current = setInterval(() => {
         setSosCooldown(prev => {
@@ -156,224 +133,162 @@ export default function ChatWidget() {
   };
 
   const handleKey = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); }
-  };
-
-  const styles = {
-    fab: {
-      position: 'fixed', bottom: 28, right: 28, zIndex: 9999,
-      width: 60, height: 60, borderRadius: '50%',
-      background: mode === 'calming_companion' ? '#2e7d32' : '#1a237e',
-      color: '#fff', border: 'none', cursor: 'pointer',
-      fontSize: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-      transition: 'transform 0.2s',
-    },
-    window: {
-      position: 'fixed', bottom: 100, right: 28, zIndex: 9998,
-      width: 370, maxHeight: '78vh',
-      display: 'flex', flexDirection: 'column',
-      borderRadius: 18, overflow: 'hidden',
-      boxShadow: '0 12px 48px rgba(0,0,0,0.55)',
-      background: '#0d1117',
-      border: '1px solid rgba(255,255,255,0.08)',
-      animation: 'fadeSlideUp 0.25s ease',
-    },
-    header: {
-      background: themeColors.header,
-      padding: '14px 18px',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    },
-    headerTitle: { color: '#fff', fontWeight: 700, fontSize: '0.95rem' },
-    headerSub:   { color: 'rgba(255,255,255,0.75)', fontSize: '0.72rem' },
-    emergency: {
-      background: '#b71c1c', color: '#fff',
-      padding: '10px 14px', fontSize: '0.82rem',
-      display: 'flex', gap: 10, alignItems: 'center',
-    },
-    consent: {
-      background: 'rgba(255,255,255,0.04)',
-      padding: '12px 16px', fontSize: '0.78rem', color: '#ccc',
-      borderBottom: '1px solid rgba(255,255,255,0.08)',
-    },
-    messages: {
-      flex: 1, overflowY: 'auto', padding: '14px 12px',
-      display: 'flex', flexDirection: 'column', gap: 10,
-    },
-    msgUser: {
-      alignSelf: 'flex-end', background: themeColors.accent,
-      color: '#fff', borderRadius: '16px 16px 4px 16px',
-      padding: '10px 14px', maxWidth: '82%', fontSize: '0.875rem', lineHeight: 1.5,
-    },
-    msgBot: {
-      alignSelf: 'flex-start', background: 'rgba(255,255,255,0.07)',
-      color: '#e8eaf6', borderRadius: '16px 16px 16px 4px',
-      padding: '10px 14px', maxWidth: '86%', fontSize: '0.875rem', lineHeight: 1.5,
-      whiteSpace: 'pre-wrap',
-    },
-    modeTag: {
-      fontSize: '0.65rem', color: 'rgba(255,255,255,0.45)',
-      marginTop: 4, display: 'block',
-    },
-    chips: {
-      display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6,
-    },
-    chip: {
-      background: 'rgba(255,255,255,0.08)', color: '#90caf9',
-      border: '1px solid rgba(144,202,249,0.3)',
-      borderRadius: 999, padding: '4px 10px', fontSize: '0.72rem',
-      cursor: 'pointer', transition: 'all 0.15s',
-    },
-    inputRow: {
-      display: 'flex', gap: 8, padding: '10px 12px',
-      borderTop: '1px solid rgba(255,255,255,0.07)',
-    },
-    textArea: {
-      flex: 1, background: 'rgba(255,255,255,0.06)', border: 'none',
-      borderRadius: 10, color: '#fff', padding: '9px 12px',
-      fontSize: '0.875rem', outline: 'none', resize: 'none',
-      fontFamily: 'inherit',
-    },
-    sendBtn: {
-      background: themeColors.accent, color: '#fff',
-      border: 'none', borderRadius: 10, padding: '0 14px',
-      cursor: 'pointer', fontWeight: 600, fontSize: '1rem',
-      transition: 'opacity 0.15s',
-    },
-    loadingDot: {
-      display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
-      background: '#90caf9', margin: '0 2px',
-      animation: 'pulse 1s infinite',
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(input);
     }
   };
 
   return (
     <>
-      <style>{`
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulse {
-          0%,100% { opacity:0.3; transform:scale(0.8); }
-          50%      { opacity:1;   transform:scale(1.2); }
-        }
-        @keyframes sosPulse {
-          0%   { box-shadow: 0 0 0 0 rgba(211,47,47,0.7); }
-          70%  { box-shadow: 0 0 0 14px rgba(211,47,47,0); }
-          100% { box-shadow: 0 0 0 0 rgba(211,47,47,0); }
-        }
-        .chat-chip:hover { background: rgba(144,202,249,0.18) !important; }
-      `}</style>
-
-      {/* Floating Action Button */}
-      <button
-        id="chat-widget-fab"
-        style={styles.fab}
-        onClick={() => setOpen(o => !o)}
-        title={open ? 'Close chat' : 'Open Nyaya-Sakhi Chat'}
-      >
-        {open ? '✕' : '💬'}
-      </button>
-
-      {/* SOS Floating Button (always visible — safety critical) */}
+      {/* Floating SOS Emergency Button */}
       <button
         id="sos-fab"
+        type="button"
         onClick={handleSOS}
         disabled={sosState === 'sending' || sosState === 'cooldown'}
-        title="🆘 SOS Emergency Button — sends immediate alert"
-        style={{
-          position: 'fixed', bottom: 100, right: 96, zIndex: 10000,
-          width: 56, height: 56, borderRadius: '50%',
-          background: sosState === 'sent' || sosState === 'cooldown' ? '#4caf50' : '#d32f2f',
-          color: '#fff', border: '3px solid rgba(255,255,255,0.35)',
-          cursor: sosState === 'cooldown' ? 'not-allowed' : 'pointer',
-          fontWeight: 900, fontSize: '0.68rem', letterSpacing: '-0.5px',
-          boxShadow: sosState === 'idle' ? '0 0 0 0 rgba(211,47,47,0.7)' : 'none',
-          animation: sosState === 'idle' ? 'sosPulse 2s infinite' : 'none',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexDirection: 'column', lineHeight: 1.1, transition: 'background 0.3s',
-        }}
+        title="🆘 SOS Emergency Button — dispatches instant alert to officers"
+        className={`fixed bottom-24 right-24 z-[10000] w-14 h-14 rounded-full text-white font-extrabold flex flex-col items-center justify-center border-2 border-white/40 shadow-xl transition-all ${
+          sosState === 'sent' || sosState === 'cooldown'
+            ? 'bg-emerald-600 cursor-not-allowed'
+            : 'bg-red-600 hover:bg-red-700 animate-pulse'
+        }`}
       >
-        {sosState === 'sending' ? '…' : sosState === 'sent' || sosState === 'cooldown' ? '✓' : '🆘'}
-        <span style={{ fontSize: '0.55rem', marginTop: 1 }}>
+        <span className="text-xs leading-none">
+          {sosState === 'sending' ? '…' : sosState === 'sent' || sosState === 'cooldown' ? '✓' : '🆘'}
+        </span>
+        <span className="text-[10px] font-black uppercase tracking-wider mt-0.5">
           {sosState === 'cooldown' ? `${sosCooldown}s` : 'SOS'}
         </span>
       </button>
 
+      {/* Floating Action Button (FAB) */}
+      <button
+        id="chat-widget-fab"
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        title={open ? 'Close Nyaya-Sakhi Assistant' : 'Open Nyaya-Sakhi AI Assistant'}
+        className={`fixed bottom-6 right-6 z-[9999] w-14 h-14 rounded-full text-white flex items-center justify-center shadow-xl border border-white/30 transition-all ${
+          mode === 'calming_companion'
+            ? 'bg-gradient-to-r from-emerald-700 to-teal-800 hover:from-emerald-800 hover:to-teal-900'
+            : 'bg-gradient-to-r from-[#022448] to-[#1b3a60] hover:from-[#011b37] hover:to-[#152e4d]'
+        }`}
+      >
+        <span className="material-symbols-outlined text-2xl">
+          {open ? 'close' : mode === 'calming_companion' ? 'eco' : 'forum'}
+        </span>
+      </button>
+
+      {/* Main Chat Floating Window */}
       {open && (
-        <div style={styles.window} id="chat-widget-window">
+        <div
+          id="chat-widget-window"
+          className="fixed bottom-24 right-6 z-[9998] w-[380px] max-h-[78vh] flex flex-col bg-white border border-outline-variant/30 rounded-2xl shadow-2xl overflow-hidden font-body-md animate-in fade-in slide-in-from-bottom-5 duration-200"
+        >
           {/* Header */}
-          <div style={styles.header}>
-            <div>
-              <div style={styles.headerTitle}>
-                {mode === 'calming_companion' ? '🌿 Nyaya-Sakhi Support' : '⚖️ Nyaya-Sakhi Info'}
+          <div
+            className={`p-4 flex items-center justify-between text-white shadow-sm transition-colors ${
+              mode === 'calming_companion'
+                ? 'bg-gradient-to-r from-emerald-700 to-teal-800'
+                : 'bg-gradient-to-r from-[#022448] to-[#1b3a60]'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+                <span className="material-symbols-outlined text-lg">
+                  {mode === 'calming_companion' ? 'eco' : 'balance'}
+                </span>
               </div>
-              <div style={styles.headerSub}>
-                {mode === 'calming_companion'
-                  ? 'Calming Companion • NHAA 14566'
-                  : 'SC/ST PoA Act Rights Assistant • NHAA 14566'}
+              <div>
+                <h4 className="text-sm font-bold tracking-tight">
+                  {mode === 'calming_companion' ? '🌿 Nyaya-Sakhi Companion' : '⚖️ Nyaya-Sakhi Info'}
+                </h4>
+                <p className="text-[11px] text-white/80 font-medium">
+                  {mode === 'calming_companion'
+                    ? 'Calming Emotional Companion • 14566'
+                    : 'SC/ST PoA Rights Assistant • NHAA 14566'}
+                </p>
               </div>
             </div>
             <button
+              type="button"
               onClick={() => setOpen(false)}
-              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: 18 }}
-            >✕</button>
+              className="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <span className="material-symbols-outlined text-lg">close</span>
+            </button>
           </div>
 
           {/* Emergency Banner */}
           {showEmergency && (
-            <div style={styles.emergency} id="chat-emergency-banner">
-              🚨 <span>
-                <strong>Emergency?</strong> Call <strong>112</strong> (Police) or{' '}
-                <strong>14566</strong> (NHAA) immediately.
-                <button
-                  onClick={() => setShowEmergency(false)}
-                  style={{ marginLeft: 8, background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 12 }}
-                >Dismiss</button>
-              </span>
+            <div id="chat-emergency-banner" className="bg-red-50 border-b border-red-200 p-3 text-xs text-red-900 flex items-center justify-between font-medium">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-red-600 text-base">warning</span>
+                <span>
+                  <strong>Emergency?</strong> Call <strong>112</strong> (Police) or <strong>14566</strong> (NHAA) now.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEmergency(false)}
+                className="text-red-700 hover:text-red-900 font-bold ml-2"
+              >
+                ✕
+              </button>
             </div>
           )}
 
           {/* Consent Banner */}
           {!consentGiven && (
-            <div style={styles.consent}>
-              <strong>Data Privacy Notice:</strong> Messages are processed by AI for emotional support
-              and kept confidential under DPDP Act 2023.
-              <br />
+            <div className="bg-surface-container-low border-b border-outline-variant/30 p-3.5 text-xs text-on-surface-variant space-y-2">
+              <p>
+                <strong>Data Privacy Notice:</strong> Messages are processed securely by AI for legal guidance and emotional support, protected under DPDP Act 2023.
+              </p>
               <button
                 id="chat-consent-accept"
+                type="button"
                 onClick={() => setConsent(true)}
-                style={{
-                  marginTop: 8, background: '#1565c0', color: '#fff',
-                  border: 'none', borderRadius: 6, padding: '5px 14px',
-                  cursor: 'pointer', fontSize: '0.78rem',
-                }}
-              >I Understand &amp; Accept</button>
+                className="py-1.5 px-3 rounded-lg bg-[#022448] text-white font-semibold text-xs hover:bg-[#1b3a60] transition-colors shadow-sm"
+              >
+                I Understand & Accept
+              </button>
             </div>
           )}
 
-          {/* Messages */}
-          <div style={styles.messages} id="chat-messages">
+          {/* Messages Container */}
+          <div id="chat-messages" className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-surface-container-lowest">
             {messages.map(msg => (
-              <div key={msg.id}>
-                <div style={msg.role === 'user' ? styles.msgUser : styles.msgBot}>
+              <div key={msg.id} className="space-y-2">
+                <div
+                  className={`max-w-[86%] text-xs leading-relaxed p-3.5 shadow-xs ${
+                    msg.role === 'user'
+                      ? 'ml-auto bg-[#022448] text-white rounded-2xl rounded-tr-none font-medium'
+                      : 'mr-auto bg-surface-container-low border border-outline-variant/20 text-on-surface rounded-2xl rounded-tl-none whitespace-pre-wrap'
+                  }`}
+                >
                   {msg.text}
                   {msg.role === 'bot' && msg.mode && (
-                    <span style={styles.modeTag}>
-                      {msg.mode === 'calming_companion' ? '🌿 calming companion' : '⚖️ info mode'}
+                    <span className="block text-[10px] text-on-surface-variant/70 mt-1 font-semibold uppercase tracking-wider">
+                      {msg.mode === 'calming_companion' ? '🌿 Calming Companion' : '⚖️ Info Mode'}
                     </span>
                   )}
                 </div>
+
+                {/* Suggestions / Chips */}
                 {msg.suggestions?.length > 0 && (
-                  <div style={styles.chips}>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
                     {msg.suggestions.map((s, i) => (
                       <button
                         key={i}
-                        className="chat-chip"
-                        style={styles.chip}
-                        onClick={() => { if (consentGiven) sendMessage(s); else setConsent(true); }}
-                      >{s}</button>
+                        type="button"
+                        onClick={() => {
+                          if (consentGiven) sendMessage(s);
+                          else setConsent(true);
+                        }}
+                        className="px-3 py-1 rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary/15 text-[11px] font-semibold transition-all text-left"
+                      >
+                        {s}
+                      </button>
                     ))}
                   </div>
                 )}
@@ -381,31 +296,36 @@ export default function ChatWidget() {
             ))}
 
             {loading && (
-              <div style={styles.msgBot}>
-                <span style={styles.loadingDot} /><span style={{ ...styles.loadingDot, animationDelay: '0.2s' }} /><span style={{ ...styles.loadingDot, animationDelay: '0.4s' }} />
+              <div className="mr-auto bg-surface-container-low border border-outline-variant/20 p-3 rounded-2xl rounded-tl-none w-16 flex justify-center items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.2s]"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.4s]"></span>
               </div>
             )}
             <div ref={bottomRef} />
           </div>
 
-          {/* Input Row */}
-          <div style={styles.inputRow}>
+          {/* Input Area */}
+          <div className="p-3 border-t border-outline-variant/20 bg-white flex items-center gap-2">
             <textarea
               id="chat-input"
               rows={1}
-              style={styles.textArea}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKey}
-              placeholder={consentGiven ? 'Type your question…' : 'In danger? Type now — or accept the privacy notice above.'}
+              placeholder={consentGiven ? 'Type your question or request…' : 'In danger? Type now — or accept notice above.'}
               disabled={loading}
+              className="flex-1 px-3 py-2 text-xs rounded-xl bg-surface-container-low border border-outline-variant/30 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
             />
             <button
               id="chat-send-btn"
-              style={{ ...styles.sendBtn, opacity: (!consentGiven && !isEmergencyMessage(input)) || loading ? 0.4 : 1 }}
+              type="button"
               onClick={() => sendMessage(input)}
               disabled={(!consentGiven && !isEmergencyMessage(input)) || loading}
-            >↑</button>
+              className="w-8 h-8 rounded-xl bg-[#022448] text-white flex items-center justify-center hover:bg-[#1b3a60] disabled:opacity-40 transition-all shadow-sm"
+            >
+              <span className="material-symbols-outlined text-base">send</span>
+            </button>
           </div>
         </div>
       )}

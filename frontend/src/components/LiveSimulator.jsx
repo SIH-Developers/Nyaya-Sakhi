@@ -1,11 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { 
-  Play, MessageSquare, PhoneCall, Sliders, CheckCircle2, 
-  AlertTriangle, ArrowRight, Zap, Mic, MicOff, Radio, Globe 
-} from 'lucide-react';
 import { API_BASE } from '../config';
 
-export default function LiveSimulator({ victims, onMessageSent, onCallSent }) {
+export default function LiveSimulator({ victims = [], onMessageSent, onCallSent }) {
   const [selectedVictimId, setSelectedVictimId] = useState(victims[0]?.victim_id || 'VIC-RIYA-204');
   const [channel, setChannel] = useState('ivrs');
   const [messageText, setMessageText] = useState('The accused person got bail yesterday and I am feeling terrified.');
@@ -70,7 +66,7 @@ export default function LiveSimulator({ victims, onMessageSent, onCallSent }) {
       setIsRecording(true);
       setMessageText('');
 
-      // Optional Browser Speech Recognition for Live Transcription
+      // Browser Speech Recognition for Live Transcription
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SpeechRecognition) {
         recognitionRef.current = new SpeechRecognition();
@@ -108,7 +104,6 @@ export default function LiveSimulator({ victims, onMessageSent, onCallSent }) {
     setSimulationResult(null);
 
     try {
-      // If we have a real recorded audio blob, upload it via multipart form
       if (recordedBlob && channel === 'ivrs') {
         const formData = new FormData();
         formData.append('victim_id', selectedVictimId);
@@ -156,58 +151,67 @@ export default function LiveSimulator({ victims, onMessageSent, onCallSent }) {
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ffffff' }}>
-          Interactive Multi-Channel & Live Voice Call Simulator
-        </h2>
-        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          Test the system with real-time microphone voice calls or synthetic telemetry to observe multi-agent analysis in real time
-        </p>
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Header Banner */}
+      <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="material-symbols-outlined text-primary text-2xl">graphic_eq</span>
+            <h2 className="text-xl font-bold text-on-surface tracking-tight">
+              Interactive Multi-Channel & Live Voice Call Simulator
+            </h2>
+          </div>
+          <p className="text-sm text-on-surface-variant">
+            Test real-time microphone voice calls or synthetic telemetry to observe multi-agent analysis & risk tiering in real time.
+          </p>
+        </div>
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+          <span className="material-symbols-outlined text-sm">psychology</span>
+          LangGraph Multi-Agent Engine
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '24px' }}>
-        {/* Left: Input Sandbox */}
-        <div className="glass-panel" style={{ padding: '24px' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Input Sandbox */}
+        <div className="lg:col-span-6 bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-sm space-y-5">
+          <div className="flex items-center justify-between border-b border-outline-variant/20 pb-3">
+            <h3 className="text-base font-bold text-on-surface flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-lg">tune</span>
+              Telemetry Input Sandbox
+            </h3>
+            <span className="text-xs text-on-surface-variant">Step 1 of 2</span>
+          </div>
+
           {/* Target Victim Selector */}
-          <div style={{ marginBottom: '18px' }}>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              Select Registered Victim:
+          <div>
+            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
+              Select Registered Victim
             </label>
             <select
               value={selectedVictimId}
               onChange={(e) => setSelectedVictimId(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 14px',
-                borderRadius: '8px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid var(--border-subtle)',
-                color: '#ffffff',
-                fontSize: '0.85rem',
-                outline: 'none'
-              }}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/30 text-on-surface text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
             >
               {victims.map((v) => (
-                <option key={v.victim_id} value={v.victim_id} style={{ background: '#111726' }}>
-                  {v.name} ({v.victim_id}) — {v.case_stage} • Bail: {v.accused_bail_status}
+                <option key={v.victim_id} value={v.victim_id}>
+                  {v.name} ({v.victim_id}) — Stage: {v.case_stage} • Bail: {v.accused_bail_status}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Quick Presets */}
-          <div style={{ marginBottom: '18px' }}>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '8px' }}>
-              Quick Scenario Presets:
+          {/* Quick Scenario Presets */}
+          <div>
+            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
+              Quick Scenario Presets
             </label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            <div className="flex flex-wrap gap-2">
               {samplePresets.map((p, i) => (
                 <button
                   key={i}
+                  type="button"
                   onClick={() => applyPreset(p)}
-                  className="btn btn-secondary"
-                  style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                  className="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/30 text-on-surface text-xs font-medium transition-all"
                 >
                   {p.label}
                 </button>
@@ -215,40 +219,30 @@ export default function LiveSimulator({ victims, onMessageSent, onCallSent }) {
             </div>
           </div>
 
-          {/* Channel Selector */}
-          <div style={{ marginBottom: '18px' }}>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              Communication Channel:
+          {/* Communication Channel */}
+          <div>
+            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
+              Communication Channel
             </label>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="grid grid-cols-3 gap-2">
               {[
-                { id: 'ivrs', label: '14566 IVRS Voice Call', icon: PhoneCall },
-                { id: 'chatbot', label: 'Web Chatbot', icon: MessageSquare },
-                { id: 'app', label: 'Mobile App', icon: MessageSquare }
+                { id: 'ivrs', label: '14566 Voice Call', icon: 'phone_in_talk' },
+                { id: 'chatbot', label: 'Web Chatbot', icon: 'chat' },
+                { id: 'app', label: 'Mobile App', icon: 'smartphone' }
               ].map((c) => {
-                const Icon = c.icon;
                 const isSelected = channel === c.id;
                 return (
                   <button
                     key={c.id}
+                    type="button"
                     onClick={() => setChannel(c.id)}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      padding: '10px',
-                      borderRadius: '8px',
-                      border: isSelected ? '1px solid var(--accent-indigo)' : '1px solid var(--border-subtle)',
-                      background: isSelected ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255, 255, 255, 0.03)',
-                      color: isSelected ? '#ffffff' : 'var(--text-secondary)',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      cursor: 'pointer'
-                    }}
+                    className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-semibold transition-all ${
+                      isSelected
+                        ? 'bg-[#022448] text-white border-[#022448] shadow-sm'
+                        : 'bg-surface-container-low text-on-surface-variant border-outline-variant/30 hover:bg-surface-container-high'
+                    }`}
                   >
-                    <Icon size={14} />
+                    <span className="material-symbols-outlined text-base">{c.icon}</span>
                     {c.label}
                   </button>
                 );
@@ -256,52 +250,50 @@ export default function LiveSimulator({ victims, onMessageSent, onCallSent }) {
             </div>
           </div>
 
-          {/* Real Microphone Call Button (For IVRS) */}
+          {/* Real Microphone Call Box (For IVRS) */}
           {channel === 'ivrs' && (
-            <div style={{
-              background: 'rgba(99, 102, 241, 0.08)',
-              border: '1px solid rgba(99, 102, 241, 0.3)',
-              padding: '16px',
-              borderRadius: '12px',
-              marginBottom: '18px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Radio size={16} color="#6366f1" />
-                  Live Phone Call / Mic Recording:
+            <div className="bg-emerald-50/60 border border-emerald-200 p-4 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-emerald-700 text-base">mic</span>
+                  Live Phone Call / Mic Recording
                 </span>
                 {isRecording && (
-                  <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span className="pulse-dot" style={{ background: '#ef4444' }}></span> RECORDING CALL...
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 animate-pulse">
+                    <span className="w-2 h-2 rounded-full bg-red-600"></span>
+                    RECORDING CALL...
                   </span>
                 )}
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <div className="flex gap-2">
                 {!isRecording ? (
                   <button
+                    type="button"
                     onClick={startRecording}
-                    className="btn btn-primary"
-                    style={{ flex: 1, background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
                   >
-                    <Mic size={16} /> Speak Into Mic (Start Call)
+                    <span className="material-symbols-outlined text-base">mic</span>
+                    Speak Into Mic (Start Call)
                   </button>
                 ) : (
                   <button
+                    type="button"
                     onClick={stopRecording}
-                    className="btn btn-danger"
-                    style={{ flex: 1 }}
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
                   >
-                    <MicOff size={16} /> End Call & Process Audio
+                    <span className="material-symbols-outlined text-base">mic_off</span>
+                    End Call & Process Audio
                   </button>
                 )}
               </div>
 
               {recordedAudioUrl && (
-                <div style={{ marginTop: '12px' }}>
-                  <audio controls src={recordedAudioUrl} style={{ width: '100%', height: '36px' }} />
-                  <p style={{ fontSize: '0.75rem', color: '#34d399', marginTop: '4px' }}>
-                    ✅ Real audio waveform ready for acoustic prosody extraction.
+                <div className="pt-2 border-t border-emerald-200/60 space-y-1">
+                  <audio controls src={recordedAudioUrl} className="w-full h-8" />
+                  <p className="text-[11px] text-emerald-700 font-medium flex items-center gap-1">
+                    <span className="material-symbols-outlined text-xs">check_circle</span>
+                    Real audio waveform captured & ready for acoustic prosody extraction.
                   </p>
                 </div>
               )}
@@ -309,45 +301,32 @@ export default function LiveSimulator({ victims, onMessageSent, onCallSent }) {
           )}
 
           {/* Message / Audio Transcript Input */}
-          <div style={{ marginBottom: '18px' }}>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              {channel === 'ivrs' ? 'Spoken Audio Transcript (ASR Output):' : 'Victim Text Message:'}
+          <div>
+            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
+              {channel === 'ivrs' ? 'Spoken Audio Transcript (ASR Output)' : 'Victim Text Message'}
             </label>
             <textarea
               rows={3}
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               placeholder="Speak into microphone or type message text..."
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid var(--border-subtle)',
-                color: '#ffffff',
-                fontSize: '0.85rem',
-                outline: 'none',
-                resize: 'none'
-              }}
+              className="w-full p-3 rounded-xl bg-surface-container-low border border-outline-variant/30 text-on-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
             />
           </div>
 
           {/* Telephony Sliders (Fallback / Simulation) */}
           {channel === 'ivrs' && !recordedBlob && (
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.02)',
-              padding: '14px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-subtle)',
-              marginBottom: '20px'
-            }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-cyan)' }}>
-                🎙️ Telephony Prosody Simulation:
+            <div className="bg-surface-container-low p-3.5 rounded-xl border border-outline-variant/30 space-y-2">
+              <span className="text-xs font-bold text-primary flex items-center gap-1">
+                <span className="material-symbols-outlined text-sm">graphic_eq</span>
+                Telephony Prosody Simulation Controls
               </span>
-              <div style={{ marginTop: '10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  <span>Pitch Flatness (Variance): {pitchVariance} Hz</span>
-                  <span>{pitchVariance < 10 ? '🔴 Depressive Flatness' : '🟢 Normal Expressive'}</span>
+              <div>
+                <div className="flex justify-between text-xs text-on-surface-variant font-medium mb-1">
+                  <span>Pitch Flatness Variance: {pitchVariance} Hz</span>
+                  <span className={pitchVariance < 10 ? "text-error font-bold" : "text-emerald-600 font-bold"}>
+                    {pitchVariance < 10 ? '🔴 Depressive Flatness' : '🟢 Normal Expressive'}
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -356,7 +335,7 @@ export default function LiveSimulator({ victims, onMessageSent, onCallSent }) {
                   step="0.5"
                   value={pitchVariance}
                   onChange={(e) => setPitchVariance(e.target.value)}
-                  style={{ width: '100%' }}
+                  className="w-full accent-primary cursor-pointer"
                 />
               </div>
             </div>
@@ -364,139 +343,162 @@ export default function LiveSimulator({ victims, onMessageSent, onCallSent }) {
 
           {/* Run Button */}
           <button
+            type="button"
             onClick={handleRunSimulation}
             disabled={isLoading}
-            className="btn btn-primary"
-            style={{ width: '100%', padding: '14px', fontSize: '0.95rem' }}
+            className="w-full py-3.5 px-4 rounded-xl bg-[#022448] hover:bg-[#1b3a60] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-50"
           >
             {isLoading ? (
-              <span>⚡ Executing LangGraph Multi-Agent Engine...</span>
+              <span className="flex items-center gap-2">
+                <span className="material-symbols-outlined animate-spin">sync</span>
+                Executing LangGraph Multi-Agent Engine...
+              </span>
             ) : (
               <>
-                <Zap size={18} /> Run Multi-Agent Prediction Pipeline
+                <span className="material-symbols-outlined text-lg">bolt</span>
+                Run Multi-Agent Prediction Pipeline
               </>
             )}
           </button>
         </div>
 
-        {/* Right: Real-time Multi-Agent Output Display */}
-        <div className="glass-panel" style={{ padding: '24px' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff', marginBottom: '16px' }}>
-            Multi-Agent State & Decision Pipeline
-          </h3>
+        {/* Right Column: Multi-Agent State & Decision Pipeline Output */}
+        <div className="lg:col-span-6 bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-sm space-y-5 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between border-b border-outline-variant/20 pb-3 mb-4">
+              <h3 className="text-base font-bold text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-lg">smart_toy</span>
+                Multi-Agent State & Decision Pipeline
+              </h3>
+              <span className="text-xs text-on-surface-variant">Real-time Telemetry</span>
+            </div>
 
-          {simulationResult ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {/* Risk Tier Badge Result */}
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                padding: '16px',
-                borderRadius: '12px',
-                border: '1px solid var(--border-subtle)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}>
-                <div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Assigned Risk Tier</span>
-                  <div style={{ marginTop: '4px' }}>
-                    <span className={`badge ${simulationResult.risk_tier === 'Urgent' ? 'badge-urgent' : simulationResult.risk_tier === 'Counselor Outreach' ? 'badge-outreach' : 'badge-watch'}`} style={{ fontSize: '0.85rem' }}>
-                      {simulationResult.risk_tier}
+            {simulationResult ? (
+              <div className="space-y-4">
+                {/* Risk Tier & Fused Score Badge */}
+                <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Assigned Risk Tier</span>
+                    <div className="mt-1">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                        simulationResult.risk_tier === 'Urgent'
+                          ? 'bg-red-100 text-red-800 border border-red-200'
+                          : simulationResult.risk_tier === 'Counselor Outreach'
+                          ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                          : 'bg-blue-100 text-blue-800 border border-blue-200'
+                      }`}>
+                        <span className="w-2 h-2 rounded-full bg-current"></span>
+                        {simulationResult.risk_tier}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Fused Risk Score</span>
+                    <p className={`text-2xl font-black ${
+                      simulationResult.fused_risk_score >= 0.75
+                        ? 'text-error'
+                        : simulationResult.fused_risk_score >= 0.5
+                        ? 'text-amber-600'
+                        : 'text-primary'
+                    }`}>
+                      {(simulationResult.fused_risk_score * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+
+                {/* NLP Agent Card */}
+                <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 space-y-1.5">
+                  <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm">psychology</span>
+                    NLP Agent (Hugging Face RoBERTa GoEmotions)
+                  </span>
+                  {simulationResult.nlp_results ? (
+                    <div className="text-xs text-on-surface space-y-1 pt-1">
+                      <p className="flex justify-between">
+                        <span className="text-on-surface-variant">Distress Severity:</span>
+                        <strong className="font-semibold text-on-surface">{simulationResult.nlp_results.distress_severity}</strong>
+                      </p>
+                      <p className="flex justify-between">
+                        <span className="text-on-surface-variant">Top Emotions:</span>
+                        <span className="font-semibold text-on-surface">
+                          {simulationResult.nlp_results.top_emotions?.map(e => `${e.label} (${(e.score * 100).toFixed(0)}%)`).join(', ')}
+                        </span>
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-on-surface-variant italic">Voice prosody stream processed directly.</p>
+                  )}
+                </div>
+
+                {/* Voice Prosody Agent Card */}
+                {simulationResult.speech_results && (
+                  <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 space-y-1.5">
+                    <span className="text-xs font-bold text-secondary flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-sm">graphic_eq</span>
+                      Voice Prosody Agent (Acoustics)
                     </span>
+                    <div className="text-xs text-on-surface space-y-1 pt-1">
+                      <p className="flex justify-between">
+                        <span className="text-on-surface-variant">Tone Classification:</span>
+                        <strong className="font-semibold text-on-surface">{simulationResult.speech_results.tone_label}</strong>
+                      </p>
+                      <p className="flex justify-between">
+                        <span className="text-on-surface-variant">Tone Distress Score:</span>
+                        <strong className="font-semibold text-on-surface">{(simulationResult.speech_results.tone_distress_score * 100).toFixed(0)}%</strong>
+                      </p>
+                      {simulationResult.speech_results.prosodic_cues?.length > 0 && (
+                        <p className="text-error font-medium text-[11px] pt-0.5">
+                          Prosodic Cues: {simulationResult.speech_results.prosodic_cues.join(', ')}
+                        </p>
+                      )}
+                    </div>
                   </div>
+                )}
+
+                {/* Explainability Factors */}
+                <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 space-y-2">
+                  <span className="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm text-primary">analytics</span>
+                    Decision Explainability Factors
+                  </span>
+                  <ul className="space-y-1 text-xs text-on-surface-variant">
+                    {simulationResult.explainability_reasons?.map((r, i) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <span className="material-symbols-outlined text-emerald-600 text-xs mt-0.5">check_circle</span>
+                        <span>{r}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
-                <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Fused Risk Score</span>
-                  <p style={{
-                    fontSize: '1.75rem',
-                    fontWeight: 800,
-                    color: simulationResult.fused_risk_score >= 0.75 ? 'var(--urgent-red)' : simulationResult.fused_risk_score >= 0.5 ? 'var(--outreach-amber)' : 'var(--watch-blue)',
-                    fontFamily: 'var(--font-display)'
-                  }}>
-                    {(simulationResult.fused_risk_score * 100).toFixed(1)}%
-                  </p>
-                </div>
-              </div>
-
-              {/* Individual Agent Output Cards */}
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.02)',
-                padding: '14px',
-                borderRadius: '10px',
-                border: '1px solid var(--border-subtle)'
-              }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-indigo)' }}>
-                  🤖 NLP Agent (Hugging Face RoBERTa GoEmotions):
-                </span>
-                {simulationResult.nlp_results ? (
-                  <div style={{ marginTop: '6px', fontSize: '0.8rem' }}>
-                    <p>Distress Severity: <strong style={{ color: '#ffffff' }}>{simulationResult.nlp_results.distress_severity}</strong></p>
-                    <p>Emotions: {simulationResult.nlp_results.top_emotions.map(e => `${e.label} (${(e.score * 100).toFixed(0)}%)`).join(', ')}</p>
+                {/* Alert Dispatched Banner */}
+                {simulationResult.escalation_triggered && (
+                  <div className="bg-red-50 border border-red-200 p-3.5 rounded-xl flex items-center gap-3 text-red-800 text-xs font-semibold shadow-sm">
+                    <span className="material-symbols-outlined text-red-600 text-lg">warning</span>
+                    <div>
+                      P1 Emergency Counselor Alert Dispatched to Sakhi One-Stop Center Dashboard!
+                    </div>
                   </div>
-                ) : (
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Voice Prosody Stream Processed</p>
                 )}
               </div>
-
-              {/* Acoustic Prosody Real-Time Stats */}
-              {simulationResult.speech_results && (
-                <div style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  padding: '14px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--border-subtle)'
-                }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-cyan)' }}>
-                    🎙️ Voice Prosody Agent (Acoustics):
-                  </span>
-                  <div style={{ marginTop: '6px', fontSize: '0.8rem' }}>
-                    <p>Tone Classification: <strong style={{ color: '#ffffff' }}>{simulationResult.speech_results.tone_label}</strong></p>
-                    <p>Tone Distress Score: <strong>{(simulationResult.speech_results.tone_distress_score * 100).toFixed(0)}%</strong></p>
-                    {simulationResult.speech_results.prosodic_cues?.length > 0 && (
-                      <p style={{ color: '#fca5a5' }}>Cues: {simulationResult.speech_results.prosodic_cues.join(', ')}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Explainability Reasons */}
-              <div>
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#ffffff' }}>
-                  🔍 Decision Explainability Factors:
+            ) : (
+              <div className="py-20 text-center space-y-3 text-on-surface-variant">
+                <span className="material-symbols-outlined text-4xl text-outline-variant/60 animate-pulse">
+                  graphic_eq
                 </span>
-                <ul style={{ marginTop: '8px', paddingLeft: '18px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                  {simulationResult.explainability_reasons && simulationResult.explainability_reasons.map((r, i) => (
-                    <li key={i} style={{ marginBottom: '4px' }}>{r}</li>
-                  ))}
-                </ul>
+                <p className="text-sm font-medium">
+                  Click "Speak Into Mic (Start Call)" to talk in real time, or click "Run Multi-Agent Prediction Pipeline".
+                </p>
               </div>
+            )}
+          </div>
 
-              {/* Alert Dispatched Banner */}
-              {simulationResult.escalation_triggered && (
-                <div style={{
-                  background: 'rgba(239, 68, 68, 0.15)',
-                  border: '1px solid rgba(239, 68, 68, 0.4)',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  color: '#fca5a5',
-                  fontSize: '0.85rem',
-                  fontWeight: 600
-                }}>
-                  <AlertTriangle size={18} />
-                  P1 Emergency Counselor Alert Dispatched to District Dashboard!
-                </div>
-              )}
-            </div>
-          ) : (
-            <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-              <Zap size={32} color="var(--text-muted)" style={{ margin: '0 auto 12px', opacity: 0.5 }} />
-              <p style={{ fontSize: '0.9rem' }}>Click "Speak Into Mic (Start Call)" to talk in real time, or click "Run Multi-Agent Prediction Pipeline".</p>
-            </div>
-          )}
+          <div className="text-center border-t border-outline-variant/20 pt-3">
+            <p className="text-[11px] text-on-surface-variant">
+              🔒 Confidential & Compliant with DPDP Act 2023 • SC/ST (Prevention of Atrocities) Act Standard
+            </p>
+          </div>
         </div>
       </div>
     </div>
