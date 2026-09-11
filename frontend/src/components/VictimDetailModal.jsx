@@ -159,7 +159,7 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
         <span className="text-xs text-on-surface-variant font-mono ml-1">({victim.victim_id})</span>
       </div>
 
-      <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+      <div className="overflow-y-auto rounded-b-xl" style={{ maxHeight: 'calc(100vh - 280px)', background: '#0d1322', padding: '28px 28px 32px 28px' }}>
 
         {/* Header Profile */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
