@@ -7,7 +7,6 @@ import DistrictOversight from './components/DistrictOversight';
 import PatientPortal from './components/PatientPortal';
 import MinistryDashboard from './components/MinistryDashboard';
 import LiveSimulator from './components/LiveSimulator';
-import VictimDetailModal from './components/VictimDetailModal';
 import ChatWidget from './components/ChatWidget';
 import GuidedWalkthrough from './components/GuidedWalkthrough';
 
@@ -52,6 +51,13 @@ export default function App() {
   }, []);
 
   const handleSelectVictim = async (victimId) => {
+    // null means "go back to list"
+    if (!victimId) {
+      setSelectedVictimId(null);
+      setSelectedVictimDetails(null);
+      setSelectedVictimHistory([]);
+      return;
+    }
     setSelectedVictimId(victimId);
     try {
       const res = await fetch(`${API_BASE}/victim/${victimId}/history?role=${userRole}`);
@@ -61,12 +67,6 @@ export default function App() {
     } catch (err) {
       console.error("Error fetching victim details:", err);
     }
-  };
-
-  const handleCloseModal = () => {
-    setSelectedVictimId(null);
-    setSelectedVictimDetails(null);
-    setSelectedVictimHistory([]);
   };
 
   const handleTriggerSOS = async () => {
@@ -144,14 +144,17 @@ export default function App() {
             <PatientPortal />
           )}
 
-          {/* VIEW 3: Counselor Workspace */}
+          {/* VIEW 3: Counselor Workspace — inline patient detail replaces list */}
           {activeTab === 'dashboard' && (
             <TriageRoster
               victims={victims}
               onSelectVictim={handleSelectVictim}
               selectedVictimId={selectedVictimId}
+              selectedVictimDetails={selectedVictimDetails}
+              selectedVictimHistory={selectedVictimHistory}
               userRole={userRole}
               onRefresh={fetchDashboardData}
+              onRefreshData={fetchDashboardData}
             />
           )}
 
@@ -188,17 +191,6 @@ export default function App() {
           </div>
         </footer>
       </div>
-
-      {/* Detailed Victim History Drawer / Modal */}
-      {selectedVictimId && selectedVictimDetails && (
-        <VictimDetailModal
-          victim={selectedVictimDetails}
-          history={selectedVictimHistory}
-          onClose={handleCloseModal}
-          userRole={userRole}
-          onRefreshData={fetchDashboardData}
-        />
-      )}
 
       {/* Floating SOS Panic Button & Chat Widget */}
       <ChatWidget />

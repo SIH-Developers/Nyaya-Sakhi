@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import VictimDetailModal from './VictimDetailModal';
 
 const CHANNEL_META = {
   telegram_mobile: { label: 'Telegram', color: '#0088cc', icon: '📱' },
@@ -20,9 +21,22 @@ function ChannelBadge({ channel }) {
   );
 }
 
-export default function TriageRoster({ victims = [], onSelectVictim, selectedVictimId, userRole = 'counselor', onRefresh }) {
+export default function TriageRoster({ victims = [], onSelectVictim, selectedVictimId, selectedVictimDetails, selectedVictimHistory = [], userRole = 'counselor', onRefresh, onRefreshData }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
+
+  // When a victim detail is open, render the detail inline replacing the list
+  if (selectedVictimDetails) {
+    return (
+      <VictimDetailModal
+        victim={selectedVictimDetails}
+        history={selectedVictimHistory}
+        onClose={() => onSelectVictim && onSelectVictim(null)}
+        userRole={userRole}
+        onRefreshData={onRefreshData || onRefresh}
+      />
+    );
+  }
 
   const criticalCount = victims.filter(v => v.current_risk_tier === 'Urgent' || v.current_risk_tier === 'Critical').length;
   const elevatedCount = victims.filter(v => v.current_risk_tier === 'Counselor Outreach').length;

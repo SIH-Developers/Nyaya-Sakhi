@@ -144,47 +144,22 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.75)',
-      backdropFilter: 'blur(10px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 100,
-      padding: '20px'
-    }}>
-      <div className="glass-panel" style={{
-        width: '1000px',
-        maxWidth: '95vw',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        padding: '32px',
-        background: '#0d1322',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
-        position: 'relative'
-      }}>
-        {/* Close Button */}
+    <div className="w-full bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm" style={{ minHeight: '80vh' }}>
+      {/* ── Inline Back-breadcrumb toolbar ── */}
+      <div className="flex items-center gap-3 px-6 py-3.5 border-b border-outline-variant/30 bg-surface-container-low rounded-t-xl">
         <button
           onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '24px',
-            right: '24px',
-            background: 'rgba(255, 255, 255, 0.08)',
-            border: 'none',
-            color: 'var(--text-secondary)',
-            padding: '8px',
-            borderRadius: '50%',
-            cursor: 'pointer'
-          }}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-on-primary-container bg-surface-container hover:bg-primary-container px-3 py-1.5 rounded-lg transition-all"
         >
-          <X size={18} />
+          <span className="material-symbols-outlined text-base">arrow_back</span>
+          Back to Case Roster
         </button>
+        <span className="text-on-surface-variant text-xs">/</span>
+        <span className="text-xs font-semibold text-on-surface">{victim.name}</span>
+        <span className="text-xs text-on-surface-variant font-mono ml-1">({victim.victim_id})</span>
+      </div>
+
+      <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
 
         {/* Header Profile */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
