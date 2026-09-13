@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Nyaya-Sakhi",
+    "slug": "nyaya-sakhi-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#022448"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.nhaa.nyayasakhi"
+    },
+    "android": {
+      "package": "com.nhaa.nyayasakhi",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#022448",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "extra": {
+      "apiBase": "https://nyaya-sakhi-tszb.onrender.com/api"
+    }
+  }
+}
