@@ -44,11 +44,23 @@ export default function SOSHome({ navigation }) {
   // ✅ FIX: Subscribe ONCE (empty dep array) using a ref to avoid stale closure.
   // The callback always reads isOnlineRef.current — never a stale captured value.
   useEffect(() => {
-    // Seed initial state immediately from a one-time fetch
+    // Seed initial state immediately from a one-time fetch.
+    // Also flush any leftover queue if we're already online at mount time
+    // (covers: app rebooted, screen remounted, force-closed mid-retry, etc.)
     NetInfo.fetch().then((state) => {
       const online = state.isConnected && state.isInternetReachable !== false;
       isOnlineRef.current = online;
       setIsOnline(online);
+
+      // ✅ Startup flush — don't wait for a future connectivity change event
+      if (online) {
+        flushSOSQueue().then((count) => {
+          if (count > 0) {
+            setStatusMsg(`✅ ${count} queued SOS sent on startup.`);
+            setTimeout(() => setStatusMsg(null), 5000);
+          }
+        });
+      }
     });
 
     // Then keep a persistent listener for all future changes
