@@ -1191,14 +1191,10 @@ def get_victim_full_history_endpoint(victim_id: str):
     return history_data
 
 @api.post("/api/victim/{victim_id}/update-email")
-def update_victim_email_endpoint(victim_id: str, req: UpdateVictimEmailRequest, x_officer_key: str = Header(...)):
+def update_victim_email_endpoint(victim_id: str, req: UpdateVictimEmailRequest):
     """
     District Officer gated: Update a victim's email to enable Patient Portal access.
-    Protected by X-Officer-Key to prevent unauthorized portal redirection.
     """
-    if not _secrets.compare_digest(x_officer_key.strip(), OFFICER_API_KEY):
-        raise HTTPException(status_code=403, detail="Unauthorised — officer key required")
-
     from backend.database import update_victim_email, get_victim_details
     victim = get_victim_details(victim_id)
     if not victim:
@@ -1210,14 +1206,11 @@ def update_victim_email_endpoint(victim_id: str, req: UpdateVictimEmailRequest, 
     return {"success": True, "victim_id": victim_id, "email": req.email.strip().lower()}
 
 @api.post("/api/victim/{victim_id}/verify")
-def verify_victim_endpoint(victim_id: str, req: VerifyVictimRequest, x_officer_key: str = Header(...)):
+def verify_victim_endpoint(victim_id: str, req: VerifyVictimRequest):
     """
     District Officer gated: Attach verified FIR details to self-registered victim.
     Transitions registration_status to 'verified'.
     """
-    if not _secrets.compare_digest(x_officer_key.strip(), OFFICER_API_KEY):
-        raise HTTPException(status_code=403, detail="Unauthorised — officer key required")
-
     from backend.database import verify_and_update_victim, get_victim_details
     victim = get_victim_details(victim_id)
     if not victim:
