@@ -153,13 +153,6 @@ def init_db():
             cursor.execute(col_def[1])
         except Exception:
             pass  # column already exists
-        victim_id TEXT NOT NULL,
-        role TEXT NOT NULL,
-        content TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        FOREIGN KEY (victim_id) REFERENCES victims(victim_id)
-    )
-    """)
 
     conn.commit()
     conn.close()
