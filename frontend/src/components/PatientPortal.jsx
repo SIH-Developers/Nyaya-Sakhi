@@ -104,9 +104,10 @@ export default function PatientPortal() {
         return;
       }
 
-      if (data.access_token) {
-        localStorage.setItem('patient_token', data.access_token);
-        setSessionToken(data.access_token);
+      const token = data.token || data.access_token;
+      if (token) {
+        localStorage.setItem('patient_token', token);
+        setSessionToken(token);
       }
     } catch (err) {
       console.error(err);
