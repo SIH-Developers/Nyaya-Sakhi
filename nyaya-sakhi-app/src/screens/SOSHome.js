@@ -21,6 +21,8 @@ export default function SOSHome({ navigation }) {
   const [isOnline, setIsOnline] = useState(true);
   const [copied, setCopied] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  // ✅ Ref always reflects the latest isOnline value — readable inside closures
+  const isOnlineRef = useRef(true);
 
   // Pulsing animation for the SOS button
   useEffect(() => {
@@ -39,12 +41,25 @@ export default function SOSHome({ navigation }) {
     getOrCreateAnonymousId().then(setVictimId);
   }, []);
 
-  // Monitor connectivity + flush queue on reconnect
+  // ✅ FIX: Subscribe ONCE (empty dep array) using a ref to avoid stale closure.
+  // The callback always reads isOnlineRef.current — never a stale captured value.
   useEffect(() => {
+    // Seed initial state immediately from a one-time fetch
+    NetInfo.fetch().then((state) => {
+      const online = state.isConnected && state.isInternetReachable !== false;
+      isOnlineRef.current = online;
+      setIsOnline(online);
+    });
+
+    // Then keep a persistent listener for all future changes
     const unsub = NetInfo.addEventListener((state) => {
       const online = state.isConnected && state.isInternetReachable !== false;
-      if (!isOnline && online) {
-        // Came back online — flush queued SOS
+      const wasOffline = !isOnlineRef.current;  // ✅ reads ref, never stale
+      isOnlineRef.current = online;             // ✅ update ref immediately
+      setIsOnline(online);                      // update state for UI
+
+      if (wasOffline && online) {
+        // Genuinely came back online — flush the queue
         flushSOSQueue().then((count) => {
           if (count > 0) {
             setStatusMsg(`✅ ${count} queued SOS sent automatically.`);
@@ -52,10 +67,10 @@ export default function SOSHome({ navigation }) {
           }
         });
       }
-      setIsOnline(online);
     });
-    return () => unsub();
-  }, [isOnline]);
+
+    return () => unsub(); // cleanup on unmount only
+  }, []); // ✅ empty dep array — subscribe once, never re-subscribes
 
   const handleSOS = async () => {
     if (sosState === STATE_LOADING || sosState === STATE_SENT) return;
@@ -67,7 +82,7 @@ export default function SOSHome({ navigation }) {
     setSosState(STATE_LOADING);
     setStatusMsg(null);
 
-    if (!isOnline) {
+    if (!isOnlineRef.current) {
       // Offline — queue for later
       await enqueueSOSForRetry(victimId);
       setSosState(STATE_QUEUED);
