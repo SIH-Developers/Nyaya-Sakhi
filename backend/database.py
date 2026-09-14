@@ -85,29 +85,6 @@ def init_db():
     )
     """)
 
-    # Migration: add new columns if they don't exist (safe for existing DBs)
-    for col_def in [
-        ("consent_timestamp", "ALTER TABLE victims ADD COLUMN consent_timestamp TEXT"),
-        ("last_channel",       "ALTER TABLE victims ADD COLUMN last_channel TEXT"),
-        ("telegram_chat_id",   "ALTER TABLE victims ADD COLUMN telegram_chat_id TEXT"),
-        ("registration_status", "ALTER TABLE victims ADD COLUMN registration_status TEXT DEFAULT 'verified'"),
-        ("link_code",          "ALTER TABLE victims ADD COLUMN link_code TEXT"),
-        ("link_code_expiry",   "ALTER TABLE victims ADD COLUMN link_code_expiry TEXT"),
-        ("email",              "ALTER TABLE victims ADD COLUMN email TEXT"),
-        ("phone_number",       "ALTER TABLE victims ADD COLUMN phone_number TEXT"),
-        # escalation_alerts migrations
-        ("trigger_type",       "ALTER TABLE escalation_alerts ADD COLUMN trigger_type TEXT DEFAULT 'nlp_detected'"),
-        ("triggered_by",       "ALTER TABLE escalation_alerts ADD COLUMN triggered_by TEXT DEFAULT 'system'"),
-        # location columns (Task 4 — GPS from mobile SOS)
-        ("lat",                "ALTER TABLE escalation_alerts ADD COLUMN lat REAL"),
-        ("lng",                "ALTER TABLE escalation_alerts ADD COLUMN lng REAL"),
-        ("location_accuracy_meters", "ALTER TABLE escalation_alerts ADD COLUMN location_accuracy_meters REAL"),
-    ]:
-        try:
-            cursor.execute(col_def[1])
-        except Exception:
-            pass  # column already exists
-
     # 4. Escalation Alerts table (TASK 2 — used by escalation_agent)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS escalation_alerts (
@@ -122,6 +99,11 @@ def init_db():
         human_in_the_loop_status TEXT DEFAULT 'Awaiting Counselor Review',
         acknowledged INTEGER DEFAULT 0,
         channel TEXT,
+        trigger_type TEXT DEFAULT 'nlp_detected',
+        triggered_by TEXT DEFAULT 'system',
+        lat REAL,
+        lng REAL,
+        location_accuracy_meters REAL,
         FOREIGN KEY (victim_id) REFERENCES victims(victim_id)
     )
     """)
@@ -143,6 +125,34 @@ def init_db():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS conversation_memory (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        victim_id TEXT NOT NULL,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        FOREIGN KEY (victim_id) REFERENCES victims(victim_id)
+    )
+    """)
+
+    # Migration: add new columns if they don't exist for older databases
+    for col_def in [
+        ("consent_timestamp", "ALTER TABLE victims ADD COLUMN consent_timestamp TEXT"),
+        ("last_channel",       "ALTER TABLE victims ADD COLUMN last_channel TEXT"),
+        ("telegram_chat_id",   "ALTER TABLE victims ADD COLUMN telegram_chat_id TEXT"),
+        ("registration_status", "ALTER TABLE victims ADD COLUMN registration_status TEXT DEFAULT 'verified'"),
+        ("link_code",          "ALTER TABLE victims ADD COLUMN link_code TEXT"),
+        ("link_code_expiry",   "ALTER TABLE victims ADD COLUMN link_code_expiry TEXT"),
+        ("email",              "ALTER TABLE victims ADD COLUMN email TEXT"),
+        ("phone_number",       "ALTER TABLE victims ADD COLUMN phone_number TEXT"),
+        ("trigger_type",       "ALTER TABLE escalation_alerts ADD COLUMN trigger_type TEXT DEFAULT 'nlp_detected'"),
+        ("triggered_by",       "ALTER TABLE escalation_alerts ADD COLUMN triggered_by TEXT DEFAULT 'system'"),
+        ("lat",                "ALTER TABLE escalation_alerts ADD COLUMN lat REAL"),
+        ("lng",                "ALTER TABLE escalation_alerts ADD COLUMN lng REAL"),
+        ("location_accuracy_meters", "ALTER TABLE escalation_alerts ADD COLUMN location_accuracy_meters REAL"),
+    ]:
+        try:
+            cursor.execute(col_def[1])
+        except Exception:
+            pass  # column already exists
         victim_id TEXT NOT NULL,
         role TEXT NOT NULL,
         content TEXT NOT NULL,

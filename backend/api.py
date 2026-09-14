@@ -148,6 +148,37 @@ def ack_alert(alert_id: str, req: AcknowledgeAlertRequest):
         raise HTTPException(status_code=404, detail="Alert ID not found")
     return {"success": True, "alert_id": alert_id, "status": "Acknowledged"}
 
+@api.get("/api/seed-gps")
+def seed_dummy_gps():
+    """Hackathon demo helper: seeds dummy GPS coordinates for a few victims."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    # Dummy coordinates in Lucknow/Patna
+    dummy_data = [
+        ("VIC-RIYA-204", 26.8467, 80.9462),
+        ("VIC-AMIT-102", 25.5941, 85.1376)
+    ]
+    updated = 0
+    for vic_id, lat, lng in dummy_data:
+        # First ensure there's at least one alert for them
+        cursor.execute("SELECT alert_id FROM escalation_alerts WHERE victim_id = ? ORDER BY timestamp DESC LIMIT 1", (vic_id,))
+        row = cursor.fetchone()
+        if not row:
+            from uuid import uuid4
+            from datetime import datetime
+            alert_id = f"ALT-{uuid4().hex[:8].upper()}"
+            cursor.execute(
+                "INSERT INTO escalation_alerts (alert_id, victim_id, timestamp, priority, risk_tier, fused_risk_score, channel, lat, lng) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (alert_id, vic_id, datetime.now().isoformat(), "P1-CRITICAL", "Urgent", 0.95, "app", lat, lng)
+            )
+            updated += 1
+        else:
+            cursor.execute("UPDATE escalation_alerts SET lat = ?, lng = ? WHERE alert_id = ?", (lat, lng, row["alert_id"]))
+            updated += 1
+    conn.commit()
+    conn.close()
+    return {"success": True, "message": f"Seeded {updated} victims with Live GPS coordinates!"}
+
 @api.post("/api/message")
 def handle_text_message(req: ChatbotMessageRequest):
     """
