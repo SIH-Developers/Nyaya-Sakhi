@@ -297,6 +297,17 @@ export default function TriageRoster({ victims = [], onSelectVictim, selectedVic
                         <div className="flex flex-col">
                           <span className="text-on-surface font-medium">{v.district || 'Patna, Bihar'}</span>
                           <span className="text-[11px] text-on-surface-variant">{v.fir_number || 'FIR-2026/312'}</span>
+                          {v.lat && v.lng && (
+                            <a
+                              href={`https://maps.google.com/?q=${v.lat},${v.lng}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[11px] font-bold text-error mt-0.5 hover:underline flex items-center"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              📍 Live GPS
+                            </a>
+                          )}
                         </div>
                       </td>
                       <td className="py-3 px-4">

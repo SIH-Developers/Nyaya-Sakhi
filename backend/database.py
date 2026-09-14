@@ -276,7 +276,10 @@ def get_all_victims() -> List[Dict[str, Any]]:
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-    SELECT * FROM victims
+    SELECT v.*, 
+           (SELECT lat FROM escalation_alerts e WHERE e.victim_id = v.victim_id AND e.lat IS NOT NULL ORDER BY timestamp DESC LIMIT 1) as lat,
+           (SELECT lng FROM escalation_alerts e WHERE e.victim_id = v.victim_id AND e.lng IS NOT NULL ORDER BY timestamp DESC LIMIT 1) as lng
+    FROM victims v
     ORDER BY 
         CASE current_risk_tier
             WHEN 'Urgent' THEN 1
