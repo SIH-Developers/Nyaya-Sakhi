@@ -277,7 +277,8 @@ export default function TriageRoster({ victims = [], onSelectVictim, selectedVic
               ) : (
                 filteredVictims.map((v) => {
                   const isSelected = selectedVictimId === v.victim_id;
-                  const score = v.risk_score || 0;
+                  const rawScore = v.current_risk_score ?? v.fused_risk_score ?? v.risk_score ?? 0;
+                  const score = rawScore > 1 ? rawScore / 100 : rawScore;
                   return (
                     <tr
                       key={v.victim_id}

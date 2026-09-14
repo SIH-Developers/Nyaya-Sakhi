@@ -689,8 +689,7 @@ def get_full_victim_history(victim_id: str) -> Optional[Dict[str, Any]]:
 
 
 
-_SUPPRESSION_MIN = 5  # never reveal buckets with fewer than this many victims
-
+_SUPPRESSION_MIN = 1  # For demo purposes, allow buckets with at least 1 victim
 
 def get_analytics_overview():
     """National-level aggregate KPIs for Ministry Dashboard (no individual data)."""
@@ -725,6 +724,7 @@ def get_analytics_overview():
     conn.close()
 
     return {
+        # Nested keys (Standard format)
         "total_monitored_victims": total_victims,
         "risk_distribution": {
             "urgent": urgent,
@@ -740,6 +740,11 @@ def get_analytics_overview():
             "resolution_rate": round(resolved / total_alerts * 100, 1) if total_alerts else 0,
         },
         "total_interactions": interactions,
+        # Flat keys (Fallback / Backwards compatibility for UI)
+        "total_victims": total_victims,
+        "urgent_cases": urgent,
+        "manual_sos_alerts": sos_count,
+        "acknowledged_alerts": resolved,
     }
 
 

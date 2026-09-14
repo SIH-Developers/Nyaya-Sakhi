@@ -88,7 +88,7 @@ export default function MinistryDashboard() {
           </div>
           <div className="mt-4">
             <span className="font-headline-lg text-3xl text-on-surface font-bold tracking-tight">
-              {overview ? overview.total_victims : '—'}
+              {overview ? (overview.total_monitored_victims ?? overview.total_victims ?? 0) : (isLoading ? '...' : '0')}
             </span>
             <div className="flex items-center gap-1 mt-1 text-xs text-secondary font-semibold">
               <span className="material-symbols-outlined text-sm">trending_up</span>
@@ -107,7 +107,7 @@ export default function MinistryDashboard() {
           </div>
           <div className="mt-4">
             <span className="font-headline-lg text-3xl text-error font-bold tracking-tight">
-              {overview ? overview.urgent_cases : '—'}
+              {overview ? (overview.risk_distribution?.urgent ?? overview.urgent_cases ?? 0) : (isLoading ? '...' : '0')}
             </span>
             <div className="flex items-center gap-1 mt-1 text-xs text-error font-semibold">
               <span className="material-symbols-outlined text-sm">timer</span>
@@ -126,7 +126,7 @@ export default function MinistryDashboard() {
           </div>
           <div className="mt-4">
             <span className="font-headline-xl text-3xl text-tertiary font-bold tracking-tight">
-              {overview ? overview.manual_sos_alerts : '—'}
+              {overview ? (overview.alerts?.manual_sos ?? overview.manual_sos_alerts ?? 0) : (isLoading ? '...' : '0')}
             </span>
             <div className="flex items-center gap-1 mt-1 text-xs text-on-surface-variant font-medium">
               <span>Voice & SMS Dispatch Active</span>
@@ -144,7 +144,7 @@ export default function MinistryDashboard() {
           </div>
           <div className="mt-4">
             <span className="font-headline-xl text-3xl text-secondary font-bold tracking-tight">
-              {overview ? overview.acknowledged_alerts : '—'}
+              {overview ? (overview.alerts?.resolved ?? overview.acknowledged_alerts ?? 0) : (isLoading ? '...' : '0')}
             </span>
             <div className="flex items-center gap-1 mt-1 text-xs text-secondary font-semibold">
               <span>Verified Outreach Rate</span>
@@ -178,19 +178,25 @@ export default function MinistryDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/20 bg-surface-container-lowest">
-              {districts.length === 0 ? (
+              {isLoading ? (
                 <tr>
                   <td colSpan="5" className="py-6 text-center text-on-surface-variant">
                     Loading district aggregate metrics...
+                  </td>
+                </tr>
+              ) : districts.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="py-6 text-center text-on-surface-variant">
+                    No district aggregate records found matching current criteria.
                   </td>
                 </tr>
               ) : (
                 districts.map((d, idx) => (
                   <tr key={idx} className="hover:bg-surface-container-low/60 transition-colors">
                     <td className="py-3 px-4 font-semibold text-primary">{d.district || 'Central Division'}</td>
-                    <td className="py-3 px-4 font-bold">{d.total_cases || d.count || '<5'}</td>
-                    <td className="py-3 px-4 text-error font-semibold">{d.urgent_cases || '0'}</td>
-                    <td className="py-3 px-4 text-tertiary font-semibold">{d.manual_sos || '0'}</td>
+                    <td className="py-3 px-4 font-bold">{d.victim_count ?? d.total_cases ?? d.count ?? '<5'}</td>
+                    <td className="py-3 px-4 text-error font-semibold">{d.urgent_count ?? d.urgent_cases ?? 0}</td>
+                    <td className="py-3 px-4 text-tertiary font-semibold">{d.sos_alerts ?? d.manual_sos ?? 0}</td>
                     <td className="py-3 px-4">
                       <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-secondary-container text-on-secondary-container">
                         100% Compliant
