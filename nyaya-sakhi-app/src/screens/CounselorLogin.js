@@ -5,11 +5,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
-import { OFFICER_KEY_STORE_KEY, OWNER_ID_STORE_KEY } from '../config/api';
-import { API_BASE } from '../config/api';
+import { OFFICER_KEY_STORE_KEY, OWNER_ID_STORE_KEY, API_BASE } from '../config/api';
 
 export default function CounselorLogin({ navigation }) {
   const [key, setKey] = useState('');
+  const [showKey, setShowKey] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -20,7 +20,6 @@ export default function CounselorLogin({ navigation }) {
     }
     setLoading(true);
     try {
-      // Validate the key against the backend
       const res = await fetch(`${API_BASE}/victims?role=counselor`, {
         headers: { 'x-officer-key': trimmed },
       });
@@ -32,12 +31,11 @@ export default function CounselorLogin({ navigation }) {
         Alert.alert('Error', `Server error (${res.status}). Please try again.`);
         return;
       }
-      // Store securely
       await SecureStore.setItemAsync(OFFICER_KEY_STORE_KEY, trimmed);
       await SecureStore.setItemAsync(OWNER_ID_STORE_KEY, 'counselor');
       navigation.replace('AlertFeed', { officerKey: trimmed });
     } catch (err) {
-      Alert.alert('Network Error', 'Could not connect to the server. Check your internet connection.');
+      Alert.alert('Network Error', 'Could not connect. Check your internet connection.');
     } finally {
       setLoading(false);
     }
@@ -45,64 +43,85 @@ export default function CounselorLogin({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        style={styles.inner}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.icon}>🛡️</Text>
-            <Text style={styles.title}>Counselor Login</Text>
-            <Text style={styles.subtitle}>Enter your NHAA Officer Access Key</Text>
+
+          {/* Top nav */}
+          <View style={styles.topNav}>
+            <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+              <Text style={styles.backArrow}>←</Text>
+            </TouchableOpacity>
+            <View style={styles.authBadge}>
+              <Text style={styles.authIcon}>🛡️</Text>
+              <Text style={styles.authText}>AUTHORIZED ACCESS</Text>
+            </View>
           </View>
 
-          {/* Input */}
-          <View style={styles.card}>
-            <Text style={styles.label}>Officer Access Key</Text>
-            <TextInput
-              style={styles.input}
-              value={key}
-              onChangeText={setKey}
-              placeholder="nhaa-officer-xxxx"
-              placeholderTextColor="#64748b"
-              autoCapitalize="none"
-              autoCorrect={false}
-              secureTextEntry={false}
-              returnKeyType="done"
-              onSubmitEditing={handleLogin}
-            />
+          {/* Icon */}
+          <View style={styles.iconWrap}>
+            <View style={styles.iconBox}>
+              <Text style={styles.iconEmoji}>🛡️</Text>
+            </View>
+          </View>
 
+          {/* Title */}
+          <Text style={styles.title}>Counselor Login</Text>
+          <Text style={styles.subtitle}>
+            Enter credential credentials to decrypt{'\n'}casework records and active triage feeds.
+          </Text>
+
+          {/* Key input */}
+          <View style={styles.form}>
+            <View style={styles.labelRow}>
+              <Text style={styles.label}>Officer Key</Text>
+              <Text style={styles.labelHint}>8-digit format</Text>
+            </View>
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.input}
+                value={key}
+                onChangeText={setKey}
+                placeholder="Enter your assigned 8-digit key"
+                placeholderTextColor="#94a3b8"
+                autoCapitalize="none"
+                autoCorrect={false}
+                secureTextEntry={!showKey}
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
+              />
+              <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowKey(!showKey)}>
+                <Text style={styles.eyeIcon}>{showKey ? '🙈' : '👁️'}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Sign In button */}
             <TouchableOpacity
-              style={[styles.btn, loading && styles.btnDisabled]}
+              style={[styles.signInBtn, loading && styles.btnDisabled]}
               onPress={handleLogin}
               disabled={loading}
-              activeOpacity={0.85}
+              activeOpacity={0.88}
             >
               {loading
                 ? <ActivityIndicator color="#fff" size="small" />
-                : <Text style={styles.btnText}>Verify &amp; Login</Text>
+                : <Text style={styles.signInText}>Sign In  →</Text>
               }
             </TouchableOpacity>
 
-            <Text style={styles.hint}>
-              Contact your District Officer or OSC supervisor if you do not have a key.
+            {/* Biometrics */}
+            <TouchableOpacity style={styles.biometricsBtn}>
+              <Text style={styles.biometricsIcon}>🪪</Text>
+              <Text style={styles.biometricsText}>Use Hardware Key / Biometrics</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Info box */}
+          <View style={styles.infoBox}>
+            <Text style={styles.infoIcon}>🔒</Text>
+            <Text style={styles.infoText}>
+              Contact your district administrator if you don't have a key or your assignment token requires statutory re-issuance.
             </Text>
           </View>
 
-          {/* Info */}
-          <View style={styles.infoBox}>
-            <Text style={styles.infoText}>🔒 Keys are stored securely using device encryption (SecureStore)</Text>
-            <Text style={styles.infoText}>📋 This session persists across app restarts until you log out</Text>
-          </View>
-
-          {/* Back */}
-          <TouchableOpacity
-            style={styles.backBtn}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.backText}>← Back to Role Selection</Text>
-          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -110,59 +129,71 @@ export default function CounselorLogin({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#022448' },
-  inner: { flex: 1 },
-  scroll: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 32 },
-  header: { alignItems: 'center', marginBottom: 32 },
-  icon: { fontSize: 56, marginBottom: 12 },
-  title: { fontSize: 26, fontWeight: '800', color: '#ffffff' },
-  subtitle: { fontSize: 14, color: '#a5c8f0', marginTop: 6, textAlign: 'center' },
-  card: {
-    backgroundColor: '#0d2a40',
-    borderRadius: 16,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: '#1e4060',
-    marginBottom: 20,
+  container: { flex: 1, backgroundColor: '#f5f7fa' },
+  scroll: { flexGrow: 1, paddingHorizontal: 24, paddingBottom: 32 },
+  topNav: {
+    flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12,
   },
-  label: {
-    color: '#94c4e0',
-    fontSize: 13,
-    fontWeight: '600',
-    marginBottom: 8,
-    letterSpacing: 0.5,
+  backBtn: {
+    width: 40, height: 40, borderRadius: 10, backgroundColor: '#ffffff',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06, shadowRadius: 3, elevation: 2,
+  },
+  backArrow: { fontSize: 18, color: '#0f172a', fontWeight: '600' },
+  authBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: '#f0fdf9', borderRadius: 20,
+    paddingHorizontal: 12, paddingVertical: 5,
+    borderWidth: 1, borderColor: '#bbf7d0',
+  },
+  authIcon: { fontSize: 12 },
+  authText: { color: '#0d9488', fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
+  iconWrap: { alignItems: 'center', marginTop: 20, marginBottom: 16 },
+  iconBox: {
+    width: 72, height: 72, borderRadius: 20, backgroundColor: '#f0fdf9',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: '#d1fae5',
+  },
+  iconEmoji: { fontSize: 34 },
+  title: { fontSize: 26, fontWeight: '800', color: '#0f172a', textAlign: 'center', marginBottom: 8 },
+  subtitle: { fontSize: 13, color: '#64748b', textAlign: 'center', lineHeight: 19, marginBottom: 28 },
+  form: { gap: 12 },
+  labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  label: { fontSize: 14, fontWeight: '700', color: '#0f172a' },
+  labelHint: { fontSize: 12, color: '#94a3b8' },
+  inputRow: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#ffffff', borderRadius: 12,
+    borderWidth: 1, borderColor: '#e2e8f0',
+    paddingHorizontal: 14,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04, shadowRadius: 2, elevation: 1,
   },
   input: {
-    backgroundColor: '#1a3a5c',
-    borderRadius: 10,
-    padding: 14,
-    color: '#ffffff',
-    fontSize: 15,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#2a5a8c',
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    flex: 1, paddingVertical: 14, fontSize: 15, color: '#0f172a',
   },
-  btn: {
-    backgroundColor: '#1e5fa8',
-    borderRadius: 10,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginBottom: 12,
+  eyeBtn: { padding: 6 },
+  eyeIcon: { fontSize: 18 },
+  signInBtn: {
+    backgroundColor: '#0d6e64', borderRadius: 12,
+    paddingVertical: 16, alignItems: 'center',
+    shadowColor: '#0d6e64', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
   },
   btnDisabled: { opacity: 0.6 },
-  btnText: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
-  hint: { color: '#64748b', fontSize: 12, textAlign: 'center', lineHeight: 17 },
-  infoBox: {
-    backgroundColor: 'rgba(30, 95, 168, 0.15)',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#1e3a50',
-    gap: 8,
-    marginBottom: 24,
+  signInText: { color: '#ffffff', fontSize: 16, fontWeight: '800', letterSpacing: 0.3 },
+  biometricsBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 10,
   },
-  infoText: { color: '#8ab4d4', fontSize: 12, lineHeight: 17 },
-  backBtn: { alignItems: 'center', paddingVertical: 8 },
-  backText: { color: '#60a5d4', fontSize: 14, fontWeight: '600' },
+  biometricsIcon: { fontSize: 16 },
+  biometricsText: { color: '#0d9488', fontSize: 14, fontWeight: '600' },
+  infoBox: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 10,
+    backgroundColor: '#f8fafc', borderRadius: 12, padding: 14,
+    borderWidth: 1, borderColor: '#e2e8f0', marginTop: 20,
+  },
+  infoIcon: { fontSize: 18, marginTop: 1 },
+  infoText: { flex: 1, color: '#64748b', fontSize: 13, lineHeight: 19 },
 });

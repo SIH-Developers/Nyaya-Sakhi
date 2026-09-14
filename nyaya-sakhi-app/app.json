@@ -28,17 +28,29 @@
         "INTERNET",
         "ACCESS_NETWORK_STATE",
         "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
+        "VIBRATE",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
       ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Nyaya-Sakhi uses your location only when you press the SOS button to help your counselor respond faster. You are never tracked at other times."
+        }
+      ]
     ],
     "extra": {
-      "apiBase": "https://nyaya-sakhi-tszb.onrender.com/api"
-    }
+      "apiBase": "https://nyaya-sakhi-tszb.onrender.com/api",
+      "eas": {
+        "projectId": "473005f7-00d3-4c74-bbeb-e9f126e2ecf5"
+      }
+    },
+    "owner": "aniimeessh"
   }
 }

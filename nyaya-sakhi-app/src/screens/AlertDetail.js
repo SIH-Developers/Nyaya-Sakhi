@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  ActivityIndicator, Alert, Linking
+  ActivityIndicator, Alert, Linking, StatusBar
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
@@ -9,11 +9,19 @@ import { fetchVictimHistory } from '../services/api';
 import { OFFICER_KEY_STORE_KEY, API_BASE } from '../config/api';
 
 export default function AlertDetail({ navigation, route }) {
-  const { victimId, officerKey: passedKey } = route.params;
+  // Support both new (alert object) and legacy (victimId string) params
+  const alertObj = route.params?.alert || null;
+  const victimId = alertObj?.victim_id || alertObj?.id || route.params?.victimId;
+  const passedKey = route.params?.officerKey;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [acknowledging, setAcknowledging] = useState(false);
+
+  // Location from alert object (attached by mobile app after SOS)
+  const lat = alertObj?.lat ?? data?.lat ?? null;
+  const lng = alertObj?.lng ?? data?.lng ?? null;
+  const hasLocation = lat !== null && lng !== null;
 
   useEffect(() => {
     const load = async () => {
@@ -47,7 +55,13 @@ export default function AlertDetail({ navigation, route }) {
     }
   };
 
-  const handleCall = (phone) => {
+  const handleOpenMaps = () => {
+    if (!hasLocation) return;
+    Linking.openURL(`https://www.google.com/maps?q=${lat},${lng}`);
+  };
+
+  const handleCall = (phone) =>
+ {
     const tel = `tel:${phone || '14566'}`;
     Linking.openURL(tel).catch(() =>
       Alert.alert('Error', 'Could not open dialler.')

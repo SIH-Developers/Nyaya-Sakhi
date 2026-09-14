@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container-low":"#eff4ff","on-primary-fixed":"#001c3b","on-tertiary-container":"#ff7884","surface-container-high":"#dce9ff","surface-container":"#e5eeff","secondary-fixed":"#89f5e7","tertiary":"#4f0011","on-tertiary-fixed-variant":"#920028","inverse-on-surface":"#eaf1ff","on-error":"#ffffff","error-container":"#ffdad6","secondary":"#006a61","surface-variant":"#d3e4fe","outline-variant":"#c4c6cf","on-secondary-fixed-variant":"#005049","secondary-fixed-dim":"#6bd8cb","surface":"#f8f9ff","inverse-surface":"#213145","background":"#f8f9ff","on-surface-variant":"#43474e","tertiary-fixed-dim":"#ffb3b6","on-background":"#0b1c30","inverse-primary":"#adc8f5","on-secondary":"#ffffff","primary-container":"#1e3a5f","on-tertiary":"#ffffff","surface-container-highest":"#d3e4fe","on-primary-container":"#8aa4cf","on-primary":"#ffffff","on-error-container":"#93000a","secondary-container":"#86f2e4","primary":"#022448","on-tertiary-fixed":"#40000c","on-secondary-container":"#006f66","tertiary-container":"#78001f","surface-container-lowest":"#ffffff","on-primary-fixed-variant":"#2d486d","surface-tint":"#455f87","primary-fixed-dim":"#adc8f5","surface-dim":"#cbdbf5","tertiary-fixed":"#ffdada","on-secondary-fixed":"#00201d","error":"#ba1a1a","primary-fixed":"#d5e3ff","on-surface":"#0b1c30","surface-bright":"#f8f9ff","outline":"#74777f"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},spacing:{"space-sm":"0.5rem","margin-lg":"3rem","space-lg":"1.5rem","gutter-lg":"2rem","gutter-sm":"1rem","space-xl":"2.5rem","margin":"1.5rem","gutter":"1.5rem","space-xs":"0.25rem","margin-sm":"1rem","space-md":"1rem"},fontFamily:{"headline-xl":["Public Sans"],"label-md":["Inter"],"body-sm":["Inter"],"headline-sm":["Public Sans"],"headline-lg":["Public Sans"],"headline-lg-mobile":["Public Sans"],"label-sm":["Inter"],"headline-md":["Public Sans"],"body-md":["Inter"],"headline-xl-mobile":["Public Sans"],"body-lg":["Inter"],"title-md":["Inter"]},fontSize:{"headline-xl":["40px",{lineHeight:"48px",letterSpacing:"-0.02em",fontWeight:"700"}],"label-md":["14px",{lineHeight:"20px",letterSpacing:"0.01em",fontWeight:"600"}],"body-sm":["14px",{lineHeight:"20px",fontWeight:"400"}],"headline-sm":["20px",{lineHeight:"28px",fontWeight:"600"}],"headline-lg":["32px",{lineHeight:"40px",letterSpacing:"-0.015em",fontWeight:"600"}],"headline-lg-mobile":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],"label-sm":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"600"}],"headline-md":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],"body-md":["16px",{lineHeight:"24px",fontWeight:"400"}],"headline-xl-mobile":["30px",{lineHeight:"38px",letterSpacing:"-0.01em",fontWeight:"700"}],"body-lg":["18px",{lineHeight:"28px",fontWeight:"400"}],"title-md":["18px",{lineHeight:"26px",fontWeight:"600"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 right-0 h-16 z-50 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-gutter-lg flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><img alt="Nyaya-Sakhi Emblem Wordmark" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1Xc1rzr_kkQkQK6ZDo38F21VuHro1TgHRaq_722naGSV3tmy1HxGzVQePo3Qx8-n9zsUzEqT-GW33UCAkVupma0_Szcr0YNXJYJ-x0jWBO8tMFO3QRZDdlAYxcudhlewZ6uQNeA2s9MFgkMyrCn8xKEjNBfrPJefN_GjBBzZzGCxsUPFKPFTZKG8CyJEWyZv_y8Q4vzI-oVUy_RNam9SB9TA2YVHIAMMRahsh_w4-avxjm93Ok6P5tAaQ"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary leading-tight tracking-tight">Nyaya-Sakhi</span><span class="font-label-sm text-label-sm text-on-surface-variant">Government of India | Ministry of Women &amp; Child Development</span></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-sm bg-surface-container-low px-space-md py-space-xs rounded"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-secondary text-sm">support_agent</span><span class="font-label-sm text-label-sm text-on-surface-variant">Women Helpline:</span><a class="font-label-sm text-label-sm text-secondary hover:text-on-secondary-container transition-colors" href="tel:181">181</a></div><span class="text-outline-variant font-label-sm text-label-sm">|</span><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-error text-sm">emergency</span><span class="font-label-sm text-label-sm text-on-surface-variant">Emergency:</span><a class="font-label-sm text-label-sm text-error hover:text-on-error-container transition-colors" href="tel:112">112</a></div></div><div class="flex items-center bg-surface-container px-space-sm py-space-xs rounded text-on-surface"><span class="material-symbols-outlined text-base mr-space-xs text-on-surface-variant">translate</span><select class="bg-transparent font-label-sm text-label-sm text-on-surface focus:outline-none cursor-pointer pr-space-xs"><option value="en">English</option><option value="hi">हिन्दी</option><option value="bn">বাংলা</option><option value="mr">मराठी</option><option value="te">తెలుగు</option><option value="ta">தமிழ்</option></select></div><a class="inline-flex items-center gap-space-xs bg-tertiary-container hover:bg-tertiary text-on-tertiary font-label-sm text-label-sm px-space-md py-space-xs rounded shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-colors" href="https://www.google.com"><span class="material-symbols-outlined text-base">shield</span><span>Quick Exit (Esc)</span></a><div class="flex items-center gap-space-sm pl-space-sm"><div class="hidden lg:flex flex-col items-end"><span class="font-label-md text-label-md text-on-surface leading-snug">Ananya Sharma</span><span class="font-label-sm text-label-sm text-on-secondary-container bg-secondary-container px-space-xs py-0.5 rounded">Authorized Counselor / Officer</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaRFtFGRgwFwgO4Of3r2XZ1nm-zqrDquAz_biKGsmpSC4Ce7ytb8wDmJCbsORkO1jXQNApbtDnbuY22Yc9KqYEWOFUSYuTKqMuV9jtE7vmJd20PRCG8DIbV3JePDu90gqBqkKZob1FQ4SS2v12ED_DBlifeW78vUbB0MyUC59h3CQnLzZQZAqLo2F-UOY_tmO3fznpsnC7LHq1TViCTZvyk8TO-ygZPpr1KurVtiNjl8YyeDIa4TUT"/></div></div></div></header><aside class="fixed left-0 top-16 bottom-0 w-72 bg-surface-container-lowest z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="p-space-md"><div class="px-space-sm py-space-xs mb-space-sm bg-surface-container-low rounded"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Operational Units</span></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-primary-container text-on-primary font-label-md text-label-md rounded"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="public-portal-and-intake" href="#"><span class="material-symbols-outlined text-xl">public</span><span>Public Portal &amp; Intake</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="sakhi-sahayata-survivor-desk" href="#"><span class="material-symbols-outlined text-xl">front_hand</span><span>Sakhi Sahayata (Survivor Desk)</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="counselor-workspace" href="#"><span class="material-symbols-outlined text-xl">clinical_notes</span><span>Counselor Workspace</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="district-oversight" href="#"><span class="material-symbols-outlined text-xl">policy</span><span>District Oversight</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="ministry-analytics" href="#"><span class="material-symbols-outlined text-xl">query_stats</span><span>Ministry Analytics</span></a></nav></div><div class="p-space-md bg-surface-container-low"><div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span>Status: Active Duty</span><span class="w-2 h-2 rounded-full bg-secondary"></span></div><p class="font-label-sm text-label-sm text-on-surface-variant mt-space-xs">Trauma-Informed Protocol v4.2</p></div></aside><div class="pl-72"><main class="relative pt-16 bg-surface min-h-screen pb-space-xl"><div class="flex flex-col w-full">
+<!-- Top Safe Browsing & Discreet Advisory Notice Bar -->
+<section class="w-full bg-surface-container-high px-gutter-lg py-space-sm shadow-sm">
+<div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-space-sm text-on-surface-variant">
+<div class="flex items-center gap-space-sm flex-1 min-w-[280px]">
+<span class="material-symbols-outlined text-secondary text-xl shrink-0" style="font-variation-settings: 'FILL' 1;">privacy_tip</span>
+<p class="font-body-sm text-body-sm leading-tight text-on-surface">
+<strong class="font-semibold text-primary">Discreet &amp; Safe Browsing Active:</strong>
+          Double-tap <kbd class="px-1.5 py-0.5 bg-surface-container-lowest rounded text-primary font-mono text-xs shadow-sm">ESC</kbd> anytime to instantly redirect to weather. This portal leaves no auto-fill traces.
+        </p>
+</div>
+<div class="flex items-center gap-space-md shrink-0">
+<button class="inline-flex items-center gap-space-xs font-label-sm text-label-sm text-secondary hover:text-on-secondary-container transition-colors cursor-pointer" id="clear-trace-btn">
+<span class="material-symbols-outlined text-base">cleaning_services</span>
+<span>Clear Local Session</span>
+</button>
+<span class="text-outline-variant">|</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary inline-block"></span>
+          256-bit Ministry Encrypted
+        </span>
+</div>
+</div>
+</section>
+<!-- Urgent Emergency Hero Section -->
+<section class="relative w-full px-gutter-lg pt-space-xl pb-space-xl overflow-hidden bg-gradient-to-b from-surface-container-low via-surface to-surface">
+<div class="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-secondary-fixed opacity-20 blur-3xl pointer-events-none"></div>
+<div class="absolute -left-20 top-1/2 w-80 h-80 rounded-full bg-primary-fixed opacity-30 blur-3xl pointer-events-none"></div>
+<div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-center relative z-10">
+<div class="lg:col-span-7 flex flex-col gap-space-md">
+<div class="inline-flex items-center gap-space-xs bg-surface-container px-space-md py-space-xs rounded-full w-fit">
+<span class="material-symbols-outlined text-secondary text-base">verified_user</span>
+<span class="font-label-sm text-label-sm text-on-surface tracking-wide uppercase">National Mission for Empowerment of Women • Sakhi One-Stop Scheme</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-primary tracking-tight leading-tight">
+          Confidential Legal &amp; Crisis Support for Every Woman
+        </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+          Trauma-informed assistance, emergency shelter coordination, free institutional legal aid, and accredited psychosocial counseling under the One-Stop Center (Sakhi) network.
+        </p>
+<!-- CTA Cluster -->
+<div class="flex flex-wrap items-center gap-space-md pt-space-sm">
+<button class="inline-flex items-center justify-center gap-space-sm bg-primary hover:bg-primary-container text-on-primary px-space-xl py-space-md rounded-xl font-label-md text-label-md shadow-md transition-all cursor-pointer" id="open-intake-modal">
+<span class="material-symbols-outlined text-xl">health_and_safety</span>
+<span>Seek Immediate Assistance (Confidential)</span>
+</button>
+<button class="inline-flex items-center justify-center gap-space-sm bg-surface-container-lowest hover:bg-surface-container-high text-primary px-space-lg py-space-md rounded-xl font-label-md text-label-md shadow-sm transition-all cursor-pointer" id="open-pin-tracker">
+<span class="material-symbols-outlined text-xl">pin</span>
+<span>Track Existing Case by PIN</span>
+</button>
+</div>
+<!-- Helpline Pills Grid -->
+<div class="pt-space-md">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-space-sm">
+            Instant 24/7 Verified Lifelines (Toll-Free)
+          </span>
+<div class="flex flex-wrap gap-space-sm">
+<a class="flex items-center gap-space-sm bg-surface-container-lowest hover:bg-surface-container px-space-md py-space-sm rounded-lg shadow-sm transition-transform hover:-translate-y-0.5" href="tel:181">
+<span class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-semibold text-xs">181</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary font-semibold">Women Helpline</span>
+<span class="font-body-sm text-xs text-on-surface-variant">Domestic, Legal &amp; Shelter</span>
+</div>
+<span class="material-symbols-outlined text-secondary text-sm ml-space-xs">call</span>
+</a>
+<a class="flex items-center gap-space-sm bg-surface-container-lowest hover:bg-surface-container px-space-md py-space-sm rounded-lg shadow-sm transition-transform hover:-translate-y-0.5" href="tel:112">
+<span class="w-8 h-8 rounded-full bg-error-container flex items-center justify-center text-on-error-container font-semibold text-xs">112</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-error font-semibold">Emergency SOS</span>
+<span class="font-body-sm text-xs text-on-surface-variant">Police / Medical Dispatch</span>
+</div>
+<span class="material-symbols-outlined text-error text-sm ml-space-xs">emergency</span>
+</a>
+<a class="flex items-center gap-space-sm bg-surface-container-lowest hover:bg-surface-container px-space-md py-space-sm rounded-lg shadow-sm transition-transform hover:-translate-y-0.5" href="tel:1098">
+<span class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center text-on-primary-fixed-variant font-semibold text-xs">1098</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary font-semibold">Childline India</span>
+<span class="font-body-sm text-xs text-on-surface-variant">Care &amp; Protection Support</span>
+</div>
+<span class="material-symbols-outlined text-secondary text-sm ml-space-xs">call</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Hero Visual Card / Trauma-Informed Assurance Deck -->
+<div class="lg:col-span-5 flex flex-col gap-space-md">
+<div class="relative bg-surface-container-lowest rounded-xl shadow-xl p-space-lg overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-fixed-dim/20 rounded-bl-full pointer-events-none"></div>
+<div class="flex items-center gap-space-md mb-space-md">
+<img class="w-16 h-16 rounded-full object-cover shadow-sm" data-alt="A gentle, reassuring Indian woman legal counselor sitting in a warm, respectful and well-lit office room with neutral colors, holding a confidential file folder and offering supportive consultation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNpkGAByJUhaOKNEW5FeQE6DAai6VWn5svK5EV7ON_uQJIbm-T6tMeVqY1VZcK7FkM4wAf0aG5CCaMi1HUWtezDMPv0RSP-jiM_JMd3yhyXWrI83PliwnMAxK-ic9nguhlngktvXBDb8RoABm6t_WZJA3WHx7-oreQkYKtB9fJ2MsMJb9GJKn-V1d0F908aq3iYjSF-DhXsLtLCPnMeP5ABUNKUcudT1Z87sazrUsq7ya1KTWVwwHu"/>
+<div>
+<div class="flex items-center gap-1 text-secondary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-sm">lock</span>
+<span>End-to-End Anonymity</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary">Your Rights • Your Pace</h3>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-space-md">
+            Reporting does not mandate court action or immediate police reporting. You choose what support you need: medical relief, temporary safe home, psychological solace, or statutory counsel.
+          </p>
+<!-- Safe Metrics Row -->
+<div class="grid grid-cols-3 gap-space-xs bg-surface-container-low p-space-sm rounded-lg text-center">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-primary font-bold">733+</span>
+<span class="font-label-sm text-xs text-on-surface-variant">OSCs Active</span>
+</div>
+<div class="flex flex-col border-x border-outline-variant/30">
+<span class="font-headline-sm text-headline-sm text-secondary font-bold">100%</span>
+<span class="font-label-sm text-xs text-on-surface-variant">Free Legal Aid</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-primary font-bold">&lt; 15m</span>
+<span class="font-label-sm text-xs text-on-surface-variant">Avg. First Response</span>
+</div>
+</div>
+<!-- Micro interaction: Confidentiality toggle test -->
+<div class="mt-space-md pt-space-sm flex items-center justify-between bg-surface-container px-space-md py-space-xs rounded-lg">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-lg">shield_with_heart</span>
+<span class="font-label-sm text-label-sm text-on-surface">Anonymous Browser Shield</span>
+</div>
+<span class="font-label-sm text-xs text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded-full font-semibold">Armed</span>
+</div>
+</div>
+<!-- Reassurance Badges -->
+<div class="flex items-center justify-between px-space-sm text-on-surface-variant text-xs font-body-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-secondary">check_circle</span>
+            No Aadhaar Mandated for Crisis
+          </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-secondary">check_circle</span>
+            NALSA Certified Advocates
+          </span>
+</div>
+</div>
+</div>
+</section>
+<!-- Interactive Quick Intake Modal (Hidden State Simulation via JS) -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/60 backdrop-blur-sm hidden items-center justify-center p-gutter-sm" id="intake-drawer">
+<div class="bg-surface-container-lowest max-w-xl w-full rounded-xl shadow-2xl overflow-hidden p-space-lg flex flex-col gap-space-md animate-in fade-in zoom-in-95 duration-150">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-2xl">security</span>
+<h2 class="font-headline-sm text-headline-sm text-primary">Confidential Crisis Intake</h2>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface p-1 rounded-full cursor-pointer" id="close-intake-drawer">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Your safety is the priority. You may submit anonymously. You will receive a unique 6-digit access token to retrieve follow-ups without leaving phone records.
+      </p>
+<form class="flex flex-col gap-space-sm" id="crisis-intake-form" onsubmit="event.preventDefault(); submitConfidential();">
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface">Immediate Need (Select all that apply)</label>
+<div class="grid grid-cols-2 gap-space-xs">
+<label class="flex items-center gap-2 p-2 bg-surface-container-low rounded cursor-pointer font-body-sm text-sm">
+<input checked="" class="accent-secondary" type="checkbox"/>
+<span>Emergency Shelter (OSC)</span>
+</label>
+<label class="flex items-center gap-2 p-2 bg-surface-container-low rounded cursor-pointer font-body-sm text-sm">
+<input class="accent-secondary" type="checkbox"/>
+<span>Free Legal Representation</span>
+</label>
+<label class="flex items-center gap-2 p-2 bg-surface-container-low rounded cursor-pointer font-body-sm text-sm">
+<input checked="" class="accent-secondary" type="checkbox"/>
+<span>Psychosocial Counseling</span>
+</label>
+<label class="flex items-center gap-2 p-2 bg-surface-container-low rounded cursor-pointer font-body-sm text-sm">
+<input class="accent-secondary" type="checkbox"/>
+<span>Protection Order (DV Act)</span>
+</label>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface">Preferred Contact Method (Optional)</label>
+<div class="flex gap-2">
+<input class="w-full bg-surface-container-low px-space-md py-space-sm rounded font-body-sm text-sm text-on-surface focus:outline-none" placeholder="Safe Phone Number or Alternate Email (Optional)" type="text"/>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface">Safe Time Window for Call-Back</label>
+<select class="w-full bg-surface-container-low px-space-md py-space-sm rounded font-body-sm text-sm text-on-surface">
+<option>Anytime • Urgent assistance needed</option>
+<option>Morning (09:00 AM - 12:00 PM)</option>
+<option>Afternoon (01:00 PM - 04:00 PM)</option>
+<option>Do not call me, I will check online with PIN</option>
+</select>
+</div>
+<div class="p-space-sm bg-surface-container-high rounded text-xs text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-base">check_circle</span>
+<span>No digital receipt or SMS will be dispatched unless explicitly chosen.</span>
+</div>
+<div class="flex items-center justify-end gap-space-sm pt-space-xs">
+<button class="px-space-md py-space-sm rounded font-label-md text-label-md text-on-surface-variant hover:bg-surface-container cursor-pointer" id="cancel-intake" type="button">Cancel</button>
+<button class="px-space-lg py-space-sm bg-primary text-on-primary rounded font-label-md text-label-md hover:bg-primary-container shadow cursor-pointer" type="submit">Generate Anonymous Help Token</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Role-Based Access Cards -->
+<section class="w-full px-gutter-lg py-space-xl bg-surface">
+<div class="max-w-7xl mx-auto flex flex-col gap-space-lg">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-sm">
+<div>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Institutional Access Portals</span>
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">Select Your Designated Workspace</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">
+          Dedicated, encrypted entry points customized for citizens seeking relief, case officers rendering aid, and magistracy oversight.
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+<!-- Card 1: Citizen & Survivor Desk -->
+<div class="group bg-surface-container-lowest rounded-xl shadow-md p-space-lg flex flex-col justify-between transition-all duration-200 hover:-translate-y-1">
+<div class="flex flex-col gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-2xl">family_restroom</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-label-sm text-xs bg-surface-container px-2 py-0.5 rounded text-on-surface-variant font-medium">Public &amp; Anonymous</span>
+<span class="font-label-sm text-xs text-secondary font-semibold">24/7 Enabled</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary">Citizen &amp; Survivor Portal</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Zero-barrier anonymous filing, statutory rights handbooks in regional dialects, temporary shelter reservations, and personal safety plans.
+            </p>
+<ul class="flex flex-col gap-space-xs font-body-sm text-sm text-on-surface-variant">
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-base">check</span>
+<span>Direct FIR assistance &amp; Zero FIR guidance</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-base">check</span>
+<span>Free Sakhi shelter bed availability check</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-base">check</span>
+<span>One-click confidential tele-counseling</span>
+</li>
+</ul>
+</div>
+<div class="pt-space-lg mt-space-md">
+<button class="w-full inline-flex items-center justify-center gap-space-xs bg-primary hover:bg-primary-container text-on-primary py-space-sm px-space-md rounded font-label-md text-label-md transition-colors cursor-pointer">
+<span>Enter Citizen Desk</span>
+<span class="material-symbols-outlined text-base">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 2: Counselor & Social Worker -->
+<div class="group bg-surface-container-lowest rounded-xl shadow-md p-space-lg flex flex-col justify-between transition-all duration-200 hover:-translate-y-1">
+<div class="flex flex-col gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">support_agent</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-label-sm text-xs bg-surface-container px-2 py-0.5 rounded text-on-surface-variant font-medium">Authorized Staff</span>
+<span class="font-label-sm text-xs text-primary font-semibold">2FA Required</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary">Counselor &amp; Social Worker</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Structured psychosocial intake logs, trauma-informed milestone trackers, secure session notes, and medical checkup referral dispatch.
+            </p>
+<ul class="flex flex-col gap-space-xs font-body-sm text-sm text-on-surface-variant">
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-base">check</span>
+<span>Automated trauma risk scoring matrix</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-base">check</span>
+<span>Encrypted digital audio/video session room</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-base">check</span>
+<span>Inter-departmental case handoff logs</span>
+</li>
+</ul>
+</div>
+<div class="pt-space-lg mt-space-md">
+<button class="w-full inline-flex items-center justify-center gap-space-xs bg-surface-container-high hover:bg-surface-container-highest text-primary py-space-sm px-space-md rounded font-label-md text-label-md transition-colors cursor-pointer">
+<span>Staff Portal Login</span>
+<span class="material-symbols-outlined text-base">login</span>
+</button>
+</div>
+</div>
+<!-- Card 3: District Officer & Legal Aid -->
+<div class="group bg-surface-container-lowest rounded-xl shadow-md p-space-lg flex flex-col justify-between transition-all duration-200 hover:-translate-y-1">
+<div class="flex flex-col gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">balance</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-label-sm text-xs bg-surface-container px-2 py-0.5 rounded text-on-surface-variant font-medium">Judicial &amp; Police</span>
+<span class="font-label-sm text-xs text-tertiary-container font-semibold">Gazetted Access</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary">District Officer &amp; Legal Aid</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              CCTNS FIR tracking, NALSA legal aid advocate assignments, magistrate court protection order compliance, and district OSC audits.
+            </p>
+<ul class="flex flex-col gap-space-xs font-body-sm text-sm text-on-surface-variant">
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-base">check</span>
+<span>Expedited Section 12 DV Act petition drafting</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-base">check</span>
+<span>Real-time hospital medico-legal compliance</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-base">check</span>
+<span>Direct magistrate bench transmission</span>
+</li>
+</ul>
+</div>
+<div class="pt-space-lg mt-space-md">
+<button class="w-full inline-flex items-center justify-center gap-space-xs bg-surface-container-high hover:bg-surface-container-highest text-primary py-space-sm px-space-md rounded font-label-md text-label-md transition-colors cursor-pointer">
+<span>Official Verification Access</span>
+<span class="material-symbols-outlined text-base">badge</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- How Nyaya-Sakhi Protects You: 4-Step Trauma-Informed Progression Flow -->
+<section class="w-full px-gutter-lg py-space-xl bg-surface-container-low">
+<div class="max-w-7xl mx-auto flex flex-col gap-space-lg">
+<div class="text-center max-w-3xl mx-auto">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Standard Operating Protocol</span>
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight mt-1">
+          How Nyaya-Sakhi Protects &amp; Restores You
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">
+          From acute crisis response to dignified rehabilitation, every step is governed under statutory survivor protection guidelines.
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md relative mt-space-md">
+<!-- Step 1 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between relative">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container font-headline-sm text-headline-sm flex items-center justify-center font-bold">1</span>
+<span class="material-symbols-outlined text-secondary text-2xl">quick_reference</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-primary">Confidential Intake</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              File via 181 hotline, mobile walk-in, or zero-trace portal. An encrypted anonymous profile is generated with zero external notice.
+            </p>
+</div>
+<div class="pt-space-md mt-space-sm">
+<span class="font-label-sm text-xs text-secondary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">schedule</span> Immediate / T+0 Hrs
+            </span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between relative">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="w-10 h-10 rounded-full bg-surface-container-highest text-primary font-headline-sm text-headline-sm flex items-center justify-center font-bold">2</span>
+<span class="material-symbols-outlined text-primary text-2xl">supervisor_account</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-primary">Dedicated Sakhi Counselor</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              A trained woman counselor connects in your language. She formulates an immediate safety plan, arranges safe sanctuary, and stabilizes emotional distress.
+            </p>
+</div>
+<div class="pt-space-md mt-space-sm">
+<span class="font-label-sm text-xs text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">schedule</span> Assigned within 2 Hours
+            </span>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between relative">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="w-10 h-10 rounded-full bg-surface-container text-primary font-headline-sm text-headline-sm flex items-center justify-center font-bold">3</span>
+<span class="material-symbols-outlined text-primary text-2xl">medical_services</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-primary">Legal &amp; Medical Liaison</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Free hospital care &amp; medico-legal examination. A certified legal aid advocate is appointed to assist with police statements or injunctions.
+            </p>
+</div>
+<div class="pt-space-md mt-space-sm">
+<span class="font-label-sm text-xs text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">gavel</span> Zero Advocate Fees
+            </span>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between relative">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="w-10 h-10 rounded-full bg-surface-container text-primary font-headline-sm text-headline-sm flex items-center justify-center font-bold">4</span>
+<span class="material-symbols-outlined text-primary text-2xl">home_work</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-primary">Rehab &amp; Safety Order</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Securing court protection orders, financial assistance, child custody arrangements, and sustained livelihood empowerment under Nirbhaya Fund.
+            </p>
+</div>
+<div class="pt-space-md mt-space-sm">
+<span class="font-label-sm text-xs text-secondary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">shield</span> Sustained 180-Day Care
+            </span>
+</div>
+</div>
+</div>
+<!-- Process Reassurance Callout -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shrink-0">
+<span class="material-symbols-outlined text-xl">psychology</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-base text-primary">Trauma-Informed Principle</h4>
+<p class="font-body-sm text-sm text-on-surface-variant">You are in complete control of which services to accept. No step is initiated without your voluntary consent.</p>
+</div>
+</div>
+<a class="inline-flex items-center gap-1 text-secondary hover:text-on-secondary-container font-label-md text-label-md shrink-0" href="#osc-finder-section">
+<span>Find your nearest OSC Center</span>
+<span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+</div>
+</div>
+</section>
+<!-- Interactive One-Stop Center (OSC) Quick Finder -->
+<section class="w-full px-gutter-lg py-space-xl bg-surface" id="osc-finder-section">
+<div class="max-w-7xl mx-auto flex flex-col gap-space-lg">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-sm">
+<div>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">One-Stop Center (Sakhi) Real-Time Directory</span>
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">Verified 24/7 Crisis Centers Near You</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">
+          Over 733 One-Stop Centers operational across all districts in India offering integrated shelter, medical, legal, and counseling under one roof.
+        </p>
+</div>
+<!-- State / District Finder Filters -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-md grid grid-cols-1 md:grid-cols-12 gap-space-sm items-center">
+<div class="md:col-span-4 flex flex-col gap-1">
+<label class="font-label-sm text-xs text-on-surface-variant uppercase tracking-wider font-semibold">State / Union Territory</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low text-on-surface px-space-md py-space-sm rounded font-body-md text-sm appearance-none cursor-pointer focus:outline-none focus:bg-surface-container" id="state-select">
+<option value="delhi">National Capital Territory of Delhi</option>
+<option value="maharashtra">Maharashtra</option>
+<option value="karnataka">Karnataka</option>
+<option value="uttar-pradesh">Uttar Pradesh</option>
+<option value="west-bengal">West Bengal</option>
+<option value="tamil-nadu">Tamil Nadu</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-on-surface-variant pointer-events-none text-base">expand_more</span>
+</div>
+</div>
+<div class="md:col-span-4 flex flex-col gap-1">
+<label class="font-label-sm text-xs text-on-surface-variant uppercase tracking-wider font-semibold">District</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low text-on-surface px-space-md py-space-sm rounded font-body-md text-sm appearance-none cursor-pointer focus:outline-none focus:bg-surface-container" id="district-select">
+<option value="central-delhi">Central Delhi</option>
+<option value="south-delhi">South Delhi</option>
+<option value="east-delhi">East Delhi</option>
+<option value="north-delhi">North Delhi</option>
+<option value="new-delhi">New Delhi</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-on-surface-variant pointer-events-none text-base">expand_more</span>
+</div>
+</div>
+<div class="md:col-span-4 flex items-end gap-space-xs">
+<button class="flex-1 inline-flex items-center justify-center gap-space-xs bg-surface-container-high hover:bg-surface-container-highest text-primary py-space-sm px-space-md rounded font-label-md text-label-md transition-colors cursor-pointer h-10" id="use-location-btn">
+<span class="material-symbols-outlined text-base">my_location</span>
+<span>Detect Current Location</span>
+</button>
+<button class="inline-flex items-center justify-center bg-primary hover:bg-primary-container text-on-primary h-10 px-space-md rounded font-label-md text-label-md cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-base">search</span>
+</button>
+</div>
+</div>
+<!-- OSC Centers Directory Results Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Center Cards List -->
+<div class="lg:col-span-7 flex flex-col gap-space-md">
+<!-- Center 1 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-md flex flex-col gap-space-sm transition-all hover:shadow-lg">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-xs bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-semibold">24/7 Verified Operational</span>
+<span class="font-label-sm text-xs text-on-surface-variant">• Distance: ~2.4 km away</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mt-1">Sakhi One-Stop Center, LNJP Hospital Complex</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Gate No. 4, Jawaharlal Nehru Marg, Delhi Gate, Central Delhi - 110002</p>
+</div>
+<span class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-xl">verified</span>
+</span>
+</div>
+<!-- Features Included -->
+<div class="flex flex-wrap gap-space-xs py-space-xs">
+<span class="font-label-sm text-xs bg-surface-container px-2 py-1 rounded text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-secondary">hotel</span>
+                5 Temporary Shelter Beds Available
+              </span>
+<span class="font-label-sm text-xs bg-surface-container px-2 py-1 rounded text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-secondary">gavel</span>
+                Duty Legal Advocate On-Site
+              </span>
+<span class="font-label-sm text-xs bg-surface-container px-2 py-1 rounded text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-secondary">local_hospital</span>
+                Immediate Medical Desk
+              </span>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-xs text-on-surface-variant">Center Hotline:</span>
+<a class="font-label-md text-label-md text-secondary hover:underline font-bold" href="tel:01123234500">011-2323-4500</a>
+</div>
+<div class="flex items-center gap-space-xs">
+<a class="inline-flex items-center gap-1 bg-surface-container hover:bg-surface-container-high px-space-md py-1.5 rounded font-label-sm text-label-sm text-primary transition-colors" href="https://maps.google.com" target="_blank">
+<span class="material-symbols-outlined text-sm">directions</span>
+<span>Get Safe Directions</span>
+</a>
+<button class="inline-flex items-center gap-1 bg-primary text-on-primary hover:bg-primary-container px-space-md py-1.5 rounded font-label-sm text-label-sm transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-sm">phone_in_talk</span>
+<span>Direct Connect</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Center 2 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-md flex flex-col gap-space-sm transition-all hover:shadow-lg">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-xs bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-semibold">24/7 Verified Operational</span>
+<span class="font-label-sm text-xs text-on-surface-variant">• Distance: ~5.1 km away</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mt-1">Sakhi Center, Deen Dayal Upadhyay Hospital</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Hari Nagar, Clock Tower Road, West Delhi - 110064</p>
+</div>
+<span class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-xl">verified</span>
+</span>
+</div>
+<!-- Features Included -->
+<div class="flex flex-wrap gap-space-xs py-space-xs">
+<span class="font-label-sm text-xs bg-surface-container px-2 py-1 rounded text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-secondary">hotel</span>
+                3 Emergency Beds Available
+              </span>
+<span class="font-label-sm text-xs bg-surface-container px-2 py-1 rounded text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-secondary">support</span>
+                Women Police Desk Assigned
+              </span>
+<span class="font-label-sm text-xs bg-surface-container px-2 py-1 rounded text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-secondary">child_friendly</span>
+                Child-Friendly Transition Room
+              </span>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-xs text-on-surface-variant">Center Hotline:</span>
+<a class="font-label-md text-label-md text-secondary hover:underline font-bold" href="tel:01125125430">011-2512-5430</a>
+</div>
+<div class="flex items-center gap-space-xs">
+<a class="inline-flex items-center gap-1 bg-surface-container hover:bg-surface-container-high px-space-md py-1.5 rounded font-label-sm text-label-sm text-primary transition-colors" href="https://maps.google.com" target="_blank">
+<span class="material-symbols-outlined text-sm">directions</span>
+<span>Get Safe Directions</span>
+</a>
+<button class="inline-flex items-center gap-1 bg-primary text-on-primary hover:bg-primary-container px-space-md py-1.5 rounded font-label-sm text-label-sm transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-sm">phone_in_talk</span>
+<span>Direct Connect</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Geo & Visual Context Card -->
+<div class="lg:col-span-5 flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between mb-space-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">location_on</span>
+<span class="font-headline-sm text-base text-primary">District OSC Reachability Map</span>
+</div>
+<span class="font-label-sm text-xs text-secondary bg-secondary-container px-2 py-0.5 rounded font-semibold">Live GPS Safe Routes</span>
+</div>
+<div class="w-full h-56 bg-cover bg-center rounded-lg shadow-inner relative overflow-hidden flex items-end p-space-sm" data-location="New Delhi, India" style="">
+<div class="bg-surface/90 backdrop-blur-md px-space-md py-space-xs rounded shadow-sm text-xs text-primary font-label-sm">
+                Active OSC Hubs in NCT: 11 Units Operational
+              </div>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded flex flex-col gap-1 text-xs text-on-surface-variant font-body-sm">
+<div class="flex items-center gap-1 font-semibold text-primary">
+<span class="material-symbols-outlined text-sm text-secondary">shield</span>
+                Discreet Transport Assistance
+              </div>
+<p>Need emergency transport to the nearest One-Stop Center? Dial 181 or 112 for safe, accompanied transit with women police constables.</p>
+</div>
+</div>
+<!-- Legal Statutory Notice Box -->
+<div class="bg-surface-container rounded-xl p-space-md flex flex-col gap-space-xs">
+<div class="flex items-center gap-2 text-primary font-label-md text-label-md">
+<span class="material-symbols-outlined text-base">verified</span>
+<span>Protection of Women from Domestic Violence Act, 2005</span>
+</div>
+<p class="font-body-sm text-xs text-on-surface-variant leading-relaxed">
+              Section 9 &amp; 10 statutory mandates ensure that every woman visiting an OSC has the right to free medical assistance, immediate safe shelter for up to 5 consecutive days without charge, and state-appointed legal protection officers.
+            </p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Confidential Case Tracker Modal (Simulation via JS) -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/60 backdrop-blur-sm hidden items-center justify-center p-gutter-sm" id="pin-tracker-modal">
+<div class="bg-surface-container-lowest max-w-md w-full rounded-xl shadow-2xl overflow-hidden p-space-lg flex flex-col gap-space-md animate-in fade-in zoom-in-95 duration-150">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-2xl">pin</span>
+<h3 class="font-headline-sm text-headline-sm text-primary">Case Status Check</h3>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface p-1 rounded-full cursor-pointer" id="close-pin-modal">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Enter the 6-character Nyaya Token provided at the time of confidential registration. No phone or email required.
+      </p>
+<form class="flex flex-col gap-space-md" id="token-search-form" onsubmit="event.preventDefault(); verifyPin();">
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface">6-Digit Help Token</label>
+<input class="w-full bg-surface-container-low px-space-md py-space-sm rounded font-mono text-center tracking-widest text-lg font-bold text-primary uppercase focus:outline-none focus:bg-surface-container" id="token-input" maxlength="6" placeholder="e.g. NK-4921" type="text"/>
+</div>
+<div class="hidden p-space-sm rounded bg-surface-container-high text-xs text-on-surface" id="pin-feedback">
+<!-- Injected via JS -->
+</div>
+<div class="flex items-center justify-end gap-space-sm">
+<button class="px-space-md py-space-sm rounded font-label-md text-label-md text-on-surface-variant hover:bg-surface-container cursor-pointer" id="cancel-pin" type="button">Close</button>
+<button class="px-space-lg py-space-sm bg-primary text-on-primary rounded font-label-md text-label-md hover:bg-primary-container shadow cursor-pointer" type="submit">Lookup Status</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Discreet Safety Floating Trigger & Quick-Purge Bar -->
+<div class="fixed bottom-24 right-space-lg z-40">
+<button class="inline-flex items-center gap-space-xs bg-tertiary text-on-tertiary hover:bg-tertiary-container text-xs font-label-sm px-space-md py-space-xs rounded-full shadow-lg transition-transform hover:scale-105 cursor-pointer" id="quick-purge-btn" title="Instantly clear portal history &amp; go to Google">
+<span class="material-symbols-outlined text-base">emergency_home</span>
+<span>Quick Exit (Esc × 2)</span>
+</button>
+</div>
+</div>
+<script>
+  // Quick Exit keydown listener: Double ESC to trigger instant redirect
+  let escPressCount = 0;
+  let escTimer = null;
+
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      escPressCount++;
+      if (escPressCount === 1) {
+        escTimer = setTimeout(() => {
+          escPressCount = 0;
+        }, 800);
+      } else if (escPressCount >= 2) {
+        clearTimeout(escTimer);
+        instantPanicRedirect();
+      }
+    }
+  });
+
+  function instantPanicRedirect() {
+    // Clear any temporary form state
+    sessionStorage.clear();
+    localStorage.removeItem('nyaya_session');
+    // Replace current location to prevent 'Back' button recovery
+    window.location.replace('https://www.google.com/search?q=todays+weather+forecast');
+  }
+
+  // Bind Quick Purge button
+  const purgeBtn = document.getElementById('quick-purge-btn');
+  if (purgeBtn) {
+    purgeBtn.addEventListener('click', instantPanicRedirect);
+  }
+
+  // Clear Local Session Action
+  const clearTraceBtn = document.getElementById('clear-trace-btn');
+  if (clearTraceBtn) {
+    clearTraceBtn.addEventListener('click', function() {
+      sessionStorage.clear();
+      alert('Local session, form caches, and browser storage for Nyaya-Sakhi have been securely cleared.');
+    });
+  }
+
+  // Modal Open/Close handling: Intake Drawer
+  const intakeDrawer = document.getElementById('intake-drawer');
+  const openIntakeBtn = document.getElementById('open-intake-modal');
+  const closeIntakeBtn = document.getElementById('close-intake-drawer');
+  const cancelIntakeBtn = document.getElementById('cancel-intake');
+
+  if (openIntakeBtn && intakeDrawer) {
+    openIntakeBtn.addEventListener('click', () => {
+      intakeDrawer.classList.remove('hidden');
+      intakeDrawer.classList.add('flex');
+    });
+  }
+
+  function closeIntake() {
+    if (intakeDrawer) {
+      intakeDrawer.classList.add('hidden');
+      intakeDrawer.classList.remove('flex');
+    }
+  }
+
+  if (closeIntakeBtn) closeIntakeBtn.addEventListener('click', closeIntake);
+  if (cancelIntakeBtn) cancelIntakeBtn.addEventListener('click', closeIntake);
+
+  // Modal Open/Close handling: PIN Tracker Modal
+  const pinModal = document.getElementById('pin-tracker-modal');
+  const openPinBtn = document.getElementById('open-pin-tracker');
+  const closePinBtn = document.getElementById('close-pin-modal');
+  const cancelPinBtn = document.getElementById('cancel-pin');
+
+  if (openPinBtn && pinModal) {
+    openPinBtn.addEventListener('click', () => {
+      pinModal.classList.remove('hidden');
+      pinModal.classList.add('flex');
+    });
+  }
+
+  function closePin() {
+    if (pinModal) {
+      pinModal.classList.add('hidden');
+      pinModal.classList.remove('flex');
+    }
+  }
+
+  if (closePinBtn) closePinBtn.addEventListener('click', closePin);
+  if (cancelPinBtn) cancelPinBtn.addEventListener('click', closePin);
+
+  // Simulated Submit Actions
+  function submitConfidential() {
+    const randomPin = 'NS-' + Math.floor(1000 + Math.random() * 9000);
+    alert('Confidential Intake Logged Successfully.\n\nYour Unique Safe Token is: ' + randomPin + '\n\nPlease write this down or memorize it. A duty counselor at the nearest OSC has been notified.');
+    closeIntake();
+  }
+
+  function verifyPin() {
+    const feedback = document.getElementById('pin-feedback');
+    const inputVal = document.getElementById('token-input').value.trim();
+    if (feedback) {
+      feedback.classList.remove('hidden');
+      if (inputVal.length >= 4) {
+        feedback.innerHTML = '<span class="font-semibold text-secondary">Token Verified:</span> Case #'+inputVal.toUpperCase()+' is Active. Assigned Counselor: Sunita R. (Central Delhi OSC). Status: Safety Order Petition Filed in Tis Hazari Court.';
+      } else {
+        feedback.innerHTML = '<span class="text-error font-semibold">Please enter a valid 6-character token.</span>';
+      }
+    }
+  }
+
+  // District Location button micro-interaction
+  const locBtn = document.getElementById('use-location-btn');
+  if (locBtn) {
+    locBtn.addEventListener('click', function() {
+      locBtn.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">refresh</span><span>Detecting...</span>';
+      setTimeout(() => {
+        locBtn.innerHTML = '<span class="material-symbols-outlined text-base text-secondary">check</span><span>Central Delhi Located</span>';
+      }, 700);
+    });
+  }
+</script></main></div><div class="fixed bottom-space-lg left-space-lg z-50"><a class="inline-flex items-center gap-space-sm bg-error hover:bg-on-error-container text-on-error px-space-lg py-space-sm rounded-full shadow-[0_4px_12px_-2px_rgba(15,23,42,0.08)] transition-transform hover:scale-105" href="tel:112"><span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-surface opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-surface"></span></span><span class="material-symbols-outlined text-xl">sos</span><span class="font-label-md text-label-md uppercase tracking-wider">SOS Emergency Assistance (112)</span></a></div><div class="fixed bottom-space-lg right-space-lg z-50"><button class="inline-flex items-center gap-space-sm bg-secondary hover:bg-on-secondary-container text-on-secondary px-space-lg py-space-sm rounded-full shadow-[0_4px_12px_-2px_rgba(15,23,42,0.08)] transition-transform hover:scale-105 cursor-pointer"><span class="material-symbols-outlined text-xl">forum</span><span class="font-label-md text-label-md">Sakhi Virtual Assistant</span></button></div></body></html>

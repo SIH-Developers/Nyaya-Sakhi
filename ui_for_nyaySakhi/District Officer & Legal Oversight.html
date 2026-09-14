@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container-low":"#eff4ff","on-primary-fixed":"#001c3b","on-tertiary-container":"#ff7884","surface-container-high":"#dce9ff","surface-container":"#e5eeff","secondary-fixed":"#89f5e7","tertiary":"#4f0011","on-tertiary-fixed-variant":"#920028","inverse-on-surface":"#eaf1ff","on-error":"#ffffff","error-container":"#ffdad6","secondary":"#006a61","surface-variant":"#d3e4fe","outline-variant":"#c4c6cf","on-secondary-fixed-variant":"#005049","secondary-fixed-dim":"#6bd8cb","surface":"#f8f9ff","inverse-surface":"#213145","background":"#f8f9ff","on-surface-variant":"#43474e","tertiary-fixed-dim":"#ffb3b6","on-background":"#0b1c30","inverse-primary":"#adc8f5","on-secondary":"#ffffff","primary-container":"#1e3a5f","on-tertiary":"#ffffff","surface-container-highest":"#d3e4fe","on-primary-container":"#8aa4cf","on-primary":"#ffffff","on-error-container":"#93000a","secondary-container":"#86f2e4","primary":"#022448","on-tertiary-fixed":"#40000c","on-secondary-container":"#006f66","tertiary-container":"#78001f","surface-container-lowest":"#ffffff","on-primary-fixed-variant":"#2d486d","surface-tint":"#455f87","primary-fixed-dim":"#adc8f5","surface-dim":"#cbdbf5","tertiary-fixed":"#ffdada","on-secondary-fixed":"#00201d","error":"#ba1a1a","primary-fixed":"#d5e3ff","on-surface":"#0b1c30","surface-bright":"#f8f9ff","outline":"#74777f"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},spacing:{"space-sm":"0.5rem","margin-lg":"3rem","space-lg":"1.5rem","gutter-lg":"2rem","gutter-sm":"1rem","space-xl":"2.5rem","margin":"1.5rem","gutter":"1.5rem","space-xs":"0.25rem","margin-sm":"1rem","space-md":"1rem"},fontFamily:{"headline-xl":["Public Sans"],"label-md":["Inter"],"body-sm":["Inter"],"headline-sm":["Public Sans"],"headline-lg":["Public Sans"],"headline-lg-mobile":["Public Sans"],"label-sm":["Inter"],"headline-md":["Public Sans"],"body-md":["Inter"],"headline-xl-mobile":["Public Sans"],"body-lg":["Inter"],"title-md":["Inter"]},fontSize:{"headline-xl":["40px",{lineHeight:"48px",letterSpacing:"-0.02em",fontWeight:"700"}],"label-md":["14px",{lineHeight:"20px",letterSpacing:"0.01em",fontWeight:"600"}],"body-sm":["14px",{lineHeight:"20px",fontWeight:"400"}],"headline-sm":["20px",{lineHeight:"28px",fontWeight:"600"}],"headline-lg":["32px",{lineHeight:"40px",letterSpacing:"-0.015em",fontWeight:"600"}],"headline-lg-mobile":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],"label-sm":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"600"}],"headline-md":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],"body-md":["16px",{lineHeight:"24px",fontWeight:"400"}],"headline-xl-mobile":["30px",{lineHeight:"38px",letterSpacing:"-0.01em",fontWeight:"700"}],"body-lg":["18px",{lineHeight:"28px",fontWeight:"400"}],"title-md":["18px",{lineHeight:"26px",fontWeight:"600"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 right-0 h-16 z-50 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-gutter-lg flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><img alt="Nyaya-Sakhi Emblem Wordmark" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1Xc1rzr_kkQkQK6ZDo38F21VuHro1TgHRaq_722naGSV3tmy1HxGzVQePo3Qx8-n9zsUzEqT-GW33UCAkVupma0_Szcr0YNXJYJ-x0jWBO8tMFO3QRZDdlAYxcudhlewZ6uQNeA2s9MFgkMyrCn8xKEjNBfrPJefN_GjBBzZzGCxsUPFKPFTZKG8CyJEWyZv_y8Q4vzI-oVUy_RNam9SB9TA2YVHIAMMRahsh_w4-avxjm93Ok6P5tAaQ"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary leading-tight tracking-tight">Nyaya-Sakhi</span><span class="font-label-sm text-label-sm text-on-surface-variant">Government of India | Ministry of Women &amp; Child Development</span></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-sm bg-surface-container-low px-space-md py-space-xs rounded"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-secondary text-sm">support_agent</span><span class="font-label-sm text-label-sm text-on-surface-variant">Women Helpline:</span><a class="font-label-sm text-label-sm text-secondary hover:text-on-secondary-container transition-colors" href="tel:181">181</a></div><span class="text-outline-variant font-label-sm text-label-sm">|</span><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-error text-sm">emergency</span><span class="font-label-sm text-label-sm text-on-surface-variant">Emergency:</span><a class="font-label-sm text-label-sm text-error hover:text-on-error-container transition-colors" href="tel:112">112</a></div></div><div class="flex items-center bg-surface-container px-space-sm py-space-xs rounded text-on-surface"><span class="material-symbols-outlined text-base mr-space-xs text-on-surface-variant">translate</span><select class="bg-transparent font-label-sm text-label-sm text-on-surface focus:outline-none cursor-pointer pr-space-xs"><option value="en">English</option><option value="hi">हिन्दी</option><option value="bn">বাংলা</option><option value="mr">मराठी</option><option value="te">తెలుగు</option><option value="ta">தமிழ்</option></select></div><a class="inline-flex items-center gap-space-xs bg-tertiary-container hover:bg-tertiary text-on-tertiary font-label-sm text-label-sm px-space-md py-space-xs rounded shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-colors" href="https://www.google.com"><span class="material-symbols-outlined text-base">shield</span><span>Quick Exit (Esc)</span></a><div class="flex items-center gap-space-sm pl-space-sm"><div class="hidden lg:flex flex-col items-end"><span class="font-label-md text-label-md text-on-surface leading-snug">Ananya Sharma</span><span class="font-label-sm text-label-sm text-on-secondary-container bg-secondary-container px-space-xs py-0.5 rounded">Authorized Counselor / Officer</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaRFtFGRgwFwgO4Of3r2XZ1nm-zqrDquAz_biKGsmpSC4Ce7ytb8wDmJCbsORkO1jXQNApbtDnbuY22Yc9KqYEWOFUSYuTKqMuV9jtE7vmJd20PRCG8DIbV3JePDu90gqBqkKZob1FQ4SS2v12ED_DBlifeW78vUbB0MyUC59h3CQnLzZQZAqLo2F-UOY_tmO3fznpsnC7LHq1TViCTZvyk8TO-ygZPpr1KurVtiNjl8YyeDIa4TUT"/></div></div></div></header><aside class="fixed left-0 top-16 bottom-0 w-72 bg-surface-container-lowest z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="p-space-md"><div class="px-space-sm py-space-xs mb-space-sm bg-surface-container-low rounded"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Operational Units</span></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-primary-container text-on-primary font-label-md text-label-md rounded"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="public-portal-and-intake" href="#"><span class="material-symbols-outlined text-xl">public</span><span>Public Portal &amp; Intake</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="sakhi-sahayata-survivor-desk" href="#"><span class="material-symbols-outlined text-xl">front_hand</span><span>Sakhi Sahayata (Survivor Desk)</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="counselor-workspace" href="#"><span class="material-symbols-outlined text-xl">clinical_notes</span><span>Counselor Workspace</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm transition-colors bg-primary-container text-on-primary font-label-md text-label-md rounded" data-path="district-oversight" href="#"><span class="material-symbols-outlined text-xl">policy</span><span>District Oversight</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="ministry-analytics" href="#"><span class="material-symbols-outlined text-xl">query_stats</span><span>Ministry Analytics</span></a></nav></div><div class="p-space-md bg-surface-container-low"><div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span>Status: Active Duty</span><span class="w-2 h-2 rounded-full bg-secondary"></span></div><p class="font-label-sm text-label-sm text-on-surface-variant mt-space-xs">Trauma-Informed Protocol v4.2</p></div></aside><div class="pl-72"><main class="relative pt-16 bg-surface min-h-screen pb-space-xl"><div class="flex flex-col w-full px-gutter-lg py-space-lg max-w-[1440px] mx-auto space-y-space-xl">
+<!-- TOP BANNER: DISTRICT EXECUTIVE & STATUTORY OVERSIGHT -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-2xl">account_balance</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="font-headline-md text-headline-md text-primary tracking-tight">South Delhi Administrative Zone</span>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary-fixed/50 px-space-xs py-0.5 rounded uppercase font-semibold">Jurisdiction: Tier-1</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-high px-space-xs py-0.5 rounded font-mono">DL-SD-PWDVA-09</span>
+</div>
+<div class="flex items-center gap-space-md text-on-surface-variant font-body-sm text-body-sm mt-space-xs">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-primary">badge</span>
+<strong>Designated Protection Officer:</strong> Smt. Rajeshwari Iyer, IAS
+            </span>
+<span class="text-outline-variant">|</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-secondary">gavel</span>
+              Court Liaison: Saket District Court
+            </span>
+<span class="text-outline-variant">|</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-on-surface-variant">schedule</span>
+              Sync: Live (03m ago)
+            </span>
+</div>
+</div>
+</div>
+<!-- Operational Actions -->
+<div class="flex items-center gap-space-sm self-start lg:self-center">
+<button class="inline-flex items-center gap-space-xs bg-surface-container-low hover:bg-surface-container text-primary font-label-md text-label-md px-space-md py-space-sm rounded transition-colors shadow-sm" id="dispatchSummonModalBtn">
+<span class="material-symbols-outlined text-lg">local_police</span>
+<span>Deploy Inter-Agency Notice</span>
+</button>
+<button class="inline-flex items-center gap-space-xs bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md px-space-md py-space-sm rounded transition-all shadow-sm" id="exportGazetteBtn">
+<span class="material-symbols-outlined text-lg">download</span>
+<span>Download Statutory Log (PDF)</span>
+</button>
+</div>
+</div>
+<!-- Alert Strip: SLA Urgency -->
+<div class="bg-tertiary-fixed/70 p-space-md rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="flex h-3 w-3 relative shrink-0">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-tertiary"></span>
+</span>
+<span class="material-symbols-outlined text-tertiary text-xl">gavel</span>
+<p class="font-label-md text-label-md text-on-tertiary-fixed-variant">
+<strong>Urgent Statutory SLA Notice:</strong> 2 Inter-Agency Escalations pending immediate District Magistrate sign-off (&lt; 4 hrs statutory deadline).
+        </p>
+</div>
+<div class="flex items-center gap-space-sm">
+<a class="inline-flex items-center gap-space-xs bg-tertiary-container hover:bg-tertiary text-on-tertiary font-label-sm text-label-sm px-space-md py-space-xs rounded transition-colors" href="#action-escalations">
+<span>Review Escalations (2)</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+</div>
+</section>
+<!-- INTER-AGENCY COORDINATION STATS & DRILL-DOWN -->
+<section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<!-- FIR / Zero FIR Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Police Coordination</span>
+<span class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-lg">policy</span>
+</span>
+</div>
+<div class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight">42 <span class="text-body-md font-body-md text-on-surface-variant font-normal">FIRs</span></div>
+<p class="font-title-md text-title-md text-on-surface mt-1">Zero-FIR / PWDVA Track</p>
+<div class="mt-space-md space-y-space-xs text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex justify-between items-center">
+<span>Verified &amp; Lodged</span>
+<span class="font-semibold text-secondary">38 Confirmed</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 90.4%"></div>
+</div>
+<div class="flex justify-between items-center text-error pt-1 font-medium">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">warning</span>Pending SHO Action</span>
+<span class="bg-error-container text-on-error-container px-1.5 py-0.2 rounded font-mono text-label-sm">4 cases</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm bg-surface-container-low -mx-space-lg -mb-space-lg px-space-lg py-space-xs rounded-b-xl flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Target SLA: &lt; 12 hrs</span>
+<span class="text-secondary font-semibold">90.4% on-track</span>
+</div>
+</div>
+<!-- Free Legal Aid Advocate Assignments -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">DLSA Panel Roster</span>
+<span class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-lg">balance</span>
+</span>
+</div>
+<div class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight">51 <span class="text-body-md font-body-md text-on-surface-variant font-normal">Empanelled</span></div>
+<p class="font-title-md text-title-md text-on-surface mt-1">Free Legal Aid Advocates</p>
+<div class="mt-space-md space-y-space-xs text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex justify-between items-center">
+<span>24h SLA Allocation</span>
+<span class="font-semibold text-secondary">98% Compliant</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 98%"></div>
+</div>
+<div class="flex justify-between items-center pt-1 text-on-surface">
+<span>Active Briefs Handled</span>
+<span class="font-semibold font-mono">114 Briefs</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm bg-surface-container-low -mx-space-lg -mb-space-lg px-space-lg py-space-xs rounded-b-xl flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Standby Pool: 9 Counsel</span>
+<span class="text-secondary font-semibold">Available</span>
+</div>
+</div>
+<!-- Shelter & Short-Stay Occupancy -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Sakhi One-Stop Centre</span>
+<span class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-lg">night_shelter</span>
+</span>
+</div>
+<div class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight">84% <span class="text-body-md font-body-md text-on-surface-variant font-normal">Capacity</span></div>
+<p class="font-title-md text-title-md text-on-surface mt-1">Short-Stay Shelter Beds</p>
+<div class="mt-space-md space-y-space-xs text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex justify-between items-center">
+<span>Bed Occupancy</span>
+<span class="font-semibold font-mono text-on-surface">32 / 38 Beds</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-1.5 rounded-full" style="width: 84.2%"></div>
+</div>
+<div class="flex justify-between items-center pt-1 text-on-surface-variant">
+<span>Emergency Surge Reserve</span>
+<span class="font-semibold text-secondary font-mono">6 Safe Cots</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm bg-surface-container-low -mx-space-lg -mb-space-lg px-space-lg py-space-xs rounded-b-xl flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Medical Officer In-House</span>
+<span class="text-secondary font-semibold">Active (Dr. Rao)</span>
+</div>
+</div>
+<!-- Special Court Injunctions / Milestones -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Magistrate Directives</span>
+<span class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-lg">verified_user</span>
+</span>
+</div>
+<div class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight">16 <span class="text-body-md font-body-md text-on-surface-variant font-normal">Orders</span></div>
+<p class="font-title-md text-title-md text-on-surface mt-1">Protection Orders (Sec 18)</p>
+<div class="mt-space-md space-y-space-xs text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex justify-between items-center">
+<span>Residence Injunctions (Sec 19)</span>
+<span class="font-semibold font-mono text-on-surface">9 Issued</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 72%"></div>
+</div>
+<div class="flex justify-between items-center pt-1 text-on-surface-variant">
+<span>Monetary Relief Applications</span>
+<span class="font-semibold font-mono text-on-surface">11 Processed</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm bg-surface-container-low -mx-space-lg -mb-space-lg px-space-lg py-space-xs rounded-b-xl flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Avg Disposition Speed</span>
+<span class="text-primary font-semibold">4.2 Calendar Days</span>
+</div>
+</div>
+</section>
+<!-- INTERACTIVE ACTIONABLE ESCALATIONS GRID -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md" id="action-escalations">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary">notification_important</span>
+<h2 class="font-headline-md text-headline-md text-primary">Priority Statutory Escalation Grid</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+          Matters requiring statutory magistrate endorsement, summons issuance, or rapid enforcement directives.
+        </p>
+</div>
+<!-- Filter / Search Tools -->
+<div class="flex items-center gap-space-xs flex-wrap">
+<div class="flex items-center bg-surface-container px-space-sm py-1.5 rounded text-on-surface">
+<span class="material-symbols-outlined text-sm text-on-surface-variant mr-1">filter_list</span>
+<select class="bg-transparent font-label-sm text-label-sm text-on-surface focus:outline-none cursor-pointer" id="jurisdictionFilter">
+<option value="all">All Thanas (Hauz Khas, Saket, Mehrauli)</option>
+<option value="hauz-khas">PS Hauz Khas</option>
+<option value="saket">PS Saket</option>
+<option value="mehrauli">PS Mehrauli</option>
+<option value="malviya-nagar">PS Malviya Nagar</option>
+</select>
+</div>
+<button class="p-1.5 bg-surface-container-low hover:bg-surface-container text-on-surface-variant rounded transition-colors" id="refreshTableBtn" title="Sync live docket">
+<span class="material-symbols-outlined text-lg">sync</span>
+</button>
+</div>
+</div>
+<!-- Data Table Container -->
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant uppercase font-label-sm text-label-sm tracking-wider">
+<th class="py-space-sm px-space-md">Case Identifier</th>
+<th class="py-space-sm px-space-md">Survivor Code</th>
+<th class="py-space-sm px-space-md">Requested Statutory Action</th>
+<th class="py-space-sm px-space-md">Police Station Jurisdiction</th>
+<th class="py-space-sm px-space-md">Assigned Legal Counsel</th>
+<th class="py-space-sm px-space-md">SLA Status</th>
+<th class="py-space-sm px-space-md text-right">Administrative Levers</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container" id="escalationTableBody">
+<!-- ROW 1: Near breach -->
+<tr class="hover:bg-surface-container-low/50 transition-colors" data-police="saket">
+<td class="py-space-md px-space-md">
+<span class="font-mono font-semibold text-primary">DL-SD-2024-0891</span>
+<span class="block text-label-sm text-on-surface-variant font-mono">DIR Form-1 Registered</span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-base">verified_user</span>
+<span class="font-mono font-medium text-on-surface">SK-9941-K</span>
+</div>
+</td>
+<td class="py-space-md px-space-md max-w-xs">
+<span class="font-semibold text-tertiary">Immediate Protection Order (Sec 18)</span>
+<p class="text-label-sm text-on-surface-variant line-clamp-1">Physical danger flagged by field counselor; respondent violating restraining perimeter.</p>
+</td>
+<td class="py-space-md px-space-md">
+<span class="font-medium text-on-surface">PS Saket</span>
+<span class="block text-label-sm text-on-surface-variant">SHO: Insp. V. Malhotra</span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="text-on-surface font-medium">Adv. Meenakshi Sundaram</span>
+<span class="block text-label-sm text-secondary">DLSA Senior Panel</span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 bg-error-container text-on-error-container px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-sm">alarm</span>
+                14 hrs (Near Breach)
+              </span>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm px-space-sm py-1 rounded shadow-sm transition-colors" onclick="triggerDirectAction('Approve Police Escort', 'DL-SD-2024-0891', 'PS Saket')">
+                  Approve Escort
+                </button>
+<button class="bg-surface-container-high hover:bg-surface-container-highest text-primary font-label-sm text-label-sm px-space-sm py-1 rounded transition-colors" onclick="triggerDirectAction('Summon Protection Officer', 'DL-SD-2024-0891', 'Smt. Rajeshwari Iyer')">
+                  Summon PO
+                </button>
+</div>
+</td>
+</tr>
+<!-- ROW 2: High Priority -->
+<tr class="hover:bg-surface-container-low/50 transition-colors" data-police="hauz-khas">
+<td class="py-space-md px-space-md">
+<span class="font-mono font-semibold text-primary">DL-SD-2024-0898</span>
+<span class="block text-label-sm text-on-surface-variant font-mono">DIR Form-2 Interim</span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-base">verified_user</span>
+<span class="font-mono font-medium text-on-surface">SK-3012-P</span>
+</div>
+</td>
+<td class="py-space-md px-space-md max-w-xs">
+<span class="font-semibold text-on-surface">Sec 19 Residence Eviction Protection</span>
+<p class="text-label-sm text-on-surface-variant line-clamp-1">In-laws attempting unlawful dispossession from shared matrimonial dwelling.</p>
+</td>
+<td class="py-space-md px-space-md">
+<span class="font-medium text-on-surface">PS Hauz Khas</span>
+<span class="block text-label-sm text-on-surface-variant">SHO: Insp. S. Nehra</span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="text-on-surface font-medium">Adv. Karan Grover</span>
+<span class="block text-label-sm text-secondary">DLSA Panel A</span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 bg-surface-container-high text-primary font-semibold px-space-xs py-0.5 rounded font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                07 hrs (Within SLA)
+              </span>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="bg-secondary hover:bg-on-secondary-container text-on-secondary font-label-sm text-label-sm px-space-sm py-1 rounded shadow-sm transition-colors" onclick="triggerDirectAction('Generate Fast-Track Subpoena', 'DL-SD-2024-0898', 'PS Hauz Khas')">
+                  Issue Subpoena
+                </button>
+<button class="bg-surface-container-high hover:bg-surface-container-highest text-primary font-label-sm text-label-sm px-space-sm py-1 rounded transition-colors" onclick="triggerDirectAction('Summon Protection Officer', 'DL-SD-2024-0898', 'Sector-3 Field Squad')">
+                  Summon PO
+                </button>
+</div>
+</td>
+</tr>
+<!-- ROW 3: Regular Processing -->
+<tr class="hover:bg-surface-container-low/50 transition-colors" data-police="mehrauli">
+<td class="py-space-md px-space-md">
+<span class="font-mono font-semibold text-primary">DL-SD-2024-0904</span>
+<span class="block text-label-sm text-on-surface-variant font-mono">DIR Form-1 Direct</span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-base">verified_user</span>
+<span class="font-mono font-medium text-on-surface">SK-7124-A</span>
+</div>
+</td>
+<td class="py-space-md px-space-md max-w-xs">
+<span class="font-semibold text-on-surface">Sec 20 Monetary &amp; Child Custody</span>
+<p class="text-label-sm text-on-surface-variant line-clamp-1">Immediate interim maintenance application pending judicial review.</p>
+</td>
+<td class="py-space-md px-space-md">
+<span class="font-medium text-on-surface">PS Mehrauli</span>
+<span class="block text-label-sm text-on-surface-variant">SHO: Insp. P. Kadian</span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="text-on-surface font-medium">Adv. Ananya Bannerjee</span>
+<span class="block text-label-sm text-secondary">DLSA Senior Panel</span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 bg-surface-container-high text-primary font-semibold px-space-xs py-0.5 rounded font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                03 hrs (On Schedule)
+              </span>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm px-space-sm py-1 rounded shadow-sm transition-colors" onclick="triggerDirectAction('Approve Legal Aid Funding', 'DL-SD-2024-0904', 'State Victim Fund')">
+                  Approve Relief
+                </button>
+<button class="bg-surface-container-high hover:bg-surface-container-highest text-primary font-label-sm text-label-sm px-space-sm py-1 rounded transition-colors" onclick="triggerDirectAction('Generate Fast-Track Subpoena', 'DL-SD-2024-0904', 'PS Mehrauli')">
+                  Issue Notice
+                </button>
+</div>
+</td>
+</tr>
+<!-- ROW 4: Critical Case -->
+<tr class="hover:bg-surface-container-low/50 transition-colors" data-police="malviya-nagar">
+<td class="py-space-md px-space-md">
+<span class="font-mono font-semibold text-primary">DL-SD-2024-0911</span>
+<span class="block text-label-sm text-on-surface-variant font-mono">Zero-FIR Transfer 01/24</span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-base">verified_user</span>
+<span class="font-mono font-medium text-on-surface">SK-8812-C</span>
+</div>
+</td>
+<td class="py-space-md px-space-md max-w-xs">
+<span class="font-semibold text-tertiary">Ex-Parte Emergency Injunction</span>
+<p class="text-label-sm text-on-surface-variant line-clamp-1">Aggravated violence report; shelter transfer completed; emergency order requested.</p>
+</td>
+<td class="py-space-md px-space-md">
+<span class="font-medium text-on-surface">PS Malviya Nagar</span>
+<span class="block text-label-sm text-on-surface-variant">SHO: Insp. R. Chhillar</span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="text-on-surface font-medium">Adv. T. Raghavan</span>
+<span class="block text-label-sm text-secondary">DLSA Fast-Track Lead</span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 bg-error-container text-on-error-container px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-sm">alarm</span>
+                15 hrs (Critical Sign-off)
+              </span>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm px-space-sm py-1 rounded shadow-sm transition-colors" onclick="triggerDirectAction('Approve Police Escort', 'DL-SD-2024-0911', 'PS Malviya Nagar')">
+                  Approve Escort
+                </button>
+<button class="bg-secondary hover:bg-on-secondary-container text-on-secondary font-label-sm text-label-sm px-space-sm py-1 rounded shadow-sm transition-colors" onclick="triggerDirectAction('Generate Fast-Track Subpoena', 'DL-SD-2024-0911', 'Court Room 4')">
+                  Subpoena
+                </button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Grid Footer Summary -->
+<div class="flex flex-col sm:flex-row items-center justify-between pt-space-xs border-t-0 text-on-surface-variant text-label-sm font-label-sm">
+<span class="font-mono">Displaying 4 active statutory escalation cases | Real-time statutory ledger</span>
+<span class="flex items-center gap-1 mt-2 sm:mt-0">
+<span class="w-2 h-2 rounded-full bg-secondary inline-block"></span>
+        Encrypted PWDVA Digital Evidence Vault Active (ISO 27001)
+      </span>
+</div>
+</section>
+<!-- TWO-COLUMN SECTION: SLA COMPLIANCE RADIALS & FAST-TRACK COURT CALENDAR -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- LEFT: INSTITUTIONAL SLA COMPLIANCE -->
+<section class="lg:col-span-5 bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary">analytics</span>
+<h2 class="font-headline-sm text-headline-sm text-primary">District SLA Compliance</h2>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container text-on-surface-variant px-space-xs py-0.5 rounded font-mono">Q3 Current Cycle</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-lg">
+          Statutory timelines benchmarked under the Protection of Women from Domestic Violence Act, 2005.
+        </p>
+<!-- Progress Rings Layout -->
+<div class="grid grid-cols-3 gap-space-sm text-center mb-space-lg">
+<!-- Metric 1: Response Time -->
+<div class="flex flex-col items-center p-space-sm bg-surface-container-low rounded-lg">
+<div class="relative w-20 h-20 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-high" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+<path class="text-secondary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="94, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<span class="absolute font-headline-sm text-headline-sm font-bold text-primary">94%</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold mt-space-xs">Rapid Response</span>
+<span class="text-label-sm text-on-surface-variant font-mono">&lt; 2hr benchmark</span>
+</div>
+<!-- Metric 2: Legal Aid Allocation -->
+<div class="flex flex-col items-center p-space-sm bg-surface-container-low rounded-lg">
+<div class="relative w-20 h-20 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-high" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+<path class="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="98, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<span class="absolute font-headline-sm text-headline-sm font-bold text-primary">98%</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold mt-space-xs">DLSA Allotment</span>
+<span class="text-label-sm text-on-surface-variant font-mono">&lt; 24hr quota</span>
+</div>
+<!-- Metric 3: Shelter Placement -->
+<div class="flex flex-col items-center p-space-sm bg-surface-container-low rounded-lg">
+<div class="relative w-20 h-20 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-high" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+<path class="text-secondary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="100, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<span class="absolute font-headline-sm text-headline-sm font-bold text-secondary">100%</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold mt-space-xs">Shelter Ingestion</span>
+<span class="text-label-sm text-on-surface-variant font-mono">Zero rejection</span>
+</div>
+</div>
+<!-- Breakdown List -->
+<div class="space-y-space-xs">
+<div class="flex justify-between items-center py-2 px-3 bg-surface-container-low rounded text-body-sm font-body-sm">
+<span class="text-on-surface">Domestic Incident Report (DIR) Intake to Filing</span>
+<span class="font-mono font-semibold text-primary">Avg 18.4 hrs (Legal limit 48 hrs)</span>
+</div>
+<div class="flex justify-between items-center py-2 px-3 bg-surface-container-low rounded text-body-sm font-body-sm">
+<span class="text-on-surface">Protection Order Notice Service by Police</span>
+<span class="font-mono font-semibold text-secondary">Avg 2.1 days</span>
+</div>
+<div class="flex justify-between items-center py-2 px-3 bg-surface-container-low rounded text-body-sm font-body-sm">
+<span class="text-on-surface">District Magistrate Emergency Counter-Sign</span>
+<span class="font-mono font-semibold text-tertiary">3h 40m remaining avg</span>
+</div>
+</div>
+</div>
+<!-- Footer action -->
+<div class="mt-space-md pt-space-sm flex items-center justify-between">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Audited by State Women's Commission</span>
+<button class="font-label-sm text-label-sm text-secondary hover:text-on-secondary-container font-semibold inline-flex items-center gap-1">
+<span>View Statutory Audit Trail</span>
+<span class="material-symbols-outlined text-sm">open_in_new</span>
+</button>
+</div>
+</section>
+<!-- RIGHT: DISTRICT FAST-TRACK SPECIAL COURT CALENDAR -->
+<section class="lg:col-span-7 bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary">event_note</span>
+<h2 class="font-headline-sm text-headline-sm text-primary">Fast-Track Special Court Calendar</h2>
+</div>
+<span class="font-label-sm text-label-sm bg-secondary-fixed/40 text-on-secondary-fixed px-space-sm py-0.5 rounded font-semibold">Saket Court Complex - Courtroom 04</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+          Scheduled evidentiary hearings, ex-parte protection orders, and cross-examinations for the current judicial session.
+        </p>
+<!-- Court Sessions Agenda List -->
+<div class="space-y-space-sm">
+<!-- Calendar Item 1 -->
+<div class="p-space-md bg-surface-container-low rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-sm hover:bg-surface-container transition-colors">
+<div class="flex items-start gap-space-sm">
+<div class="px-space-sm py-1 bg-surface-container-lowest rounded text-center shrink-0">
+<span class="block font-headline-sm text-headline-sm font-bold text-primary leading-tight">10</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant uppercase">OCT</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-mono font-semibold text-primary text-body-md">DL-SD-2024-0740</span>
+<span class="bg-primary-container text-on-primary text-label-sm font-label-sm px-1.5 py-0.2 rounded">10:30 AM</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant font-medium">Sec 12 PWDVA Full Hearing</span>
+</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant mt-1">
+<strong>Assigned Govt Prosecutor:</strong> Adv. Sunita Tandon (Addl. Public Prosecutor)
+                </div>
+<div class="text-label-sm font-label-sm text-secondary flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-sm">shield</span>
+                  In-Camera Protection Order Hearing with Judicial Magistrate 1st Class
+                </div>
+</div>
+</div>
+<button class="bg-surface-container-lowest hover:bg-surface-container-high text-primary font-label-sm text-label-sm px-space-md py-space-xs rounded shrink-0 shadow-sm transition-colors" onclick="showCourtDossier('DL-SD-2024-0740')">
+              Brief Dossier
+            </button>
+</div>
+<!-- Calendar Item 2 -->
+<div class="p-space-md bg-surface-container-low rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-sm hover:bg-surface-container transition-colors">
+<div class="flex items-start gap-space-sm">
+<div class="px-space-sm py-1 bg-surface-container-lowest rounded text-center shrink-0">
+<span class="block font-headline-sm text-headline-sm font-bold text-primary leading-tight">10</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant uppercase">OCT</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-mono font-semibold text-primary text-body-md">DL-SD-2024-0789</span>
+<span class="bg-secondary text-on-secondary text-label-sm font-label-sm px-1.5 py-0.2 rounded">02:15 PM</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant font-medium">Sec 23 Interim Injunction Ruling</span>
+</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant mt-1">
+<strong>Assigned Govt Prosecutor:</strong> Adv. Ramanathan Swamy (Spl. PP - Crime Against Women)
+                </div>
+<div class="text-label-sm font-label-sm text-secondary flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-sm">home</span>
+                  Shared Household Right Confirmation &amp; Dispossession Restraint
+                </div>
+</div>
+</div>
+<button class="bg-surface-container-lowest hover:bg-surface-container-high text-primary font-label-sm text-label-sm px-space-md py-space-xs rounded shrink-0 shadow-sm transition-colors" onclick="showCourtDossier('DL-SD-2024-0789')">
+              Brief Dossier
+            </button>
+</div>
+<!-- Calendar Item 3 -->
+<div class="p-space-md bg-surface-container-low rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-sm hover:bg-surface-container transition-colors">
+<div class="flex items-start gap-space-sm">
+<div class="px-space-sm py-1 bg-surface-container-lowest rounded text-center shrink-0">
+<span class="block font-headline-sm text-headline-sm font-bold text-primary leading-tight">11</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant uppercase">OCT</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-mono font-semibold text-primary text-body-md">DL-SD-2024-0815</span>
+<span class="bg-primary-container text-on-primary text-label-sm font-label-sm px-1.5 py-0.2 rounded">11:00 AM</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant font-medium">Sec 19 Enforcement Non-Compliance</span>
+</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant mt-1">
+<strong>Assigned Govt Prosecutor:</strong> Adv. Sunita Tandon
+                </div>
+<div class="text-label-sm font-label-sm text-tertiary flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-sm">warning</span>
+                  Police Action Report requested on Section 31 breach (Penalty for breach of order)
+                </div>
+</div>
+</div>
+<button class="bg-surface-container-lowest hover:bg-surface-container-high text-primary font-label-sm text-label-sm px-space-md py-space-xs rounded shrink-0 shadow-sm transition-colors" onclick="showCourtDossier('DL-SD-2024-0815')">
+              Brief Dossier
+            </button>
+</div>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="mt-space-md pt-space-sm flex flex-col sm:flex-row items-center justify-between gap-space-xs">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Presiding Magistrate: Shri K. S. Verma, CMM</span>
+<button class="bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md px-space-md py-space-xs rounded transition-colors inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">calendar_month</span>
+<span>Full District Judicial Docket</span>
+</button>
+</div>
+</section>
+</div>
+<!-- INTER-AGENCY ROSTER & FACILITY STATUS -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary">diversity_3</span>
+<h2 class="font-headline-sm text-headline-sm text-primary">Key Institutional Duty Personnel</h2>
+</div>
+<span class="text-label-sm font-label-sm text-secondary font-semibold flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+        All 4 Administrative Nodes Synchronized
+      </span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Duty Card 1: Protection Officer -->
+<div class="p-space-md bg-surface-container-low rounded-lg flex items-center gap-space-sm">
+<img class="w-12 h-12 rounded-full object-cover shrink-0 shadow-sm" data-alt="Official portrait photograph of Rajeshwari Iyer, a high-ranking Indian Administrative Service officer wearing formal office attire with an authoritative and compassionate demeanor in a government administrative chamber." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7xCquEb7WakzafNxmSF2z4k8UYNLqjAo0P5s-XOP7tvr0WCrZoiAWSw46Np9sTXtSYAFacnxx15Tjx_Tp3bh4YdHZmgY05nkHv0Bo_FCkFFfSUwnFpTLmExS_7mQn-0kqhaKX-0mEPKqAusnTpsuqUhj8eD-qDq_9t5HbmxxbXslHjVPmWChyC0ZnQAXCnCDEsl_a8joXPeS6Gll3UKbHJTrD9E-r9E0zbo560-oPCPf-EiWv8Ay4"/>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-primary truncate">Rajeshwari Iyer, IAS</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate">Chief Protection Officer</span>
+<span class="font-label-sm text-label-sm text-secondary font-mono mt-0.5">Desk PO-01 | Ph: Ext 402</span>
+</div>
+</div>
+<!-- Duty Card 2: DCP Special Cell -->
+<div class="p-space-md bg-surface-container-low rounded-lg flex items-center gap-space-sm">
+<img class="w-12 h-12 rounded-full object-cover shrink-0 shadow-sm" data-alt="Official portrait photograph of Vikramaditya Singh, Deputy Commissioner of Police in crisp Indian Police uniform with service medals, seated in an institutional high-security office." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9y45_PA6XZjL0Bn-Oq224WIpivRobO-TZNeroiUYZrM-TxIGbjdbBE_MRXY47R41_iT0e4qs6xX6M5RvO_1o3RnS1FHPRhN6IeRtoSZL5ZoP90kLtW-WU9o2tl44odiyEnbjMaoVRhYlbd3sUgy9WG8IynafCleJIjRBLvBJbQWmXdWOzWAF9BQQm39hViGxrlaf_DiAIpMqlbREoN-IFGrx0VQr5GbaCxj_th7mJHoCdXl4sbDNq"/>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-primary truncate">Vikramaditya Singh, IPS</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate">DCP, CAW Cell South</span>
+<span class="font-label-sm text-label-sm text-secondary font-mono mt-0.5">Control: 011-2651441</span>
+</div>
+</div>
+<!-- Duty Card 3: DLSA Secretary -->
+<div class="p-space-md bg-surface-container-low rounded-lg flex items-center gap-space-sm">
+<img class="w-12 h-12 rounded-full object-cover shrink-0 shadow-sm" data-alt="Official professional portrait of Preeti Deshmukh, Secretary of District Legal Services Authority wearing advocate collar and black judicial coat in a clean legal library." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdiBxfXv3gLvTZAv_CbKmGdCwvGfdgISdFzoZ9DKW8K69X_JEbhlOl8GFhvcux4twmYp4-C5Igf_Il-d9sYWRG8Y8w6iSVjcW9aNpblyUiNPK54CWFf-4ewXo6pAXbN1MrTzVjrOj7pQFjkTdOHoc_o5z6ek661kcIeeRXHK9vhJPYneCETUgid98zmdKSsLuNtk1pfwJkPliLaZhVXxgM-kxCdLWpmZ_Sn09CLMuEuH2CbhhH2r8e"/>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-primary truncate">Preeti Deshmukh, DHJS</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate">Secretary, DLSA South</span>
+<span class="font-label-sm text-label-sm text-secondary font-mono mt-0.5">Legal Roster Lead</span>
+</div>
+</div>
+<!-- Duty Card 4: OSC Administrator -->
+<div class="p-space-md bg-surface-container-low rounded-lg flex items-center gap-space-sm">
+<img class="w-12 h-12 rounded-full object-cover shrink-0 shadow-sm" data-alt="Official portrait of Dr. Smita Nair, Chief Medical Officer and Administrator of One Stop Centre in white clinical coat with stethoscope and identification badge." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc4_YP5BSv_d5g6eTNP748AVnufxdb15JaHIPGOQ8-vUPquTN_tTJw5e9tiTrt4iucGKgEtdSlDkJ34EyVR_ENLR1d1s8UsaJ3M3Uubb84eU3vsfcFCWAfvSWQtAPvi8uVI8Nea6O7tkJcDau-eS9mI1vk5tqWHZkkBfsOJQ_UJRbSUd9CZg5kXclVfj3tH_9uGDMxjMTw-KpFdCdb8__6S97noKV44MTuftZXKmX13ruAQ9d1tKGt"/>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-primary truncate">Dr. Smita Nair</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate">OSC Sakhi Medical Supt.</span>
+<span class="font-label-sm text-label-sm text-secondary font-mono mt-0.5">24x7 Trauma Crisis Lead</span>
+</div>
+</div>
+</div>
+</section>
+<!-- MODAL: INTERACTIVE ACTION TRIGGER DIALOG (HIDDEN BY DEFAULT) -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/60 backdrop-blur-sm p-4" id="statutoryActionModal">
+<div class="bg-surface-container-lowest rounded-xl max-w-lg w-full p-space-lg shadow-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-2xl">verified</span>
+<h3 class="font-headline-sm text-headline-sm text-primary" id="modalTitle">Execute Statutory Warrant</h3>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface" onclick="closeStatutoryModal()">
+<span class="material-symbols-outlined text-xl">close</span>
+</button>
+</div>
+<div class="space-y-space-sm">
+<div class="p-space-sm bg-surface-container-low rounded">
+<span class="text-label-sm font-label-sm text-on-surface-variant block">Target File &amp; Jurisdictional Unit:</span>
+<span class="font-mono font-semibold text-body-md text-primary" id="modalTargetMeta">DL-SD-2024-0891 (PS Saket)</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface" id="modalDescription">
+          You are authorizing an executive statutory directive under the powers vested in the District Magistrate / Designated Protection Officer under the Protection of Women from Domestic Violence Act, 2005.
+        </p>
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant font-semibold">Authorized Officer Signature / Pin Confirmation</label>
+<input class="w-full bg-surface-container px-space-md py-space-xs rounded font-mono text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary" type="password" value="••••••••"/>
+<span class="text-label-sm text-on-surface-variant">Validated via NIC e-Pramaan Token (Rajeshwari Iyer, IAS)</span>
+</div>
+</div>
+<div class="flex items-center justify-end gap-space-sm pt-space-sm">
+<button class="px-space-md py-space-sm bg-surface-container hover:bg-surface-container-high text-on-surface rounded font-label-md text-label-md transition-colors" onclick="closeStatutoryModal()">
+          Cancel Directive
+        </button>
+<button class="px-space-md py-space-sm bg-primary hover:bg-primary-container text-on-primary rounded font-label-md text-label-md transition-colors flex items-center gap-1 shadow-sm" onclick="confirmStatutoryAction()">
+<span class="material-symbols-outlined text-base">lock_open</span>
+<span>Dispatch &amp; Notify SHO</span>
+</button>
+</div>
+</div>
+</div>
+<!-- TOAST NOTIFICATION -->
+<div class="fixed top-20 right-6 z-50 hidden bg-primary text-on-primary px-space-lg py-space-sm rounded-lg shadow-xl flex items-center gap-space-sm transition-all transform ease-out duration-300" id="actionToast">
+<span class="material-symbols-outlined text-secondary text-xl">check_circle</span>
+<div>
+<span class="font-label-md text-label-md block font-semibold" id="toastHeading">Directive Dispatched</span>
+<span class="font-body-sm text-body-sm text-inverse-on-surface" id="toastSubtext">Police escort instructions synchronized with PS Saket.</span>
+</div>
+</div>
+</div>
+<script>
+  // Filter by Police Jurisdiction
+  const jurisdictionSelect = document.getElementById('jurisdictionFilter');
+  if (jurisdictionSelect) {
+    jurisdictionSelect.addEventListener('change', function(e) {
+      const val = e.target.value;
+      const rows = document.querySelectorAll('#escalationTableBody tr');
+      rows.forEach(row => {
+        if (val === 'all') {
+          row.style.display = '';
+        } else {
+          const police = row.getAttribute('data-police');
+          row.style.display = (police === val) ? '' : 'none';
+        }
+      });
+    });
+  }
+
+  // Refresh animation
+  const refreshBtn = document.getElementById('refreshTableBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function() {
+      const icon = this.querySelector('.material-symbols-outlined');
+      icon.classList.add('animate-spin');
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+        showToast('Docket Updated', 'All 4 police jurisdictions refreshed and synced with CCTNS portal.');
+      }, 700);
+    });
+  }
+
+  // Action Triggers
+  let activeCaseMeta = '';
+  function triggerDirectAction(actionName, caseId, authority) {
+    const modal = document.getElementById('statutoryActionModal');
+    const title = document.getElementById('modalTitle');
+    const targetMeta = document.getElementById('modalTargetMeta');
+    const desc = document.getElementById('modalDescription');
+
+    activeCaseMeta = `${caseId} (${authority})`;
+    title.textContent = actionName;
+    targetMeta.textContent = activeCaseMeta;
+
+    if (actionName.includes('Escort')) {
+      desc.textContent = `Issuing formal statutory order for immediate female police escort dispatch from ${authority} to secure survivor under Sec 12/18 PWDVA.`;
+    } else if (actionName.includes('Subpoena')) {
+      desc.textContent = `Issuing judicial expedited appearance notice to respondent and station authorities through ${authority}.`;
+    } else if (actionName.includes('Summon')) {
+      desc.textContent = `Immediate executive requisition notice dispatched to field protection officer squad: ${authority}.`;
+    } else {
+      desc.textContent = `Executing statutory authorization for matter ${caseId}.`;
+    }
+
+    modal.classList.remove('hidden');
+  }
+
+  function closeStatutoryModal() {
+    document.getElementById('statutoryActionModal').classList.add('hidden');
+  }
+
+  function confirmStatutoryAction() {
+    closeStatutoryModal();
+    showToast('Executive Directive Transmitted', `Order logged for ${activeCaseMeta}. SHO & Protection Officer notified via SMS/CCTNS.`);
+  }
+
+  function showCourtDossier(caseId) {
+    showToast('Dossier Unsealed', `Statutory e-filing record loaded for ${caseId}. Evidentiary affidavits and DIR ready for hearing.`);
+  }
+
+  function showToast(heading, subtext) {
+    const toast = document.getElementById('actionToast');
+    const toastHead = document.getElementById('toastHeading');
+    const toastSub = document.getElementById('toastSubtext');
+    toastHead.textContent = heading;
+    toastSub.textContent = subtext;
+    toast.classList.remove('hidden');
+    setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 4500);
+  }
+
+  // Export Gazetted Report Button
+  const exportBtn = document.getElementById('exportGazetteBtn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function() {
+      showToast('Generating Statutory Report', 'South Delhi PWDVA Quarterly Oversight Dossier compiling (PDF/A format).');
+    });
+  }
+
+  // Top summon notice dispatch
+  const dispatchSummonModalBtn = document.getElementById('dispatchSummonModalBtn');
+  if (dispatchSummonModalBtn) {
+    dispatchSummonModalBtn.addEventListener('click', function() {
+      triggerDirectAction('Deploy Inter-Agency Notice', 'ALL-STATIONS-CIRCULAR', 'South Delhi Thanas & Protection Unit');
+    });
+  }
+</script></main></div><div class="fixed bottom-space-lg left-space-lg z-50"><a class="inline-flex items-center gap-space-sm bg-error hover:bg-on-error-container text-on-error px-space-lg py-space-sm rounded-full shadow-[0_4px_12px_-2px_rgba(15,23,42,0.08)] transition-transform hover:scale-105" href="tel:112"><span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-surface opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-surface"></span></span><span class="material-symbols-outlined text-xl">sos</span><span class="font-label-md text-label-md uppercase tracking-wider">SOS Emergency Assistance (112)</span></a></div><div class="fixed bottom-space-lg right-space-lg z-50"><button class="inline-flex items-center gap-space-sm bg-secondary hover:bg-on-secondary-container text-on-secondary px-space-lg py-space-sm rounded-full shadow-[0_4px_12px_-2px_rgba(15,23,42,0.08)] transition-transform hover:scale-105 cursor-pointer"><span class="material-symbols-outlined text-xl">forum</span><span class="font-label-md text-label-md">Sakhi Virtual Assistant</span></button></div></body></html>

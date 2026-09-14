@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container-low":"#eff4ff","on-primary-fixed":"#001c3b","on-tertiary-container":"#ff7884","surface-container-high":"#dce9ff","surface-container":"#e5eeff","secondary-fixed":"#89f5e7","tertiary":"#4f0011","on-tertiary-fixed-variant":"#920028","inverse-on-surface":"#eaf1ff","on-error":"#ffffff","error-container":"#ffdad6","secondary":"#006a61","surface-variant":"#d3e4fe","outline-variant":"#c4c6cf","on-secondary-fixed-variant":"#005049","secondary-fixed-dim":"#6bd8cb","surface":"#f8f9ff","inverse-surface":"#213145","background":"#f8f9ff","on-surface-variant":"#43474e","tertiary-fixed-dim":"#ffb3b6","on-background":"#0b1c30","inverse-primary":"#adc8f5","on-secondary":"#ffffff","primary-container":"#1e3a5f","on-tertiary":"#ffffff","surface-container-highest":"#d3e4fe","on-primary-container":"#8aa4cf","on-primary":"#ffffff","on-error-container":"#93000a","secondary-container":"#86f2e4","primary":"#022448","on-tertiary-fixed":"#40000c","on-secondary-container":"#006f66","tertiary-container":"#78001f","surface-container-lowest":"#ffffff","on-primary-fixed-variant":"#2d486d","surface-tint":"#455f87","primary-fixed-dim":"#adc8f5","surface-dim":"#cbdbf5","tertiary-fixed":"#ffdada","on-secondary-fixed":"#00201d","error":"#ba1a1a","primary-fixed":"#d5e3ff","on-surface":"#0b1c30","surface-bright":"#f8f9ff","outline":"#74777f"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},spacing:{"space-sm":"0.5rem","margin-lg":"3rem","space-lg":"1.5rem","gutter-lg":"2rem","gutter-sm":"1rem","space-xl":"2.5rem","margin":"1.5rem","gutter":"1.5rem","space-xs":"0.25rem","margin-sm":"1rem","space-md":"1rem"},fontFamily:{"headline-xl":["Public Sans"],"label-md":["Inter"],"body-sm":["Inter"],"headline-sm":["Public Sans"],"headline-lg":["Public Sans"],"headline-lg-mobile":["Public Sans"],"label-sm":["Inter"],"headline-md":["Public Sans"],"body-md":["Inter"],"headline-xl-mobile":["Public Sans"],"body-lg":["Inter"],"title-md":["Inter"]},fontSize:{"headline-xl":["40px",{lineHeight:"48px",letterSpacing:"-0.02em",fontWeight:"700"}],"label-md":["14px",{lineHeight:"20px",letterSpacing:"0.01em",fontWeight:"600"}],"body-sm":["14px",{lineHeight:"20px",fontWeight:"400"}],"headline-sm":["20px",{lineHeight:"28px",fontWeight:"600"}],"headline-lg":["32px",{lineHeight:"40px",letterSpacing:"-0.015em",fontWeight:"600"}],"headline-lg-mobile":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],"label-sm":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"600"}],"headline-md":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],"body-md":["16px",{lineHeight:"24px",fontWeight:"400"}],"headline-xl-mobile":["30px",{lineHeight:"38px",letterSpacing:"-0.01em",fontWeight:"700"}],"body-lg":["18px",{lineHeight:"28px",fontWeight:"400"}],"title-md":["18px",{lineHeight:"26px",fontWeight:"600"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 right-0 h-16 z-50 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-gutter-lg flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><img alt="Nyaya-Sakhi Emblem Wordmark" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1Xc1rzr_kkQkQK6ZDo38F21VuHro1TgHRaq_722naGSV3tmy1HxGzVQePo3Qx8-n9zsUzEqT-GW33UCAkVupma0_Szcr0YNXJYJ-x0jWBO8tMFO3QRZDdlAYxcudhlewZ6uQNeA2s9MFgkMyrCn8xKEjNBfrPJefN_GjBBzZzGCxsUPFKPFTZKG8CyJEWyZv_y8Q4vzI-oVUy_RNam9SB9TA2YVHIAMMRahsh_w4-avxjm93Ok6P5tAaQ"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary leading-tight tracking-tight">Nyaya-Sakhi</span><span class="font-label-sm text-label-sm text-on-surface-variant">Government of India | Ministry of Women &amp; Child Development</span></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-sm bg-surface-container-low px-space-md py-space-xs rounded"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-secondary text-sm">support_agent</span><span class="font-label-sm text-label-sm text-on-surface-variant">Women Helpline:</span><a class="font-label-sm text-label-sm text-secondary hover:text-on-secondary-container transition-colors" href="tel:181">181</a></div><span class="text-outline-variant font-label-sm text-label-sm">|</span><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-error text-sm">emergency</span><span class="font-label-sm text-label-sm text-on-surface-variant">Emergency:</span><a class="font-label-sm text-label-sm text-error hover:text-on-error-container transition-colors" href="tel:112">112</a></div></div><div class="flex items-center bg-surface-container px-space-sm py-space-xs rounded text-on-surface"><span class="material-symbols-outlined text-base mr-space-xs text-on-surface-variant">translate</span><select class="bg-transparent font-label-sm text-label-sm text-on-surface focus:outline-none cursor-pointer pr-space-xs"><option value="en">English</option><option value="hi">हिन्दी</option><option value="bn">বাংলা</option><option value="mr">मराठी</option><option value="te">తెలుగు</option><option value="ta">தமிழ்</option></select></div><a class="inline-flex items-center gap-space-xs bg-tertiary-container hover:bg-tertiary text-on-tertiary font-label-sm text-label-sm px-space-md py-space-xs rounded shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-colors" href="https://www.google.com"><span class="material-symbols-outlined text-base">shield</span><span>Quick Exit (Esc)</span></a><div class="flex items-center gap-space-sm pl-space-sm"><div class="hidden lg:flex flex-col items-end"><span class="font-label-md text-label-md text-on-surface leading-snug">Ananya Sharma</span><span class="font-label-sm text-label-sm text-on-secondary-container bg-secondary-container px-space-xs py-0.5 rounded">Authorized Counselor / Officer</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaRFtFGRgwFwgO4Of3r2XZ1nm-zqrDquAz_biKGsmpSC4Ce7ytb8wDmJCbsORkO1jXQNApbtDnbuY22Yc9KqYEWOFUSYuTKqMuV9jtE7vmJd20PRCG8DIbV3JePDu90gqBqkKZob1FQ4SS2v12ED_DBlifeW78vUbB0MyUC59h3CQnLzZQZAqLo2F-UOY_tmO3fznpsnC7LHq1TViCTZvyk8TO-ygZPpr1KurVtiNjl8YyeDIa4TUT"/></div></div></div></header><aside class="fixed left-0 top-16 bottom-0 w-72 bg-surface-container-lowest z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="p-space-md"><div class="px-space-sm py-space-xs mb-space-sm bg-surface-container-low rounded"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Operational Units</span></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-primary-container text-on-primary font-label-md text-label-md rounded"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="public-portal-and-intake" href="#"><span class="material-symbols-outlined text-xl">public</span><span>Public Portal &amp; Intake</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="sakhi-sahayata-survivor-desk" href="#"><span class="material-symbols-outlined text-xl">front_hand</span><span>Sakhi Sahayata (Survivor Desk)</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="counselor-workspace" href="#"><span class="material-symbols-outlined text-xl">clinical_notes</span><span>Counselor Workspace</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="district-oversight" href="#"><span class="material-symbols-outlined text-xl">policy</span><span>District Oversight</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm transition-colors bg-primary-container text-on-primary font-label-md text-label-md rounded" data-path="ministry-analytics" href="#"><span class="material-symbols-outlined text-xl">query_stats</span><span>Ministry Analytics</span></a></nav></div><div class="p-space-md bg-surface-container-low"><div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span>Status: Active Duty</span><span class="w-2 h-2 rounded-full bg-secondary"></span></div><p class="font-label-sm text-label-sm text-on-surface-variant mt-space-xs">Trauma-Informed Protocol v4.2</p></div></aside><div class="pl-72"><main class="relative pt-16 bg-surface min-h-screen pb-space-xl"><div class="flex flex-col w-full">
+<!-- Top Executive Scope & Action Banner -->
+<section class="w-full px-gutter-lg py-space-lg bg-surface-container-lowest shadow-sm flex flex-col xl:flex-row items-start xl:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="inline-flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold tracking-wide">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+          LIVE STATUTORY FEED
+        </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">OSC Central Oversight Node • 733 One-Stop Centers (Sakhi)</span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Q3 FY 2024-25 Review Window</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">National &amp; State Oversight Analytics</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-3xl">
+        Aggregated mission analytics under the umbrella of <span class="font-medium text-on-surface">Sambal (Mission Shakti)</span>. Standardized data streams synchronized from State Women Commissions, SLSA panels, and District Magistracy consoles.
+      </p>
+</div>
+<!-- Quick Executive Filter Controls -->
+<div class="flex items-center flex-wrap gap-space-sm w-full xl:w-auto">
+<div class="bg-surface-container-low px-space-md py-space-xs rounded flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">calendar_month</span>
+<select class="bg-transparent font-label-sm text-label-sm text-on-surface focus:outline-none cursor-pointer pr-1">
+<option>Q3 FY 2024-25 (Oct - Dec)</option>
+<option>Q2 FY 2024-25 (Jul - Sep)</option>
+<option>Q1 FY 2024-25 (Apr - Jun)</option>
+<option>Full FY 2023-24 (Audited)</option>
+</select>
+</div>
+<div class="bg-surface-container-low px-space-md py-space-xs rounded flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">public</span>
+<select class="bg-transparent font-label-sm text-label-sm text-on-surface focus:outline-none cursor-pointer pr-1">
+<option>All India (Pan-National)</option>
+<option>Northern Zone (8 States/UTs)</option>
+<option>Southern Zone (5 States/UTs)</option>
+<option>Western Zone (4 States)</option>
+<option>Eastern &amp; North-Eastern Zone</option>
+<option>Central Zone</option>
+</select>
+</div>
+<button class="inline-flex items-center gap-space-xs bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md px-space-md py-space-xs rounded shadow-sm transition-colors cursor-pointer" id="exportModalBtn">
+<span class="material-symbols-outlined text-base">download</span>
+<span>Export Ministry Dossier</span>
+</button>
+</div>
+</section>
+<!-- Core KPI Metric Cards -->
+<section class="w-full px-gutter-lg py-space-lg">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-space-md">
+<!-- Metric 1: Total Survivors -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Survivors Supported</span>
+<span class="p-2 rounded-lg bg-surface-container-high text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-xl">diversity_1</span>
+</span>
+</div>
+<div class="mt-space-md">
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">184,920</span>
+</div>
+<div class="flex items-center gap-1.5 mt-space-xs">
+<span class="material-symbols-outlined text-secondary text-sm font-bold">trending_up</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">+12.4% YoY</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-normal">(vs. Q3 FY24)</span>
+</div>
+</div>
+<div class="mt-space-sm pt-space-xs flex justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Target Met: 108%</span>
+<span class="text-primary font-medium">Active: 22,410</span>
+</div>
+</div>
+<!-- Metric 2: Crisis Response Time -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Avg. Crisis Response Time</span>
+<span class="p-2 rounded-lg bg-surface-container-high text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-xl">timer</span>
+</span>
+</div>
+<div class="mt-space-md">
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">18.4</span>
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">mins</span>
+</div>
+<div class="flex items-center gap-1.5 mt-space-xs">
+<span class="material-symbols-outlined text-secondary text-sm font-bold">arrow_downward</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">-4.2 mins</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-normal">SLA: &lt; 30 mins</span>
+</div>
+</div>
+<div class="mt-space-sm pt-space-xs">
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 61.3%;"></div>
+</div>
+</div>
+</div>
+<!-- Metric 3: Legal Aid Representation -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Legal Aid Representation</span>
+<span class="p-2 rounded-lg bg-surface-container-high text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-xl">gavel</span>
+</span>
+</div>
+<div class="mt-space-md">
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">96.2%</span>
+</div>
+<div class="flex items-center gap-1.5 mt-space-xs">
+<span class="material-symbols-outlined text-secondary text-sm font-bold">verified</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">DLSA / SLSA Affiliated</span>
+</div>
+</div>
+<div class="mt-space-sm pt-space-xs flex justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Assigned Counsel: 14,890</span>
+<span class="text-primary font-medium">Bench Target: 95%</span>
+</div>
+</div>
+<!-- Metric 4: Shelter Capacity -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Shelter Utilization Rate</span>
+<span class="p-2 rounded-lg bg-surface-container-high text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-xl">night_shelter</span>
+</span>
+</div>
+<div class="mt-space-md">
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">76.5%</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">(Optimized)</span>
+</div>
+<div class="flex items-center gap-1.5 mt-space-xs">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">bed</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">8,410 / 11,000 Verified Beds</span>
+</div>
+</div>
+<div class="mt-space-sm pt-space-xs">
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 76.5%;"></div>
+</div>
+</div>
+</div>
+<!-- Metric 5: Nirbhaya Fund Utilization -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Nirbhaya Fund Outlay</span>
+<span class="p-2 rounded-lg bg-surface-container-high text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-xl">account_balance</span>
+</span>
+</div>
+<div class="mt-space-md">
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">89.4%</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Disbursed</span>
+</div>
+<div class="flex items-center gap-1.5 mt-space-xs">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">currency_rupee</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">₹368.3 Cr of ₹412 Cr Allocated</span>
+</div>
+</div>
+<div class="mt-space-sm pt-space-xs flex justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Unspent: ₹43.7 Cr</span>
+<span class="text-secondary font-medium">Audit Clean</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Executive Insight & Strategic Highlights Strip -->
+<section class="w-full px-gutter-lg pb-space-lg">
+<div class="p-space-md rounded-xl bg-gradient-to-r from-primary via-primary-container to-primary text-on-primary shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container-lowest/15 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-2xl text-secondary-fixed">shield_lock</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-semibold">Executive Governance Directive</span>
+<span class="bg-secondary text-on-secondary px-2 py-0.5 rounded font-label-sm text-label-sm">High Priority</span>
+</div>
+<p class="font-body-sm text-body-sm text-surface-variant mt-0.5 max-w-4xl">
+            National integration of 112-ERSS with 181 Women Helplines is 98.4% operational. Central and Eastern border corridors require targeted counselor reallocation before Q4 statutory audits.
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<button class="bg-surface-container-lowest text-primary font-label-md text-label-md px-space-md py-space-xs rounded shadow-sm hover:bg-surface-container transition-colors cursor-pointer">
+          Reallocate Reserves
+        </button>
+<button class="bg-surface-container-lowest/15 hover:bg-surface-container-lowest/25 text-on-primary font-label-md text-label-md px-space-md py-space-xs rounded transition-colors cursor-pointer">
+          Inter-Ministry Memo
+        </button>
+</div>
+</div>
+</section>
+<!-- Main Strategic Matrix & Geographic Heatmap Section -->
+<section class="w-full px-gutter-lg pb-space-lg">
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-start">
+<!-- Left 8 Columns: Regional Matrix & Interactive Heatmap -->
+<div class="xl:col-span-8 flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-md">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary">State &amp; Zonal Performance Matrix</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Composite Operational Efficiency Index (COEI) based on SLA adherence, resolution rate, and bed occupancy.</p>
+</div>
+<div class="inline-flex rounded-lg bg-surface-container-low p-1">
+<button class="px-space-sm py-1 rounded bg-surface-container-lowest text-primary font-label-sm text-label-sm shadow-sm">Zonal View</button>
+<button class="px-space-sm py-1 rounded text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">By State</button>
+<button class="px-space-sm py-1 rounded text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">District Drill</button>
+</div>
+</div>
+<!-- Heatmap Interactive Visual Representation -->
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-space-sm mb-space-lg">
+<!-- Northern Zone -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col justify-between hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-bold">North Zone</span>
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+</div>
+<div class="my-space-sm">
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">92.4 <span class="font-label-sm text-label-sm text-on-surface-variant font-normal">/ 100</span></div>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Exemplary Tier</span>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant space-y-0.5">
+<div>Centers: <span class="text-on-surface font-medium">178</span></div>
+<div>Avg Resp: <span class="text-on-surface font-medium">14.1m</span></div>
+</div>
+</div>
+<!-- Southern Zone -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col justify-between hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-bold">South Zone</span>
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+</div>
+<div class="my-space-sm">
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">95.1 <span class="font-label-sm text-label-sm text-on-surface-variant font-normal">/ 100</span></div>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Exemplary Tier</span>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant space-y-0.5">
+<div>Centers: <span class="text-on-surface font-medium">164</span></div>
+<div>Avg Resp: <span class="text-on-surface font-medium">12.8m</span></div>
+</div>
+</div>
+<!-- Western Zone -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col justify-between hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-bold">West Zone</span>
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+</div>
+<div class="my-space-sm">
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">88.6 <span class="font-label-sm text-label-sm text-on-surface-variant font-normal">/ 100</span></div>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Stable Tier</span>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant space-y-0.5">
+<div>Centers: <span class="text-on-surface font-medium">142</span></div>
+<div>Avg Resp: <span class="text-on-surface font-medium">19.2m</span></div>
+</div>
+</div>
+<!-- Central Zone -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col justify-between hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-bold">Central Zone</span>
+<span class="w-2.5 h-2.5 rounded-full bg-outline"></span>
+</div>
+<div class="my-space-sm">
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">78.2 <span class="font-label-sm text-label-sm text-on-surface-variant font-normal">/ 100</span></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">Needs Support</span>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant space-y-0.5">
+<div>Centers: <span class="text-on-surface font-medium">126</span></div>
+<div>Avg Resp: <span class="text-on-surface font-medium">24.5m</span></div>
+</div>
+</div>
+<!-- Eastern & NE Zone -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col justify-between hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-bold">East &amp; NE</span>
+<span class="w-2.5 h-2.5 rounded-full bg-error"></span>
+</div>
+<div class="my-space-sm">
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">71.5 <span class="font-label-sm text-label-sm text-on-surface-variant font-normal">/ 100</span></div>
+<span class="font-label-sm text-label-sm text-error font-semibold">Action Required</span>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant space-y-0.5">
+<div>Centers: <span class="text-on-surface font-medium">123</span></div>
+<div>Avg Resp: <span class="text-on-surface font-medium">29.1m</span></div>
+</div>
+</div>
+</div>
+<!-- National Geographic Data Visualization & Location Matrix -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md items-stretch">
+<!-- Map Card -->
+<div class="lg:col-span-7 bg-surface-container rounded-lg p-space-md relative overflow-hidden flex flex-col justify-between min-h-[300px]">
+<div class="flex items-center justify-between z-10">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">map</span>
+<span class="font-label-md text-label-md text-primary font-semibold">Regional Coverage &amp; Cluster Density</span>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container-lowest px-2 py-0.5 rounded text-on-surface font-medium">Auto-Sync 15m</span>
+</div>
+<!-- Map Placeholder -->
+<div class="w-full h-52 bg-cover bg-center rounded-md my-space-sm shadow-inner relative flex items-center justify-center" data-location="New Delhi, India" style="">
+<div class="absolute inset-0 bg-primary/20 backdrop-blur-[1px] rounded-md"></div>
+<div class="relative z-10 bg-surface-container-lowest/95 p-space-sm rounded-lg shadow-md flex items-center gap-space-sm max-w-xs">
+<span class="material-symbols-outlined text-secondary text-2xl">location_city</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-bold">National Command Hub</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Shastri Bhawan • 733 OSC Interlinks Synchronized</span>
+</div>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex items-center justify-between flex-wrap gap-2 text-on-surface-variant font-label-sm text-label-sm z-10 pt-space-xs">
+<div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-secondary"></span> 90%+ Optimal</div>
+<div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span> 80-89% Stable</div>
+<div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-outline"></span> 70-79% Review</div>
+<div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-error"></span> &lt; 70% Reallocation</div>
+</div>
+</div>
+<!-- Top vs Need Action District Split -->
+<div class="lg:col-span-5 flex flex-col justify-between gap-space-sm">
+<!-- Top Performing Districts -->
+<div class="bg-surface-container-low p-space-sm rounded-lg">
+<div class="flex items-center justify-between mb-space-xs">
+<div class="flex items-center gap-1 text-secondary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-base">award_star</span>
+<span>Benchmarking Districts</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">COEI Index</span>
+</div>
+<div class="space-y-2">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-medium">1. Ernakulam (Kerala)</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-lowest text-secondary font-bold">98.8</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-medium">2. Indore (Madhya Pradesh)</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-lowest text-secondary font-bold">97.4</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-medium">3. Pune (Maharashtra)</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-lowest text-secondary font-bold">96.9</span>
+</div>
+</div>
+</div>
+<!-- Districts Needing Immediate Intervention -->
+<div class="bg-surface-container-low p-space-sm rounded-lg">
+<div class="flex items-center justify-between mb-space-xs">
+<div class="flex items-center gap-1 text-error font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-base">warning</span>
+<span>Reallocation Triggers</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Caseload Ratio</span>
+</div>
+<div class="space-y-2">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex flex-col">
+<span class="text-on-surface font-medium">1. Purnia (Bihar)</span>
+<span class="text-[10px] text-on-surface-variant">Legal Officer Shortage</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-error-container text-on-error-container font-bold">1:42</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex flex-col">
+<span class="text-on-surface font-medium">2. Dhubri (Assam)</span>
+<span class="text-[10px] text-on-surface-variant">Shelter at 104% Bed Cap</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-error-container text-on-error-container font-bold">Critical</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex flex-col">
+<span class="text-on-surface font-medium">3. Murshidabad (W. Bengal)</span>
+<span class="text-[10px] text-on-surface-variant">SLA Response &gt; 38m</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-primary font-bold">1:38</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right 4 Columns: Case Distribution Breakdown & Photographic Insight -->
+<div class="xl:col-span-4 flex flex-col gap-space-md">
+<!-- Case Distribution Breakdown Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+<div class="flex items-center justify-between mb-space-sm">
+<h2 class="font-headline-sm text-headline-sm text-primary">Case Category Distribution</h2>
+<span class="material-symbols-outlined text-on-surface-variant">pie_chart</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">Verified survivor intake across all primary registered categories.</p>
+<!-- Donut SVG and Percentage Breakdown -->
+<div class="flex items-center gap-space-md pb-space-sm">
+<!-- Inline Mini Donut SVG -->
+<div class="relative w-32 h-32 shrink-0">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<!-- Background ring -->
+<path class="text-surface-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4.5"></path>
+<!-- DV: 44% (Dasharray 44, 56) -->
+<path class="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="44, 100" stroke-width="4.5"></path>
+<!-- Workplace: 19% (offset 44) -->
+<path class="text-secondary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="19, 100" stroke-dashoffset="-44" stroke-width="4.5"></path>
+<!-- Cyber: 18% (offset 63) -->
+<path class="text-primary-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="18, 100" stroke-dashoffset="-63" stroke-width="4.5"></path>
+<!-- Custody/Maint: 12% (offset 81) -->
+<path class="text-surface-tint" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="12, 100" stroke-dashoffset="-81" stroke-width="4.5"></path>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">184k</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-semibold">Cases</span>
+</div>
+</div>
+<!-- Legend List -->
+<div class="flex flex-col gap-1.5 w-full">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-primary"></span>
+<span class="text-on-surface">Domestic Violence</span>
+</div>
+<span class="font-bold text-primary">44%</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-secondary"></span>
+<span class="text-on-surface">Workplace POSH</span>
+</div>
+<span class="font-bold text-secondary">19%</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-primary-container"></span>
+<span class="text-on-surface">Cyber Harassment</span>
+</div>
+<span class="font-bold text-primary-container">18%</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-surface-tint"></span>
+<span class="text-on-surface">Custody / Maintenance</span>
+</div>
+<span class="font-bold text-on-surface">12%</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-surface-container-high"></span>
+<span class="text-on-surface">Other Statutory</span>
+</div>
+<span class="font-bold text-on-surface-variant">7%</span>
+</div>
+</div>
+</div>
+<!-- Fast Insight Note -->
+<div class="mt-space-sm p-space-sm rounded-lg bg-surface-container-low flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-base mt-0.5">info</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Cyber cases in urban municipal clusters expanded by 31% over Q2, prompting 24 new digital forensic liaison units.</span>
+</div>
+</div>
+<!-- Institutional One-Stop Center Field Visual -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex flex-col">
+<div class="relative h-44 w-full">
+<img class="w-full h-full object-cover" data-alt="A dignified, modern government conference room in New Delhi where state secretaries and female executive administrators review legal protection analytics on large ambient displays. Soft natural lighting, deep blue and teal tones, official Indian national insignia in background, professional trauma-informed civil governance atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9YhUXoBvA1RGKbOEp4uDTjOTt476582wuKlvemLi1XIz9deAtzQy60nTK1RuZAMDEPhfNPlVmoDVTx3mnGcocOtkbHHaKsSmHjN33zN0Gq_g9xbSq9kkt322v1uzjn4TDbsr5Uk9G8W9us7MeyNIHZHqLZvTVw9ZbY98uAuK6rcCazHLHM6CM0_rBUSYNdNiDaylCWUNTjNIubK0bvAN1pUnr72eE0DEJdcLGAPK9jW9kKIWfqT74"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent flex flex-col justify-end p-space-md">
+<span class="font-label-sm text-label-sm text-secondary-fixed font-semibold tracking-wider uppercase">Mission Shakti Infrastructure</span>
+<h3 class="font-headline-sm text-headline-sm text-on-primary">Standardized Care Architecture</h3>
+</div>
+</div>
+<div class="p-space-md flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Standardized Protocols</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Trauma-Informed v4.2 Certified</span>
+</div>
+<a class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary hover:text-on-secondary-container font-semibold transition-colors" href="#">
+              Center Manual <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Deep Trend Charts & Milestone Funnel Grid -->
+<section class="w-full px-gutter-lg pb-space-lg">
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg">
+<!-- Funnel Resolution Progression (7 Columns) -->
+<div class="xl:col-span-7 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-xs">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary">Resolution &amp; Statutory Milestone Funnel</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Conversion drop-off analysis from initial crisis contact to long-term rehabilitation.</p>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-1 rounded bg-surface-container-low text-secondary font-semibold">High Retention</span>
+</div>
+<!-- Interactive Stepper / Funnel Bars -->
+<div class="mt-space-lg space-y-space-md">
+<!-- Step 1: Emergency Response -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-primary text-on-primary font-bold flex items-center justify-center text-xs">1</span>
+<span class="font-semibold text-on-surface">Emergency Response &amp; Intake Triaged</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="text-on-surface-variant">184,920 cases</span>
+<span class="font-bold text-primary">100%</span>
+</div>
+</div>
+<div class="w-full bg-surface-container h-3 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 100%;"></div>
+</div>
+</div>
+<!-- Step 2: Medical Aid -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-secondary text-on-secondary font-bold flex items-center justify-center text-xs">2</span>
+<span class="font-semibold text-on-surface">Medical Aid &amp; Clinical Examination Completed</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="text-on-surface-variant">173,825 cases</span>
+<span class="font-bold text-secondary">94%</span>
+</div>
+</div>
+<div class="w-full bg-surface-container h-3 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full transition-all duration-500" style="width: 94%;"></div>
+</div>
+</div>
+<!-- Step 3: Legal Filing -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-primary-container text-on-primary font-bold flex items-center justify-center text-xs">3</span>
+<span class="font-semibold text-on-surface">DIR (Domestic Incident Report) &amp; Legal Filing with Magistrate</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="text-on-surface-variant">162,730 cases</span>
+<span class="font-bold text-primary">88%</span>
+</div>
+</div>
+<div class="w-full bg-surface-container h-3 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full transition-all duration-500" style="width: 88%;"></div>
+</div>
+</div>
+<!-- Step 4: Protection Order -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-surface-tint text-on-primary font-bold flex items-center justify-center text-xs">4</span>
+<span class="font-semibold text-on-surface">Protection Order / Interim Relief Granted</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="text-on-surface-variant">146,086 cases</span>
+<span class="font-bold text-surface-tint">79%</span>
+</div>
+</div>
+<div class="w-full bg-surface-container h-3 rounded-full overflow-hidden">
+<div class="bg-surface-tint h-full rounded-full transition-all duration-500" style="width: 79%;"></div>
+</div>
+</div>
+<!-- Step 5: Rehabilitation -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-secondary-fixed-dim text-on-primary-fixed font-bold flex items-center justify-center text-xs">5</span>
+<span class="font-semibold text-on-surface">Comprehensive Rehabilitation (Livelihood &amp; Counseling)</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="text-on-surface-variant">125,745 cases</span>
+<span class="font-bold text-secondary font-semibold">68%</span>
+</div>
+</div>
+<div class="w-full bg-surface-container h-3 rounded-full overflow-hidden">
+<div class="bg-secondary-fixed-dim h-full rounded-full transition-all duration-500" style="width: 68%;"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-space-lg pt-space-sm flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span>*Data synchronized with National Legal Services Authority (NALSA) portal</span>
+<a class="text-primary font-semibold hover:underline" href="#">View Stage Bottleneck Breakdown →</a>
+</div>
+</div>
+<!-- Helpline (181) Inflow vs OSC Physical Walk-in Influx (5 Columns) -->
+<div class="xl:col-span-5 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-xs">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary">Channel Influx Dynamics</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Helpline 181 tele-triage vs direct One-Stop Center arrivals.</p>
+</div>
+</div>
+<!-- Sparkline / Multi-Bar Comparison Chart -->
+<div class="my-space-md">
+<div class="flex items-center justify-between pb-space-sm font-label-sm text-label-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-on-surface font-medium">181 Helpline Calls (Weekly Avg: 34.2k)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<span class="text-on-surface font-medium">Center Walk-ins (Weekly Avg: 12.1k)</span>
+</div>
+</div>
+<!-- SVG Bar Chart -->
+<div class="w-full h-44 bg-surface-container-low rounded-lg p-space-sm flex flex-col justify-end">
+<svg class="w-full h-full overflow-visible" viewbox="0 0 320 120">
+<!-- Grid Lines -->
+<line stroke="#d3e4fe" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="320" y1="20" y2="20"></line>
+<line stroke="#d3e4fe" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="320" y1="60" y2="60"></line>
+<line stroke="#d3e4fe" stroke-width="1" x1="0" x2="320" y1="100" y2="100"></line>
+<!-- Week 1 -->
+<rect fill="#022448" height="68" rx="2" width="12" x="20" y="32"></rect>
+<rect fill="#006a61" height="35" rx="2" width="12" x="34" y="65"></rect>
+<!-- Week 2 -->
+<rect fill="#022448" height="72" rx="2" width="12" x="68" y="28"></rect>
+<rect fill="#006a61" height="40" rx="2" width="12" x="82" y="60"></rect>
+<!-- Week 3 -->
+<rect fill="#022448" height="78" rx="2" width="12" x="116" y="22"></rect>
+<rect fill="#006a61" height="45" rx="2" width="12" x="130" y="55"></rect>
+<!-- Week 4 -->
+<rect fill="#022448" height="74" rx="2" width="12" x="164" y="26"></rect>
+<rect fill="#006a61" height="42" rx="2" width="12" x="178" y="58"></rect>
+<!-- Week 5 -->
+<rect fill="#022448" height="85" rx="2" width="12" x="212" y="15"></rect>
+<rect fill="#006a61" height="50" rx="2" width="12" x="226" y="50"></rect>
+<!-- Week 6 (Current) -->
+<rect fill="#022448" height="82" rx="2" width="12" x="260" y="18"></rect>
+<rect fill="#006a61" height="52" rx="2" width="12" x="274" y="48"></rect>
+</svg>
+<div class="flex justify-between text-[11px] font-label-sm text-on-surface-variant pt-1 px-1">
+<span>Wk 44</span>
+<span>Wk 45</span>
+<span>Wk 46</span>
+<span>Wk 47</span>
+<span>Wk 48</span>
+<span class="font-bold text-primary">Wk 49 (Active)</span>
+</div>
+</div>
+</div>
+<!-- Dual Tele-Inflow Metric Panels -->
+<div class="grid grid-cols-2 gap-space-sm pt-space-xs">
+<div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Helpline Conversion</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">41.8%</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium mt-0.5">Tele -&gt; Immediate OSC Case</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Walk-in Direct Shelter</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">58.2%</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium mt-0.5">Required Overnight Stay</span>
+</div>
+</div>
+</div>
+<!-- Safe Dispatch Flag -->
+<div class="p-space-sm mt-space-md rounded-lg bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-lg">local_police</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">112 Police Van Intercept Linkage</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-bold">99.1% Success Rate</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Policy, Audit & District Resource Compliance Registry -->
+<section class="w-full px-gutter-lg pb-space-xl">
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm mb-space-md">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm text-primary">Institutional Audit &amp; OSC Resource Compliance</h2>
+<span class="px-2 py-0.5 rounded bg-surface-container text-primary font-label-sm text-label-sm font-semibold">Q3 FY25 Audit Registry</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Statutory logs under Section 12 DV Act &amp; Ministry Quality Assurance Standards.</p>
+</div>
+<div class="flex items-center gap-space-sm">
+<div class="bg-surface-container-low px-space-sm py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">filter_list</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Filter by Grade:</span>
+<select class="bg-transparent font-label-sm text-label-sm text-on-surface focus:outline-none cursor-pointer">
+<option>All Ratings</option>
+<option>Grade A (Exemplary)</option>
+<option>Grade B (Standard)</option>
+<option>Grade C (Audit Escalation)</option>
+</select>
+</div>
+<button class="bg-surface-container-high hover:bg-surface-container text-primary font-label-sm text-label-sm px-space-md py-1.5 rounded transition-colors cursor-pointer flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">print</span>
+<span>Print Sheet</span>
+</button>
+</div>
+</div>
+<!-- Compliance Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-space-sm px-space-md rounded-l">OSC Center ID &amp; District</th>
+<th class="py-space-sm px-space-md">Nodal Officer / DM Sign-off</th>
+<th class="py-space-sm px-space-md">Bed Occupancy</th>
+<th class="py-space-sm px-space-md">Legal Aid SLA</th>
+<th class="py-space-sm px-space-md">Nirbhaya Utilization</th>
+<th class="py-space-sm px-space-md">Audit Grade</th>
+<th class="py-space-sm px-space-md rounded-r text-right">Dossier</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-bold">OSC-DL-004 • South Delhi</span>
+<span class="text-xs text-on-surface-variant">All India Institute of Medical Sciences Campus Hub</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-on-surface font-medium">Dr. Meera Nambiar, IAS</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-on-surface">18 / 20</span>
+<span class="text-xs text-on-surface-variant">(90%)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 text-secondary font-semibold font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-sm">check_circle</span> 99.2% on-time
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface">₹1.84 Cr / ₹1.90 Cr</span>
+<span class="text-xs text-secondary font-semibold">96.8% deployed</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-bold">Grade A+</span>
+</td>
+<td class="py-space-md px-space-md text-right">
+<button class="text-secondary hover:text-on-secondary-container font-label-sm text-label-sm font-semibold inline-flex items-center gap-1 cursor-pointer">
+                  Inspect <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-bold">OSC-MH-012 • Pune Central</span>
+<span class="text-xs text-on-surface-variant">District Collectorate Complex, Sassoon Rd</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-on-surface font-medium">Rajesh Deshmukh, IAS</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-on-surface">22 / 25</span>
+<span class="text-xs text-on-surface-variant">(88%)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 text-secondary font-semibold font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-sm">check_circle</span> 97.5% on-time
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface">₹2.12 Cr / ₹2.25 Cr</span>
+<span class="text-xs text-secondary font-semibold">94.2% deployed</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-bold">Grade A</span>
+</td>
+<td class="py-space-md px-space-md text-right">
+<button class="text-secondary hover:text-on-secondary-container font-label-sm text-label-sm font-semibold inline-flex items-center gap-1 cursor-pointer">
+                  Inspect <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 (Escalation / Action Required) -->
+<tr class="hover:bg-surface-container-low/60 transition-colors bg-error-container/10">
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-bold">OSC-BR-009 • Purnia East</span>
+<span class="text-xs text-error font-medium">Special Inquiry Notice Active</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-on-surface font-medium">Rahul Kumar, IAS</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-error">15 / 12</span>
+<span class="text-xs text-error font-bold">(125% Over Cap)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 text-error font-semibold font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-sm">error</span> 74.1% (Counselor Vacancy)
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface">₹0.98 Cr / ₹1.60 Cr</span>
+<span class="text-xs text-on-surface-variant">61.2% deployed</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">Grade C (Escalated)</span>
+</td>
+<td class="py-space-md px-space-md text-right">
+<button class="text-error hover:text-on-error-container font-label-sm text-label-sm font-semibold inline-flex items-center gap-1 cursor-pointer">
+                  Action Order <span class="material-symbols-outlined text-sm">priority_high</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-bold">OSC-KA-003 • Bengaluru Urban</span>
+<span class="text-xs text-on-surface-variant">Bowring &amp; Lady Curzon Hospital Node</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-on-surface font-medium">J. Manjunath, IAS</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-on-surface">26 / 30</span>
+<span class="text-xs text-on-surface-variant">(86%)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 text-secondary font-semibold font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-sm">check_circle</span> 98.4% on-time
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface">₹2.80 Cr / ₹2.95 Cr</span>
+<span class="text-xs text-secondary font-semibold">94.9% deployed</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-bold">Grade A</span>
+</td>
+<td class="py-space-md px-space-md text-right">
+<button class="text-secondary hover:text-on-secondary-container font-label-sm text-label-sm font-semibold inline-flex items-center gap-1 cursor-pointer">
+                  Inspect <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination & Statutory Notice -->
+<div class="mt-space-md pt-space-sm flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+<span>Showing 4 of 733 Verified Center Audits</span>
+<span class="text-outline-variant">•</span>
+<span>Certified under ISO 9001:2015 Social Care Compliance</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="px-3 py-1 rounded bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm cursor-not-allowed" disabled="">Prev</button>
+<button class="px-3 py-1 rounded bg-primary text-on-primary font-label-sm text-label-sm">1</button>
+<button class="px-3 py-1 rounded bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors cursor-pointer">2</button>
+<button class="px-3 py-1 rounded bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors cursor-pointer">3</button>
+<span class="px-2 text-on-surface-variant">...</span>
+<button class="px-3 py-1 rounded bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors cursor-pointer">74</button>
+<button class="px-3 py-1 rounded bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors cursor-pointer">Next</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Executive Dossier Export Drawer / Overlay (Hidden by default, triggered by Export Button) -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/60 backdrop-blur-sm hidden items-center justify-center p-space-md" id="exportModal">
+<div class="bg-surface-container-lowest max-w-xl w-full rounded-2xl p-space-lg shadow-xl flex flex-col gap-space-md">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">picture_as_pdf</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary">Generate Executive Ministry Dossier</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Formal quarterly compliance dossier for inter-ministerial circulation.</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface cursor-pointer p-1" id="closeExportModal">
+<span class="material-symbols-outlined text-2xl">close</span>
+</button>
+</div>
+<div class="space-y-space-sm text-on-surface font-body-sm text-body-sm">
+<div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-primary font-bold">Report Composition:</span>
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="w-4 h-4 text-primary rounded accent-primary" type="checkbox"/>
+<span>Aggregated 733 One-Stop Center Performance Indicators</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="w-4 h-4 text-primary rounded accent-primary" type="checkbox"/>
+<span>Nirbhaya Fund Financial Audits &amp; Disbursal Tranches</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="w-4 h-4 text-primary rounded accent-primary" type="checkbox"/>
+<span>District Resource Reallocation Recommendations</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="w-4 h-4 text-primary rounded accent-primary" type="checkbox"/>
+<span>DIR Court Filing SLA &amp; Judicial Dispositions</span>
+</label>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Confidentiality Tier</span>
+<span class="font-label-md text-label-md text-primary font-bold">Restricted - For Official Use Only</span>
+</div>
+<span class="material-symbols-outlined text-primary text-xl">verified_user</span>
+</div>
+</div>
+<div class="flex items-center justify-end gap-space-sm pt-space-sm">
+<button class="px-space-md py-space-xs rounded bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors cursor-pointer" id="cancelExportModal">
+          Dismiss
+        </button>
+<button class="inline-flex items-center gap-space-xs px-space-md py-space-xs rounded bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-colors cursor-pointer" onclick="downloadDossierMock()">
+<span class="material-symbols-outlined text-base">download</span>
+<span>Download Signed PDF</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Micro-interaction JavaScript -->
+<script>
+    (function() {
+      const exportModalBtn = document.getElementById('exportModalBtn');
+      const exportModal = document.getElementById('exportModal');
+      const closeExportModal = document.getElementById('closeExportModal');
+      const cancelExportModal = document.getElementById('cancelExportModal');
+
+      function openModal() {
+        if (exportModal) {
+          exportModal.classList.remove('hidden');
+          exportModal.classList.add('flex');
+        }
+      }
+
+      function closeModal() {
+        if (exportModal) {
+          exportModal.classList.add('hidden');
+          exportModal.classList.remove('flex');
+        }
+      }
+
+      if (exportModalBtn) exportModalBtn.addEventListener('click', openModal);
+      if (closeExportModal) closeExportModal.addEventListener('click', closeModal);
+      if (cancelExportModal) cancelExportModal.addEventListener('click', closeModal);
+
+      // Close modal on Escape key if not handled by shell
+      window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && exportModal && !exportModal.classList.contains('hidden')) {
+          closeModal();
+        }
+      });
+
+      window.downloadDossierMock = function() {
+        alert("Ministry Executive Dossier (Q3 FY25) generated. Digital cryptotoken affixed. Downloading archive.");
+        closeModal();
+      };
+    })();
+  </script>
+</div></main></div><div class="fixed bottom-space-lg left-space-lg z-50"><a class="inline-flex items-center gap-space-sm bg-error hover:bg-on-error-container text-on-error px-space-lg py-space-sm rounded-full shadow-[0_4px_12px_-2px_rgba(15,23,42,0.08)] transition-transform hover:scale-105" href="tel:112"><span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-surface opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-surface"></span></span><span class="material-symbols-outlined text-xl">sos</span><span class="font-label-md text-label-md uppercase tracking-wider">SOS Emergency Assistance (112)</span></a></div><div class="fixed bottom-space-lg right-space-lg z-50"><button class="inline-flex items-center gap-space-sm bg-secondary hover:bg-on-secondary-container text-on-secondary px-space-lg py-space-sm rounded-full shadow-[0_4px_12px_-2px_rgba(15,23,42,0.08)] transition-transform hover:scale-105 cursor-pointer"><span class="material-symbols-outlined text-xl">forum</span><span class="font-label-md text-label-md">Sakhi Virtual Assistant</span></button></div></body></html>

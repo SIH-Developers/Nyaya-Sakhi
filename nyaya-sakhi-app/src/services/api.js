@@ -30,7 +30,11 @@ export async function sendSOS(victimId) {
     body: JSON.stringify({ victim_id: victimId, channel: 'app_sos' }),
   });
   const data = await res.json();
-  return { success: res.ok, message: data.message || data.detail || 'SOS dispatched.' };
+  return {
+    success: res.ok,
+    message: data.message || data.detail || 'SOS dispatched.',
+    alert_id: data.alert_id || data.id || null,
+  };
 }
 
 /**
@@ -70,6 +74,23 @@ export async function fetchVictims(officerKey) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return data.victims || [];
+}
+
+/** Alias used by AlertFeed screen */
+export const fetchAlerts = fetchVictims;
+
+/**
+ * Attach GPS location to an already-sent alert.
+ * Non-blocking follow-up — if this fails, the SOS is still sent.
+ */
+export async function attachLocationToAlert(alertId, location) {
+  const res = await fetch(`${API_BASE}/sos/${alertId}/attach-location`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(location),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
 
 /**

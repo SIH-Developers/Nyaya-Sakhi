@@ -98,6 +98,10 @@ def init_db():
         # escalation_alerts migrations
         ("trigger_type",       "ALTER TABLE escalation_alerts ADD COLUMN trigger_type TEXT DEFAULT 'nlp_detected'"),
         ("triggered_by",       "ALTER TABLE escalation_alerts ADD COLUMN triggered_by TEXT DEFAULT 'system'"),
+        # location columns (Task 4 — GPS from mobile SOS)
+        ("lat",                "ALTER TABLE escalation_alerts ADD COLUMN lat REAL"),
+        ("lng",                "ALTER TABLE escalation_alerts ADD COLUMN lng REAL"),
+        ("location_accuracy_meters", "ALTER TABLE escalation_alerts ADD COLUMN location_accuracy_meters REAL"),
     ]:
         try:
             cursor.execute(col_def[1])
@@ -848,3 +852,20 @@ def get_analytics_timeline(days: int = 30):
             }
 
     return sorted(day_map.values(), key=lambda x: x["day"])
+
+
+def update_alert_location(alert_id: str, lat: float, lng: float, accuracy: float = None):
+    """
+    Attach GPS coordinates to an escalation_alert row.
+    Called as a non-blocking follow-up after SOS is already sent.
+    Safe to call on alerts that don't exist (no-op).
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """UPDATE escalation_alerts
+           SET lat = ?, lng = ?, location_accuracy_meters = ?
+           WHERE id = ? OR victim_id = ?""",
+        (lat, lng, accuracy, alert_id, alert_id)
+    )
+    conn.commit()

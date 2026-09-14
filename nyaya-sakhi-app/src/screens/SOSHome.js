@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, Alert,
-  ActivityIndicator, Animated, Clipboard, Platform
+  View, Text, TouchableOpacity, StyleSheet, Linking,
+  ActivityIndicator, Animated, Platform, StatusBar, Modal, ScrollView, Clipboard
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NetInfo from '@react-native-community/netinfo';
 import * as Haptics from 'expo-haptics';
-import { getOrCreateAnonymousId, sendSOS, enqueueSOSForRetry, flushSOSQueue } from '../services/api';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { getOrCreateAnonymousId, sendSOS, enqueueSOSForRetry, flushSOSQueue, attachLocationToAlert } from '../services/api';
+import { getLocationForSOS } from '../services/location';
 
-// SOS button states
 const STATE_IDLE = 'idle';
 const STATE_LOADING = 'loading';
 const STATE_SENT = 'sent';
@@ -20,39 +21,32 @@ export default function SOSHome({ navigation }) {
   const [statusMsg, setStatusMsg] = useState(null);
   const [isOnline, setIsOnline] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [locationStatus, setLocationStatus] = useState(null); // 'attached' | 'unavailable' | null
+  const [showCaseModal, setShowCaseModal] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  // ✅ Ref always reflects the latest isOnline value — readable inside closures
   const isOnlineRef = useRef(true);
 
-  // Pulsing animation for the SOS button
   useEffect(() => {
     const pulse = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.08, duration: 800, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1.04, duration: 1000, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
       ])
     );
     pulse.start();
     return () => pulse.stop();
   }, []);
 
-  // Initialize unique victim ID
   useEffect(() => {
     getOrCreateAnonymousId().then(setVictimId);
   }, []);
 
-  // ✅ FIX: Subscribe ONCE (empty dep array) using a ref to avoid stale closure.
-  // The callback always reads isOnlineRef.current — never a stale captured value.
+  // Single persistent NetInfo subscription + startup flush
   useEffect(() => {
-    // Seed initial state immediately from a one-time fetch.
-    // Also flush any leftover queue if we're already online at mount time
-    // (covers: app rebooted, screen remounted, force-closed mid-retry, etc.)
     NetInfo.fetch().then((state) => {
       const online = state.isConnected && state.isInternetReachable !== false;
       isOnlineRef.current = online;
       setIsOnline(online);
-
-      // ✅ Startup flush — don't wait for a future connectivity change event
       if (online) {
         flushSOSQueue().then((count) => {
           if (count > 0) {
@@ -63,15 +57,12 @@ export default function SOSHome({ navigation }) {
       }
     });
 
-    // Then keep a persistent listener for all future changes
     const unsub = NetInfo.addEventListener((state) => {
       const online = state.isConnected && state.isInternetReachable !== false;
-      const wasOffline = !isOnlineRef.current;  // ✅ reads ref, never stale
-      isOnlineRef.current = online;             // ✅ update ref immediately
-      setIsOnline(online);                      // update state for UI
-
+      const wasOffline = !isOnlineRef.current;
+      isOnlineRef.current = online;
+      setIsOnline(online);
       if (wasOffline && online) {
-        // Genuinely came back online — flush the queue
         flushSOSQueue().then((count) => {
           if (count > 0) {
             setStatusMsg(`✅ ${count} queued SOS sent automatically.`);
@@ -80,46 +71,58 @@ export default function SOSHome({ navigation }) {
         });
       }
     });
-
-    return () => unsub(); // cleanup on unmount only
-  }, []); // ✅ empty dep array — subscribe once, never re-subscribes
+    return () => unsub();
+  }, []);
 
   const handleSOS = async () => {
     if (sosState === STATE_LOADING || sosState === STATE_SENT) return;
     if (!victimId) return;
 
-    // Haptic feedback immediately — before network call
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    try {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    } catch {}
 
     setSosState(STATE_LOADING);
     setStatusMsg(null);
+    setLocationStatus(null);
 
     if (!isOnlineRef.current) {
-      // Offline — queue for later
       await enqueueSOSForRetry(victimId);
       setSosState(STATE_QUEUED);
-      setStatusMsg('📴 Offline — SOS saved. Will send automatically when internet returns.');
+      setStatusMsg('📴 Offline — SOS saved. Will send when internet returns.');
       return;
     }
 
-    try {
-      const result = await sendSOS(victimId);
-      if (result.success) {
-        setSosState(STATE_SENT);
-        setStatusMsg('🚨 SOS dispatched! Help is on the way. Your ID: ' + victimId);
-        setTimeout(() => {
-          setSosState(STATE_IDLE);
-          setStatusMsg(null);
-        }, 15000);
+    // Fire SOS + location capture in parallel
+    const sosPromise = sendSOS(victimId);
+    const locationPromise = getLocationForSOS();
+
+    const [sosResult, location] = await Promise.all([sosPromise, locationPromise]);
+
+    if (sosResult?.success) {
+      setSosState(STATE_SENT);
+      setStatusMsg('🚨 SOS dispatched! Help is on the way.');
+
+      if (location && sosResult?.alert_id) {
+        attachLocationToAlert(sosResult.alert_id, location)
+          .then(() => setLocationStatus('attached'))
+          .catch((err) => {
+            console.log('[Location] Failed to attach (non-critical):', err?.message);
+            setLocationStatus('unavailable');
+          });
       } else {
-        setSosState(STATE_QUEUED);
-        await enqueueSOSForRetry(victimId);
-        setStatusMsg('⚠️ Server error — SOS saved locally. Will retry automatically.');
+        setLocationStatus('unavailable');
       }
-    } catch {
+
+      setTimeout(() => {
+        setSosState(STATE_IDLE);
+        setStatusMsg(null);
+        setLocationStatus(null);
+      }, 15000);
+    } else {
       setSosState(STATE_QUEUED);
       await enqueueSOSForRetry(victimId);
-      setStatusMsg('📴 Could not reach server — SOS queued. Will send when online.');
+      setStatusMsg('⚠️ Server error — SOS saved locally. Will retry automatically.');
     }
   };
 
@@ -130,207 +133,284 @@ export default function SOSHome({ navigation }) {
     setTimeout(() => setCopied(false), 3000);
   };
 
-  const btnColor = sosState === STATE_SENT
-    ? '#16a34a'
-    : sosState === STATE_QUEUED
-    ? '#d97706'
-    : '#dc2626';
-
-  const btnLabel = sosState === STATE_LOADING
-    ? '...'
-    : sosState === STATE_SENT
-    ? '✓ SOS SENT'
-    : sosState === STATE_QUEUED
-    ? '📴 QUEUED'
-    : 'SOS';
+  const btnColor = sosState === STATE_SENT ? '#16a34a'
+    : sosState === STATE_QUEUED ? '#d97706'
+    : '#b91c1c';
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Network status bar */}
-      {!isOnline && (
-        <View style={styles.offlineBar}>
-          <Text style={styles.offlineText}>📴 Offline — SOS will be queued and sent automatically when you reconnect</Text>
-        </View>
-      )}
+      <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>🆘 Emergency SOS</Text>
-        <Text style={styles.headerSub}>Nyaya-Sakhi · NHAA Crisis Line</Text>
+      {/* Top Navigation Bar */}
+      <View style={styles.navBar}>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={22} color="#0f172a" />
+        </TouchableOpacity>
+
+        <View style={styles.brandContainer}>
+          <View style={styles.brandIconBox}>
+            <MaterialCommunityIcons name="shield-half-full" size={16} color="#0d9488" />
+          </View>
+          <View>
+            <Text style={styles.brandTitle}>NYAYA-SAKHI</Text>
+            <Text style={styles.screenTitle}>Sos Home</Text>
+          </View>
+        </View>
+
+        <View style={styles.avatarBox}>
+          <Ionicons name="person-outline" size={18} color="#0f766e" />
+        </View>
       </View>
 
-      <View style={styles.body}>
-        {/* Victim ID display */}
-        <View style={styles.idCard}>
-          <Text style={styles.idLabel}>Your Anonymous Safety ID</Text>
-          <Text style={styles.idValue}>{victimId || '…generating…'}</Text>
-          <TouchableOpacity style={styles.copyBtn} onPress={handleCopyId}>
-            <Text style={styles.copyText}>{copied ? '✅ Copied!' : '📋 Copy ID'}</Text>
-          </TouchableOpacity>
-          <Text style={styles.idHint}>Share this with an officer so they can link your case</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Status Badges Row */}
+        <View style={styles.badgeRow}>
+          <View style={styles.channelBadge}>
+            <View style={styles.greenDot} />
+            <Text style={styles.channelText}>SECURED CHANNEL</Text>
+          </View>
+          <View style={styles.offlineBadge}>
+            <Ionicons name="cloud-done-outline" size={14} color="#0f766e" />
+            <Text style={styles.offlineBadgeText}>Ready Offline</Text>
+          </View>
         </View>
 
-        {/* SOS Button */}
-        <View style={styles.sosContainer}>
-          <Animated.View style={{ transform: [{ scale: sosState === STATE_IDLE ? pulseAnim : 1 }] }}>
-            <TouchableOpacity
-              style={[
-                styles.sosButton,
-                { backgroundColor: btnColor },
-                (sosState === STATE_LOADING || sosState === STATE_SENT) && styles.sosDisabled
-              ]}
-              onPress={handleSOS}
-              disabled={sosState === STATE_LOADING || sosState === STATE_SENT}
-              activeOpacity={0.8}
-            >
-              {sosState === STATE_LOADING
-                ? <ActivityIndicator size="large" color="#fff" />
-                : <Text style={styles.sosLabel}>{btnLabel}</Text>
-              }
-            </TouchableOpacity>
-          </Animated.View>
-          <Text style={styles.sosInstructions}>
-            {sosState === STATE_IDLE
-              ? 'Press and hold for 1 second\nto send emergency alert'
-              : statusMsg || 'Processing…'}
-          </Text>
+        {/* SOS Interactive Box Container */}
+        <View style={styles.heroOuterContainer}>
+          <View style={styles.ring3}>
+            <View style={styles.ring2}>
+              <View style={styles.ring1}>
+                <Animated.View style={{ transform: [{ scale: sosState === STATE_IDLE ? pulseAnim : 1 }] }}>
+                  <TouchableOpacity
+                    style={[styles.sosSquareBtn, { backgroundColor: btnColor }]}
+                    onPress={handleSOS}
+                    disabled={sosState === STATE_LOADING || sosState === STATE_SENT}
+                    activeOpacity={0.85}
+                  >
+                    {sosState === STATE_LOADING ? (
+                      <ActivityIndicator size="large" color="#ffffff" />
+                    ) : (
+                      <>
+                        <MaterialCommunityIcons name="shield-heart-outline" size={44} color="#ffffff" />
+                        <Text style={styles.sosMainText}>
+                          {sosState === STATE_SENT ? 'SENT' : sosState === STATE_QUEUED ? 'QUEUED' : 'SOS'}
+                        </Text>
+                        <Text style={styles.sosSubText}>
+                          {sosState === STATE_SENT ? 'HELP DISPATCHED' : sosState === STATE_QUEUED ? 'SAVED LOCALLY' : 'TAP FOR HELP'}
+                        </Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </Animated.View>
+              </View>
+            </View>
+          </View>
         </View>
 
-        {/* Status message */}
-        {statusMsg && sosState !== STATE_IDLE && (
-          <View style={[styles.statusBanner, {
-            backgroundColor: sosState === STATE_SENT ? '#052e16' : '#451a03',
-            borderColor: sosState === STATE_SENT ? '#22c55e' : '#f59e0b'
-          }]}>
-            <Text style={[styles.statusText, {
-              color: sosState === STATE_SENT ? '#86efac' : '#fcd34d'
-            }]}>{statusMsg}</Text>
+        {/* Main Instruction */}
+        <Text style={styles.mainInstructionTitle}>Tap the button if you need immediate help.</Text>
+        <Text style={styles.mainInstructionSub}>
+          Dispatches coordinates silently to national helpline networks.
+        </Text>
+
+        {/* Location or Status Toast Banner */}
+        {locationStatus === 'attached' && (
+          <View style={styles.locBadge}>
+            <Ionicons name="location" size={14} color="#16a34a" />
+            <Text style={styles.locBadgeText}>GPS location attached to alert</Text>
           </View>
         )}
 
-        {/* Emergency numbers */}
-        <View style={styles.helplines}>
-          <Text style={styles.helplinesTitle}>📞 Emergency Helplines</Text>
-          <Text style={styles.helpline}>🏛️ NHAA Helpline: <Text style={styles.helplineNum}>14566</Text></Text>
-          <Text style={styles.helpline}>👮 Police: <Text style={styles.helplineNum}>100</Text></Text>
-          <Text style={styles.helpline}>🚑 Ambulance: <Text style={styles.helplineNum}>108</Text></Text>
-          <Text style={styles.helpline}>🤝 Women Helpline: <Text style={styles.helplineNum}>181</Text></Text>
+        {statusMsg && (
+          <View style={[styles.statusBanner, {
+            backgroundColor: sosState === STATE_SENT ? '#f0fdf4' : '#fffbeb',
+            borderColor: sosState === STATE_SENT ? '#86efac' : '#fcd34d',
+          }]}>
+            <Text style={[styles.statusText, { color: sosState === STATE_SENT ? '#166534' : '#92400e' }]}>
+              {statusMsg}
+            </Text>
+          </View>
+        )}
+
+        {/* Outbox Pill Banner */}
+        <View style={styles.outboxCard}>
+          <MaterialCommunityIcons name="send-clock-outline" size={18} color="#0f766e" style={{ marginRight: 8 }} />
+          <Text style={styles.outboxText}>Works offline. Outbox auto-relays when network returns.</Text>
         </View>
 
-        {/* Legal rights nav */}
-        <TouchableOpacity
-          style={styles.infoLink}
-          onPress={() => navigation.navigate('EmergencyInfo')}
-        >
-          <Text style={styles.infoLinkText}>📋 Know Your Legal Rights (SC/ST PoA) →</Text>
-        </TouchableOpacity>
-      </View>
+        {/* 2-Column Action Cards */}
+        <View style={styles.actionGrid}>
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('EmergencyInfo')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.actionIconBox, { backgroundColor: '#e0e7ff' }]}>
+              <Ionicons name="book-outline" size={20} color="#4338ca" />
+            </View>
+            <Text style={styles.actionTitle}>Emergency Info</Text>
+            <Text style={styles.actionSub}>& Legal Rights</Text>
+          </TouchableOpacity>
 
-      {/* Back */}
-      <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-        <Text style={styles.backText}>← Change Role</Text>
-      </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => setShowCaseModal(true)}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.actionIconBox, { backgroundColor: '#ccfbf1' }]}>
+              <MaterialCommunityIcons name="fingerprint" size={22} color="#0f766e" />
+            </View>
+            <Text style={styles.actionTitle}>Existing Case?</Text>
+            <Text style={styles.actionSub}>Attach Victim ID</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      {/* Case Attachment Modal */}
+      <Modal visible={showCaseModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Your Safety ID</Text>
+              <TouchableOpacity onPress={() => setShowCaseModal(false)}>
+                <Ionicons name="close" size={22} color="#64748b" />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.modalSub}>
+              Share this anonymous ID with your officer or counselor to link your existing court case securely.
+            </Text>
+
+            <View style={styles.idBox}>
+              <Text style={styles.idText}>{victimId || 'Generating…'}</Text>
+            </View>
+
+            <TouchableOpacity style={styles.copyButton} onPress={handleCopyId}>
+              <Ionicons name={copied ? "checkmark-circle" : "copy-outline"} size={18} color="#ffffff" style={{ marginRight: 6 }} />
+              <Text style={styles.copyBtnText}>{copied ? 'Copied to Clipboard!' : 'Copy Safety ID'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.closeBtn} onPress={() => setShowCaseModal(false)}>
+              <Text style={styles.closeBtnText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#1a0000' },
-  offlineBar: {
-    backgroundColor: '#451a03',
-    padding: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f59e0b',
-  },
-  offlineText: { color: '#fcd34d', fontSize: 12, textAlign: 'center' },
-  header: {
+  container: { flex: 1, backgroundColor: '#f8fafc' },
+  navBar: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    backgroundColor: '#2a0000',
-    borderBottomWidth: 1,
-    borderBottomColor: '#7f1d1d',
-  },
-  headerTitle: { color: '#ffffff', fontSize: 22, fontWeight: '800' },
-  headerSub: { color: '#fca5a5', fontSize: 12, marginTop: 2 },
-  body: { flex: 1, paddingHorizontal: 20, paddingTop: 20 },
-  idCard: {
-    backgroundColor: '#2d0000',
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#7f1d1d',
-    marginBottom: 28,
-    alignItems: 'center',
-  },
-  idLabel: { color: '#fca5a5', fontSize: 12, fontWeight: '600', marginBottom: 6 },
-  idValue: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    letterSpacing: 1,
-    marginBottom: 10,
-  },
-  copyBtn: {
-    backgroundColor: '#7f1d1d',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 8,
-    marginBottom: 6,
-  },
-  copyText: { color: '#fca5a5', fontSize: 13, fontWeight: '600' },
-  idHint: { color: '#64748b', fontSize: 11, textAlign: 'center' },
-  sosContainer: { alignItems: 'center', marginBottom: 24 },
-  sosButton: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#dc2626',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.6,
-    shadowRadius: 16,
-    elevation: 12,
-    marginBottom: 16,
-  },
-  sosDisabled: { shadowOpacity: 0.2, elevation: 4 },
-  sosLabel: {
-    color: '#ffffff',
-    fontSize: 32,
-    fontWeight: '900',
-    letterSpacing: 2,
-  },
-  sosInstructions: {
-    color: '#94a3b8',
-    fontSize: 13,
-    textAlign: 'center',
-    lineHeight: 20,
-    paddingHorizontal: 20,
-  },
-  statusBanner: {
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    marginBottom: 16,
-  },
-  statusText: { fontSize: 13, lineHeight: 18, textAlign: 'center' },
-  helplines: {
-    backgroundColor: '#0a1628',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#1e3a50',
-    gap: 6,
-  },
-  helplinesTitle: { color: '#94a3b8', fontSize: 12, fontWeight: '700', marginBottom: 4 },
-  helpline: { color: '#cbd5e1', fontSize: 13 },
-  helplineNum: { color: '#60a5fa', fontWeight: '800' },
-  infoLink: {
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
     paddingVertical: 12,
-    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
   },
-  infoLinkText: { color: '#60a5fa', fontSize: 13, fontWeight: '600' },
-  backBtn: { alignItems: 'center', paddingVertical: 12 },
-  backText: { color: '#475569', fontSize: 13 },
+  iconBtn: { padding: 4 },
+  brandContainer: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  brandIconBox: {
+    width: 34, height: 34, borderRadius: 10,
+    backgroundColor: '#ccfbf1', alignItems: 'center', justifyContent: 'center',
+  },
+  brandTitle: { color: '#0d9488', fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
+  screenTitle: { color: '#0f172a', fontSize: 16, fontWeight: '700' },
+  avatarBox: {
+    width: 34, height: 34, borderRadius: 17,
+    backgroundColor: '#ccfbf1', alignItems: 'center', justifyContent: 'center',
+  },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 30, alignItems: 'center' },
+  badgeRow: { flexDirection: 'row', gap: 10, marginBottom: 20, width: '100%', justifyContent: 'space-between' },
+  channelBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#f1f5f9', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6,
+  },
+  greenDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981' },
+  channelText: { color: '#475569', fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
+  offlineBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#ccfbf1', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6,
+  },
+  offlineBadgeText: { color: '#0f766e', fontSize: 11, fontWeight: '700' },
+  
+  // Hero Layered Box
+  heroOuterContainer: {
+    width: '100%', alignItems: 'center', justifyContent: 'center', marginVertical: 10,
+  },
+  ring3: {
+    backgroundColor: '#fdf2f4', padding: 14, borderRadius: 36, width: 280, height: 280,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  ring2: {
+    backgroundColor: '#fce7f3', padding: 14, borderRadius: 30, width: 252, height: 252,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  ring1: {
+    backgroundColor: '#fbcfe8', padding: 12, borderRadius: 26, width: 224, height: 224,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  sosSquareBtn: {
+    width: 200, height: 200, borderRadius: 22,
+    alignItems: 'center', justifyContent: 'center', padding: 16,
+    elevation: 8, shadowColor: '#b91c1c', shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35, shadowRadius: 12,
+  },
+  sosMainText: { color: '#ffffff', fontSize: 32, fontWeight: '900', marginTop: 4, letterSpacing: 1 },
+  sosSubText: { color: '#fee2e2', fontSize: 11, fontWeight: '700', marginTop: 2, letterSpacing: 0.8 },
+
+  mainInstructionTitle: { color: '#0f172a', fontSize: 18, fontWeight: '800', textAlign: 'center', marginTop: 18 },
+  mainInstructionSub: { color: '#64748b', fontSize: 13, textAlign: 'center', marginTop: 4, paddingHorizontal: 20 },
+
+  locBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#f0fdf4', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6,
+    borderWidth: 1, borderColor: '#86efac', marginTop: 12,
+  },
+  locBadgeText: { color: '#166534', fontSize: 12, fontWeight: '600' },
+  statusBanner: {
+    width: '100%', borderRadius: 12, padding: 12, borderWidth: 1, marginTop: 12, alignItems: 'center',
+  },
+  statusText: { fontSize: 13, fontWeight: '600', textAlign: 'center' },
+
+  outboxCard: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#f8fafc', borderRadius: 14, padding: 14,
+    borderWidth: 1, borderColor: '#e2e8f0', width: '100%', marginTop: 20,
+  },
+  outboxText: { color: '#475569', fontSize: 13, flex: 1, fontWeight: '500' },
+
+  actionGrid: { flexDirection: 'row', gap: 12, width: '100%', marginTop: 16 },
+  actionCard: {
+    flex: 1, backgroundColor: '#ffffff', borderRadius: 16, padding: 16,
+    borderWidth: 1, borderColor: '#f1f5f9', elevation: 1,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6,
+  },
+  actionIconBox: {
+    width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 12,
+  },
+  actionTitle: { color: '#0f172a', fontSize: 14, fontWeight: '700' },
+  actionSub: { color: '#64748b', fontSize: 12, marginTop: 2 },
+
+  // Modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', padding: 20 },
+  modalContent: { backgroundColor: '#ffffff', borderRadius: 20, padding: 22 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  modalTitle: { color: '#0f172a', fontSize: 18, fontWeight: '800' },
+  modalSub: { color: '#64748b', fontSize: 13, lineHeight: 18, marginBottom: 16 },
+  idBox: {
+    backgroundColor: '#f8fafc', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#cbd5e1',
+    alignItems: 'center', marginBottom: 16,
+  },
+  idText: { color: '#0f172a', fontSize: 16, fontWeight: '800', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
+  copyButton: {
+    flexDirection: 'row', backgroundColor: '#0f766e', borderRadius: 12, paddingVertical: 12,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 10,
+  },
+  copyBtnText: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
+  closeBtn: { paddingVertical: 10, alignItems: 'center' },
+  closeBtnText: { color: '#64748b', fontSize: 14, fontWeight: '600' },
 });

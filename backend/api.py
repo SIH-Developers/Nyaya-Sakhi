@@ -1416,8 +1416,33 @@ def sos_telegram(victim_id: str, chat_id: str):
     )
     return result
 
+class LocationPayload(BaseModel):
+    lat: float
+    lng: float
+    accuracy_meters: Optional[float] = None
+
+@api.post("/api/sos/{alert_id}/attach-location")
+def attach_location_to_alert(alert_id: str, location: LocationPayload):
+    """
+    Attach GPS coordinates to an already-triggered SOS alert.
+    Best-effort only — failure here never affects the SOS itself.
+    """
+    try:
+        from backend.database import update_alert_location
+        update_alert_location(
+            alert_id=alert_id,
+            lat=location.lat,
+            lng=location.lng,
+            accuracy=location.accuracy_meters,
+        )
+        return {"success": True, "alert_id": alert_id}
+    except Exception as e:
+        print(f"[Location] Failed to attach location to {alert_id}: {e}")
+        return {"success": False, "detail": str(e)}
+
 
 # ── Ministry Analytics Endpoints (Read-Only, Aggregate-Only) ──────────────────
+
 
 @api.get("/api/analytics/overview")
 def analytics_overview():

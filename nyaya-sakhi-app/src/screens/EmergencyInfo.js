@@ -1,175 +1,233 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking, StatusBar
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 
-const HELPLINES = [
-  { label: 'NHAA National Helpline', number: '14566', emoji: '🏛️', color: '#3b82f6' },
-  { label: 'Police Emergency', number: '100', emoji: '👮', color: '#dc2626' },
-  { label: 'Ambulance', number: '108', emoji: '🚑', color: '#dc2626' },
-  { label: 'Women Helpline', number: '181', emoji: '🤝', color: '#9333ea' },
-  { label: 'Child Helpline', number: '1098', emoji: '👶', color: '#f59e0b' },
-  { label: 'National Legal Aid', number: '15100', emoji: '⚖️', color: '#22c55e' },
-];
-
-const RIGHTS = [
+const STATUTORY_RIGHTS = [
   {
-    title: 'Right to File FIR',
-    detail:
-      'Under SC/ST PoA Act Section 18A, a victim has the right to register an FIR at any police station. Police CANNOT refuse to register it. If refused, contact the SP/DSP directly.',
-    icon: '📋',
+    num: '01',
+    title: 'Right to Free Legal Aid',
+    detail: 'You are entitled to a qualified government advocate at state expense from day one of filing your complaint. The District Legal Services Authority (DLSA) is bound to assign independent legal counsel without any fees or paperwork delays.',
+    section: 'Section 15A & Legal Services Authorities Act',
+    icon: 'scale-outline',
   },
   {
-    title: 'Protection from Bail (Section 18)',
-    detail:
-      'Accused in SC/ST atrocity cases CANNOT get anticipatory bail under Section 438 CrPC. If bail was wrongly granted, your legal aid officer can file for bail cancellation.',
-    icon: '🔒',
+    num: '02',
+    title: 'Right to Immediate Compensation',
+    detail: 'Monetary relief must be provided within statutory timelines at FIR registration, charge-sheet submission, and court conviction stages. The District Administration is mandated to release tranche payments directly to your certified bank account.',
+    section: 'PoA Rule 12(4) Schedule of Relief',
+    icon: 'cash-outline',
   },
   {
-    title: 'Right to Compensation',
-    detail:
-      'You are entitled to interim relief within 7 days of FIR as per SC/ST PoA Rules 2016. Final compensation varies by offense. Contact your District Social Welfare Officer.',
-    icon: '💰',
+    num: '03',
+    title: 'Right to Protection from Intimidation',
+    detail: 'Under Section 15A, the state must provide police protection, safe transit, and secure alternative residence if you or your witnesses face intimidation, coercion, social boycott, or physical threat from any party.',
+    section: 'Section 15A Witness Protection Scheme',
+    icon: 'shield-checkmark-outline',
   },
   {
-    title: 'Witness Protection (Section 15A)',
-    detail:
-      'As a victim-witness, you have the right to protection from intimidation, relocation if needed, and in-camera trial. Report all threats immediately to the Special Court.',
-    icon: '🛡️',
+    num: '04',
+    title: 'Right to Free Travel & Maintenance',
+    detail: 'Daily boarding expenses, food allowances, and verified transportation charges must be reimbursed in full for you and your accompanying attendant during investigation inquiries, medical exams, and court trial hearings.',
+    section: 'Rule 11 SC/ST A Compensation Provisions',
+    icon: 'bus-outline',
   },
   {
-    title: 'Free Legal Aid',
-    detail:
-      'Every SC/ST atrocity victim is entitled to free legal representation under the Legal Services Authorities Act. Contact DLSA (District Legal Services Authority) or call 15100.',
-    icon: '⚖️',
+    num: '05',
+    title: 'Right to Information & Case Copies',
+    detail: 'You are legally entitled to receive completely free copies of the registered FIR, forensic and medical examination reports, witness statements, and the official police charge sheet within 24 hours of filing or submission.',
+    section: 'Section 15A(8) Immediate Document Delivery',
+    icon: 'document-text-outline',
   },
   {
-    title: 'Medical Examination Right',
-    detail:
-      'In cases of assault, rape, or grievous hurt, the victim has the right to a free medical examination and report under Section 164A CrPC. This report is crucial evidence.',
-    icon: '🏥',
+    num: '06',
+    title: 'Right to Special Court Hearing',
+    detail: 'Crimes under the Act must be tried in designated Exclusive Special Courts at the district level. Trials are mandated to proceed on a day-to-day schedule to prevent prolonged delays, witness fatigue, and judicial backlog.',
+    section: 'Section 14 Designated Speedy Special Courts',
+    icon: 'briefcase-outline',
   },
 ];
-
-const LANGUAGES = [
-  { code: 'en', label: 'English' },
-  { code: 'hi', label: 'हिन्दी' },
-  { code: 'bn', label: 'বাংলা' },
-];
-
-const TRANSLATIONS = {
-  rightToFile: {
-    en: 'Right to File FIR',
-    hi: 'FIR दर्ज करने का अधिकार',
-    bn: 'FIR দায়ের করার অধিকার',
-  },
-  freeAid: {
-    en: 'Free Legal Aid',
-    hi: 'नि:शुल्क कानूनी सहायता',
-    bn: 'বিনামূল্যে আইনি সহায়তা',
-  },
-};
 
 export default function EmergencyInfo({ navigation }) {
-  const [lang, setLang] = useState('en');
-
-  const callNumber = (number) => {
-    Linking.openURL(`tel:${number}`).catch(() => {});
+  const callNumber = (num) => {
+    Linking.openURL(`tel:${num}`).catch(() => {});
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
+
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.back}>← Back</Text>
+      <View style={styles.navBar}>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={22} color="#0f172a" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>📋 Your Legal Rights</Text>
-        <View style={{ width: 50 }} />
+
+        <View style={styles.brandContainer}>
+          <View style={styles.brandIconBox}>
+            <MaterialCommunityIcons name="shield-half-full" size={16} color="#0d9488" />
+          </View>
+          <View>
+            <Text style={styles.brandTitle}>NYAYA-SAKHI</Text>
+            <Text style={styles.screenTitle}>Emergency Info</Text>
+          </View>
+        </View>
+
+        <View style={styles.avatarBox}>
+          <Ionicons name="person-outline" size={18} color="#0f766e" />
+        </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Language toggle */}
-        <View style={styles.langRow}>
-          {LANGUAGES.map((l) => (
-            <TouchableOpacity
-              key={l.code}
-              style={[styles.langBtn, lang === l.code && styles.langBtnActive]}
-              onPress={() => setLang(l.code)}
-            >
-              <Text style={[styles.langText, lang === l.code && styles.langTextActive]}>
-                {l.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Badges Row */}
+        <View style={styles.badgeRow}>
+          <View style={styles.channelBadge}>
+            <View style={styles.greenDot} />
+            <Text style={styles.channelText}>100% Offline Ready</Text>
+          </View>
+          <View style={styles.offlineBadge}>
+            <Ionicons name="cloud-done-outline" size={14} color="#0f766e" />
+            <Text style={styles.offlineBadgeText}>Cached locally</Text>
+          </View>
         </View>
 
-        {/* Complaint banner */}
-        <View style={styles.banner}>
-          <Text style={styles.bannerTitle}>
-            {lang === 'hi'
-              ? '⚠️ SC/ST अत्याचार रोकथाम अधिनियम के अंतर्गत आपके अधिकार'
-              : lang === 'bn'
-              ? '⚠️ SC/ST নৃশংসতা প্রতিরোধ আইনের অধীনে আপনার অধিকার'
-              : '⚠️ Know Your Rights Under SC/ST PoA Act'}
-          </Text>
-          <Text style={styles.bannerSub}>
-            {lang === 'hi'
-              ? 'यह जानकारी 100% गोपनीय है। कोई डिजिटल फुटप्रिंट नहीं।'
-              : lang === 'bn'
-              ? 'এই তথ্য ১০০% গোপনীয়। কোনো ডিজিটাল ফুটপ্রিন্ট নেই।'
-              : 'This information is 100% confidential. No digital footprint stored.'}
-          </Text>
-        </View>
-
-        {/* Rights cards */}
-        {RIGHTS.map((right, i) => (
-          <View key={i} style={styles.rightCard}>
-            <View style={styles.rightHeader}>
-              <Text style={styles.rightIcon}>{right.icon}</Text>
-              <Text style={styles.rightTitle}>{right.title}</Text>
+        {/* Priority Dialers Section */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.priorityHeaderRow}>
+            <View style={styles.priorityBadge}>
+              <Text style={styles.priorityBadgeIcon}>✳</Text>
+              <Text style={styles.priorityBadgeText}>PRIORITY DIALERS</Text>
             </View>
-            <Text style={styles.rightDetail}>{right.detail}</Text>
+          </View>
+
+          <Text style={styles.sectionTitle}>Emergency Helpline Hotlines</Text>
+          <Text style={styles.sectionSub}>
+            These standard statutory lines function without mobile internet. Tapping any item below initiates a telephone dial request directly.
+          </Text>
+
+          {/* Hotline 1: 112 (Red Hero Card) */}
+          <TouchableOpacity
+            style={styles.heroHotlineCard}
+            onPress={() => callNumber('112')}
+            activeOpacity={0.85}
+          >
+            <View style={styles.heroHotlineLeft}>
+              <View style={styles.heroPhoneCircle}>
+                <Ionicons name="call" size={20} color="#ffffff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.heroHotlineTitle}>National Emergency</Text>
+                <Text style={styles.heroHotlineSub}>Single Police, Fire & Medical Access</Text>
+              </View>
+            </View>
+            <View style={styles.heroNumberBadge}>
+              <Text style={styles.heroNumberText}>112</Text>
+              <Ionicons name="chevron-forward" size={16} color="#ffffff" />
+            </View>
+          </TouchableOpacity>
+
+          {/* Hotline 2: 14566 */}
+          <TouchableOpacity
+            style={styles.hotlineCard}
+            onPress={() => callNumber('14566')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.hotlineIconCircle, { backgroundColor: '#ccfbf1' }]}>
+              <MaterialCommunityIcons name="shield-account" size={20} color="#0f766e" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.hotlineTitle}>Atrocities Helpline</Text>
+              <Text style={styles.hotlineSub}>24/7 National Toll Free Assistance</Text>
+            </View>
+            <View style={styles.hotlineNumBox}>
+              <Text style={styles.hotlineNumText}>14566</Text>
+              <Ionicons name="call-outline" size={14} color="#0f766e" />
+            </View>
+          </TouchableOpacity>
+
+          {/* Hotline 3: 181 */}
+          <TouchableOpacity
+            style={styles.hotlineCard}
+            onPress={() => callNumber('181')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.hotlineIconCircle, { backgroundColor: '#f3e8ff' }]}>
+              <MaterialCommunityIcons name="human-female" size={20} color="#7e22ce" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.hotlineTitle}>Women Helpline</Text>
+              <Text style={styles.hotlineSub}>Dedicated Distress & Legal Support</Text>
+            </View>
+            <View style={styles.hotlineNumBox}>
+              <Text style={styles.hotlineNumText}>181</Text>
+              <Ionicons name="call-outline" size={14} color="#0f766e" />
+            </View>
+          </TouchableOpacity>
+
+          {/* Hotline 4: 100 */}
+          <TouchableOpacity
+            style={styles.hotlineCard}
+            onPress={() => callNumber('100')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.hotlineIconCircle, { backgroundColor: '#e2e8f0' }]}>
+              <MaterialCommunityIcons name="police-badge" size={20} color="#334155" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.hotlineTitle}>District Nodal / Police</Text>
+              <Text style={styles.hotlineSub}>Local station desk dispatch</Text>
+            </View>
+            <View style={styles.hotlineNumBox}>
+              <Text style={styles.hotlineNumText}>100</Text>
+              <Ionicons name="call-outline" size={14} color="#0f766e" />
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Statutory Rights Section */}
+        <View style={styles.rightsHeaderSection}>
+          <View style={styles.rightsTitleRow}>
+            <View style={styles.greenDot} />
+            <Text style={styles.rightsMainTitle}>Statutory Rights (SC/ST Act)</Text>
+          </View>
+          <Text style={styles.rightsMainSub}>
+            Protected rights under the Scheduled Castes & Scheduled Tribes (Prevention of Atrocities) Act. Plain-language reference guaranteed below.
+          </Text>
+        </View>
+
+        {/* Statutory Rights Cards */}
+        {STATUTORY_RIGHTS.map((right) => (
+          <View key={right.num} style={styles.rightCard}>
+            <View style={styles.rightCardHeader}>
+              <View style={styles.rightNumPill}>
+                <Text style={styles.rightNumText}>Statutory Right {right.num}</Text>
+              </View>
+              <Ionicons name={right.icon} size={20} color="#0f766e" />
+            </View>
+
+            <Text style={styles.rightCardTitle}>{right.title}</Text>
+            <Text style={styles.rightCardDetail}>{right.detail}</Text>
+
+            <View style={styles.rightFooterRow}>
+              <Ionicons name="compass-outline" size={14} color="#0f766e" style={{ marginRight: 4 }} />
+              <Text style={styles.rightSectionText}>{right.section}</Text>
+            </View>
           </View>
         ))}
 
-        {/* Helplines */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📞 Emergency Helplines</Text>
-          <Text style={styles.sectionSub}>Tap any number to call directly</Text>
-          {HELPLINES.map((h, i) => (
-            <TouchableOpacity
-              key={i}
-              style={styles.helplineCard}
-              onPress={() => callNumber(h.number)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.helplineEmoji}>{h.emoji}</Text>
-              <View style={styles.helplineInfo}>
-                <Text style={styles.helplineLabel}>{h.label}</Text>
-                <Text style={[styles.helplineNumber, { color: h.color }]}>{h.number}</Text>
-              </View>
-              <Text style={styles.callIcon}>📲</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Onestop centers */}
-        <View style={[styles.section, styles.osc]}>
-          <Text style={styles.sectionTitle}>🏥 Sakhi One-Stop Centres</Text>
-          <Text style={styles.oscText}>
-            Sakhi OSCs provide free medical aid, legal assistance, police assistance,
-            psycho-social counselling and temporary shelter — all under one roof.
-            {'\n\n'}Available in all 36 states/UTs across India. No fees. Fully confidential.
-          </Text>
-          <TouchableOpacity
-            onPress={() =>
-              Linking.openURL('https://wcd.nic.in/schemes/sakhi-one-stop-centre')
-            }
-          >
-            <Text style={styles.oscLink}>Find your nearest OSC →</Text>
-          </TouchableOpacity>
+        {/* Encrypted & Offline Preserved Banner */}
+        <View style={styles.footerBanner}>
+          <View style={styles.lockCircle}>
+            <Ionicons name="lock-closed" size={16} color="#4338ca" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.footerTitle}>Encrypted & Offline Preserved</Text>
+            <Text style={styles.footerSub}>
+              This reference manual remains readable at all times without active cellular or Wi-Fi connectivity.
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -177,78 +235,111 @@ export default function EmergencyInfo({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0a1628' },
-  header: {
+  container: { flex: 1, backgroundColor: '#f8fafc' },
+  navBar: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     paddingVertical: 12,
-    backgroundColor: '#022448',
+    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#1a3a5c',
+    borderBottomColor: '#f1f5f9',
   },
-  back: { color: '#60a5fa', fontSize: 15, fontWeight: '600' },
-  headerTitle: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
-  content: { padding: 16, gap: 12, paddingBottom: 32 },
-  langRow: { flexDirection: 'row', gap: 8, marginBottom: 4 },
-  langBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: '#1a3a5c',
-    borderWidth: 1,
-    borderColor: '#2a5a8c',
+  iconBtn: { padding: 4 },
+  brandContainer: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  brandIconBox: {
+    width: 34, height: 34, borderRadius: 10,
+    backgroundColor: '#ccfbf1', alignItems: 'center', justifyContent: 'center',
   },
-  langBtnActive: { backgroundColor: '#1e5fa8', borderColor: '#3b82f6' },
-  langText: { color: '#94a3b8', fontSize: 13, fontWeight: '600' },
-  langTextActive: { color: '#ffffff' },
-  banner: {
-    backgroundColor: '#450a0a',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#dc2626',
-    marginBottom: 4,
+  brandTitle: { color: '#0d9488', fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
+  screenTitle: { color: '#0f172a', fontSize: 16, fontWeight: '700' },
+  avatarBox: {
+    width: 34, height: 34, borderRadius: 17,
+    backgroundColor: '#ccfbf1', alignItems: 'center', justifyContent: 'center',
   },
-  bannerTitle: { color: '#fca5a5', fontSize: 14, fontWeight: '700', marginBottom: 4 },
-  bannerSub: { color: '#94a3b8', fontSize: 12 },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40 },
+  
+  badgeRow: { flexDirection: 'row', gap: 10, marginBottom: 20, justifyContent: 'space-between' },
+  channelBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#f1f5f9', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6,
+  },
+  greenDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981' },
+  channelText: { color: '#475569', fontSize: 11, fontWeight: '700' },
+  offlineBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#ccfbf1', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6,
+  },
+  offlineBadgeText: { color: '#0f766e', fontSize: 11, fontWeight: '700' },
+
+  sectionContainer: { marginBottom: 24 },
+  priorityHeaderRow: { flexDirection: 'row', marginBottom: 8 },
+  priorityBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#fee2e2', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4,
+  },
+  priorityBadgeIcon: { color: '#b91c1c', fontSize: 12, fontWeight: '800' },
+  priorityBadgeText: { color: '#b91c1c', fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
+  sectionTitle: { color: '#0f172a', fontSize: 20, fontWeight: '800', marginTop: 4 },
+  sectionSub: { color: '#64748b', fontSize: 13, lineHeight: 18, marginTop: 4, marginBottom: 16 },
+
+  // Hotlines
+  heroHotlineCard: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: '#b91c1c', borderRadius: 16, padding: 16, marginBottom: 12,
+    elevation: 3, shadowColor: '#b91c1c', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8,
+  },
+  heroHotlineLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  heroPhoneCircle: {
+    width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  heroHotlineTitle: { color: '#ffffff', fontSize: 15, fontWeight: '800' },
+  heroHotlineSub: { color: '#fca5a5', fontSize: 12, marginTop: 2 },
+  heroNumberBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  heroNumberText: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
+
+  hotlineCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: '#ffffff', borderRadius: 14, padding: 14, marginBottom: 10,
+    borderWidth: 1, borderColor: '#f1f5f9', elevation: 1,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.03, shadowRadius: 4,
+  },
+  hotlineIconCircle: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  hotlineTitle: { color: '#0f172a', fontSize: 14, fontWeight: '700' },
+  hotlineSub: { color: '#64748b', fontSize: 12, marginTop: 1 },
+  hotlineNumBox: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  hotlineNumText: { color: '#0f172a', fontSize: 16, fontWeight: '800' },
+
+  // Rights
+  rightsHeaderSection: { marginTop: 8, marginBottom: 16 },
+  rightsTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  rightsMainTitle: { color: '#0f172a', fontSize: 18, fontWeight: '800' },
+  rightsMainSub: { color: '#64748b', fontSize: 13, lineHeight: 18, marginTop: 4 },
+
   rightCard: {
-    backgroundColor: '#0d1f30',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#1e3a50',
+    backgroundColor: '#ffffff', borderRadius: 16, padding: 18, marginBottom: 14,
+    borderWidth: 1, borderColor: '#f1f5f9', elevation: 1,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6,
   },
-  rightHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 10 },
-  rightIcon: { fontSize: 22 },
-  rightTitle: { color: '#ffffff', fontSize: 15, fontWeight: '700', flex: 1 },
-  rightDetail: { color: '#94a3b8', fontSize: 13, lineHeight: 20 },
-  section: { marginTop: 8 },
-  sectionTitle: { color: '#e2e8f0', fontSize: 16, fontWeight: '800', marginBottom: 4 },
-  sectionSub: { color: '#64748b', fontSize: 12, marginBottom: 10 },
-  helplineCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#0d1f30',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#1e3a50',
+  rightCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  rightNumPill: { backgroundColor: '#f1f5f9', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
+  rightNumText: { color: '#475569', fontSize: 11, fontWeight: '700' },
+  rightCardTitle: { color: '#0f172a', fontSize: 16, fontWeight: '800', marginBottom: 8 },
+  rightCardDetail: { color: '#475569', fontSize: 13, lineHeight: 20, marginBottom: 14 },
+  rightFooterRow: { flexDirection: 'row', alignItems: 'center' },
+  rightSectionText: { color: '#0f766e', fontSize: 12, fontWeight: '700' },
+
+  // Footer banner
+  footerBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    backgroundColor: '#e0e7ff', borderRadius: 16, padding: 16, marginTop: 12,
   },
-  helplineEmoji: { fontSize: 24, marginRight: 12 },
-  helplineInfo: { flex: 1 },
-  helplineLabel: { color: '#cbd5e1', fontSize: 14, fontWeight: '600' },
-  helplineNumber: { fontSize: 18, fontWeight: '800', marginTop: 2 },
-  callIcon: { fontSize: 20 },
-  osc: {
-    backgroundColor: '#022448',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#1e4060',
+  lockCircle: {
+    width: 36, height: 36, borderRadius: 18, backgroundColor: '#c7d2fe',
+    alignItems: 'center', justifyContent: 'center',
   },
-  oscText: { color: '#94a3b8', fontSize: 13, lineHeight: 20, marginTop: 8 },
-  oscLink: { color: '#60a5fa', fontSize: 14, fontWeight: '700', marginTop: 10 },
+  footerTitle: { color: '#312e81', fontSize: 14, fontWeight: '800' },
+  footerSub: { color: '#4338ca', fontSize: 12, lineHeight: 17, marginTop: 2 },
 });
