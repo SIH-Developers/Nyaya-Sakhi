@@ -502,8 +502,11 @@ def process_speech_pipeline(spoken_text: str, caller_number: str, called_number:
 @api.api_route("/api/telephony/incoming-call", methods=["GET", "POST"])
 def telephony_incoming_call(request: Request):
     """Twilio Webhook for incoming helpline calls."""
+    victim_id = request.query_params.get("victim_id")
     base_url = os.getenv("RENDER_EXTERNAL_URL", "https://nyaya-sakhi-tszb.onrender.com").rstrip("/")
     action_url = f"{base_url}/api/telephony/speech-response"
+    if victim_id:
+        action_url = f"{action_url}?victim_id={victim_id}"
     xml_response = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
     <Say voice="alice" language="en-IN">Namaste. This is the National Helpline Against Atrocities 14566. This is a proactive well-being check-in call from your NHAA support counselor.</Say>
@@ -527,8 +530,11 @@ def twiml_simple(request: Request):
 </Response>"""
         return FastAPIResponse(content=xml_response.strip(), media_type="text/xml")
 
+    victim_id = request.query_params.get("victim_id")
     base_url = os.getenv("RENDER_EXTERNAL_URL", "https://nyaya-sakhi-tszb.onrender.com").rstrip("/")
     action_url = f"{base_url}/api/telephony/speech-response"
+    if victim_id:
+        action_url = f"{action_url}?victim_id={victim_id}"
     xml_response = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
     <Say voice="alice" language="en-IN">Namaste. This is the National Helpline Against Atrocities 14566. This is a proactive well-being check-in from your NHAA support counselor.</Say>
