@@ -446,13 +446,18 @@ async def handle_audio_file_upload(
 from fastapi.responses import Response as FastAPIResponse
 from fastapi import Request
 
-def process_speech_pipeline(spoken_text: str, caller_number: str):
+def process_speech_pipeline(spoken_text: str, caller_number: str, called_number: str):
     """Background task to run LangGraph AI pipeline without blocking Twilio's HTTP response."""
     victim_id = "VIC-2026-001"
     try:
         all_victims = get_all_victims()
         for v in all_victims:
-            if caller_number and caller_number.replace("+", "") in str(v.get("phone_number", "")):
+            victim_phone = str(v.get("phone_number", ""))
+            # For inbound calls, 'From' is the victim. For outbound check-ins, 'To' is the victim.
+            if caller_number and caller_number.replace("+", "") in victim_phone:
+                victim_id = v["victim_id"]
+                break
+            elif called_number and called_number.replace("+", "") in victim_phone:
                 victim_id = v["victim_id"]
                 break
     except Exception:
@@ -542,14 +547,16 @@ async def telephony_speech_response(request: Request, background_tasks: Backgrou
         form_data = await request.form()
         spoken_text = form_data.get("SpeechResult", "").strip()
         caller_number = form_data.get("From", "unknown")
+        called_number = form_data.get("To", "unknown")
     except Exception:
         spoken_text = ""
         caller_number = "unknown"
+        called_number = "unknown"
 
-    print(f"[Twilio Gather] Caller spoke: '{spoken_text}' | From: {caller_number}")
+    print(f"[Twilio Gather] Caller spoke: '{spoken_text}' | From: {caller_number} | To: {called_number}")
 
     if spoken_text:
-        background_tasks.add_task(process_speech_pipeline, spoken_text, caller_number)
+        background_tasks.add_task(process_speech_pipeline, spoken_text, caller_number, called_number)
 
     xml_response = """<?xml version="1.0" encoding="UTF-8"?>
 <Response>
