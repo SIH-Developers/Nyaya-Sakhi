@@ -103,7 +103,7 @@ def send_whatsapp(to_number: str, message: str) -> dict:
 
 
 # 3. Outbound IVRS Voice Call
-def make_voice_call(to_number: str, spoken_message: str, is_sos: bool = False) -> dict:
+def make_voice_call(to_number: str, spoken_message: str, is_sos: bool = False, victim_id: str = None) -> dict:
     """
     Make an automated outbound voice call to the victim.
     Auto-detects:
@@ -136,6 +136,10 @@ def make_voice_call(to_number: str, spoken_message: str, is_sos: bool = False) -
         else:
             twiml_url = f"http://localhost:8000{path}"
 
+        if victim_id:
+            join_char = "&" if "?" in twiml_url else "?"
+            twiml_url = f"{twiml_url}{join_char}victim_id={victim_id}"
+
         call = client.calls.create(
             url=twiml_url,
             from_=FROM_NUMBER,
@@ -158,7 +162,8 @@ def dispatch_checkin(
     send_sms_flag: bool = True,
     send_whatsapp_flag: bool = True,
     send_email_flag: bool = False,
-    to_email: str = ""
+    to_email: str = "",
+    victim_id: str = None
 ) -> dict:
     """
     Dispatch proactive check-in across selected communication channels.
@@ -179,11 +184,11 @@ def dispatch_checkin(
         result["whatsapp"] = wa_res
         result["channels"].append("WhatsApp")
 
-    # 3. Voice Call
+    # 3. Voice (IVRS)
     if send_voice:
-        voice_res = make_voice_call(to_number, message_text)
+        voice_res = make_voice_call(to_number, message_text, victim_id=victim_id)
         result["voice"] = voice_res
-        result["channels"].append("Voice Call")
+        result["channels"].append("Voice IVRS")
 
     # 4. Email (Twilio SendGrid)
     if send_email_flag or to_email:

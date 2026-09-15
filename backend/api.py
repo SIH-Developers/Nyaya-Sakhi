@@ -446,22 +446,25 @@ async def handle_audio_file_upload(
 from fastapi.responses import Response as FastAPIResponse
 from fastapi import Request
 
-def process_speech_pipeline(spoken_text: str, caller_number: str, called_number: str):
+def process_speech_pipeline(spoken_text: str, caller_number: str, called_number: str, victim_id_query: str = None):
     """Background task to run LangGraph AI pipeline without blocking Twilio's HTTP response."""
-    victim_id = "VIC-2026-001"
-    try:
-        all_victims = get_all_victims()
-        for v in all_victims:
-            victim_phone = str(v.get("phone_number", ""))
-            # For inbound calls, 'From' is the victim. For outbound check-ins, 'To' is the victim.
-            if caller_number and caller_number.replace("+", "") in victim_phone:
-                victim_id = v["victim_id"]
-                break
-            elif called_number and called_number.replace("+", "") in victim_phone:
-                victim_id = v["victim_id"]
-                break
-    except Exception:
-        pass
+    victim_id = victim_id_query or "VIC-2026-001"
+    
+    # Only try phone lookup if victim_id wasn't provided in the query string
+    if not victim_id_query:
+        try:
+            all_victims = get_all_victims()
+            for v in all_victims:
+                victim_phone = str(v.get("phone_number", ""))
+                # For inbound calls, 'From' is the victim. For outbound check-ins, 'To' is the victim.
+                if caller_number and caller_number.replace("+", "") in victim_phone:
+                    victim_id = v["victim_id"]
+                    break
+                elif called_number and called_number.replace("+", "") in victim_phone:
+                    victim_id = v["victim_id"]
+                    break
+        except Exception:
+            pass
 
     try:
         victim = get_victim_details(victim_id)
@@ -553,10 +556,12 @@ async def telephony_speech_response(request: Request, background_tasks: Backgrou
         caller_number = "unknown"
         called_number = "unknown"
 
-    print(f"[Twilio Gather] Caller spoke: '{spoken_text}' | From: {caller_number} | To: {called_number}")
+    victim_id_query = request.query_params.get("victim_id")
+
+    print(f"[Twilio Gather] Caller spoke: '{spoken_text}' | From: {caller_number} | To: {called_number} | Victim: {victim_id_query}")
 
     if spoken_text:
-        background_tasks.add_task(process_speech_pipeline, spoken_text, caller_number, called_number)
+        background_tasks.add_task(process_speech_pipeline, spoken_text, caller_number, called_number, victim_id_query)
 
     xml_response = """<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -622,7 +627,8 @@ def send_proactive_checkin(
                 send_sms_flag=True,
                 send_whatsapp_flag=True,
                 send_email_flag=True,
-                to_email=victim_email
+                to_email=victim_email,
+                victim_id=victim_id
             )
             dispatch_results["multi_channel"] = multi_result
             channels_used.extend(multi_result.get("channels", []))
