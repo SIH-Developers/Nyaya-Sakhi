@@ -1,10 +1,20 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X, Activity, Scale, ShieldAlert, PhoneCall, HeartPulse, 
   FileText, ShieldCheck, AlertTriangle, ArrowUpRight, Check, Send, MessageSquarePlus, MessageCircle,
   KeyRound, Mail, CheckCircle2, Copy
 } from 'lucide-react';
 import { API_BASE } from '../config';
+
+const CHANNEL_META = {
+  telegram_mobile: { label: 'Telegram', color: '#0ea5e9', icon: '📱' },
+  ivrs:            { label: 'IVRS Call', color: '#8b5cf6', icon: '📞' },
+  chatbot:         { label: 'Web Chat',  color: '#f59e0b', icon: '💬' },
+  web_chat:        { label: 'Web Chat',  color: '#f59e0b', icon: '🌐' },
+  whatsapp:        { label: 'WhatsApp',  color: '#10b981', icon: '💬' },
+  sms:             { label: 'SMS',       color: '#64748b', icon: '📨' },
+  email:           { label: 'Email',     color: '#6366f1', icon: '📧' },
+};
 
 export default function VictimDetailModal({ victim, history = [], onClose, onUpdateStatus, userRole = 'counselor' }) {
   const [actionSuccess, setActionSuccess] = useState(null);
@@ -576,6 +586,80 @@ export default function VictimDetailModal({ victim, history = [], onClose, onUpd
                 }
               </span>
             </div>
+          </div>
+
+          {/* Interaction Chat Logs */}
+          <div style={{
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            padding: '20px',
+            borderRadius: '14px',
+            marginTop: '20px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <FileText size={18} color="#4f46e5" />
+              <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>
+                Recent Interaction History
+              </span>
+            </div>
+
+            {history.length === 0 ? (
+              <p style={{ color: '#64748b', fontSize: '0.85rem' }}>No interaction logs recorded yet.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflowY: 'auto', paddingRight: '4px' }}>
+                {history.map((item, idx) => {
+                  const meta = CHANNEL_META[item.channel] || { label: item.channel, color: '#6366f1', icon: '📡' };
+                  return (
+                    <div key={idx} style={{
+                      padding: '12px 16px',
+                      borderRadius: '10px',
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{
+                            background: `${meta.color}15`,
+                            color: meta.color,
+                            border: `1px solid ${meta.color}30`,
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            fontSize: '0.7rem',
+                            fontWeight: 700
+                          }}>
+                            {meta.icon} {meta.label}
+                          </span>
+                          <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                            {new Date(item.timestamp || item.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                        <span style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          color: (item.fused_risk_score ?? 0.1) >= 0.75 ? '#dc2626' : '#059669'
+                        }}>
+                          Score: {Math.round((item.fused_risk_score ?? 0.1) * 100)}%
+                        </span>
+                      </div>
+
+                      <p style={{ fontSize: '0.84rem', color: '#334155', margin: '4px 0', whiteSpace: 'pre-wrap' }}>
+                        {item.transcript || item.message_text || 'Live voice check-in logged'}
+                      </p>
+
+                      {item.voice_metrics && (
+                        <div style={{ fontSize: '0.7rem', color: '#6366f1', display: 'flex', gap: '12px', marginTop: '4px' }}>
+                          <span>Pitch Jitter: {item.voice_metrics.pitch_jitter ?? 'Normal'}</span>
+                          <span>Acoustic Distress: {item.voice_metrics.shimmer_distress ?? 'Low'}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Past Escalation Explainability (Part C) */}
