@@ -274,6 +274,23 @@ def save_victim_turn(state: Dict[str, Any]) -> str:
     conn.close()
     return log_id
 
+def update_interaction_log_reply(log_id: str, reply_text: str):
+    """Appends the bot's reply to the interaction log message so it shows on the UI."""
+    if not log_id or not reply_text:
+        return
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT encrypted_message FROM interaction_logs WHERE log_id = ?", (log_id,))
+    row = cursor.fetchone()
+    if row:
+        user_msg = decrypt_sensitive_field(row["encrypted_message"])
+        combined_msg = f"User: {user_msg}\nBot: {reply_text}"
+        new_encrypted = encrypt_sensitive_field(combined_msg)
+        cursor.execute("UPDATE interaction_logs SET encrypted_message = ? WHERE log_id = ?", (new_encrypted, log_id))
+        conn.commit()
+    conn.close()
+
+
 def get_all_victims() -> List[Dict[str, Any]]:
     """Retrieve all victim profiles sorted by current risk severity."""
     conn = get_connection()

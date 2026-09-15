@@ -198,8 +198,14 @@ def handle_victim_text(chat_id: int, victim_id: str, user_name: str, message_tex
 
     # ── Step 5: Persist conversation memory (after reply sent) -----------------
     try:
+        from backend.database import update_interaction_log_reply
         append_conversation_turn(victim_id, "user",      message_text)
         append_conversation_turn(victim_id, "assistant", llm_reply)
+        
+        # Append the assistant's reply to the interaction log so it shows on the UI dashboard
+        if nlp_result and "log_id" in nlp_result:
+            update_interaction_log_reply(nlp_result["log_id"], llm_reply)
+            
         # Prune to keep DB lean (keep last 50 turns per victim)
         _executor.submit(trim_conversation_history, victim_id, 50)
     except Exception as exc:
