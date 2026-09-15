@@ -1,4 +1,4 @@
-﻿import os
+import os
 import re
 import requests
 from typing import Dict, Any
@@ -107,19 +107,36 @@ def analyze_text_distress(text: str) -> Dict[str, Any]:
             print(f"[NLP Agent] Inference request error: {e}")
 
     if not res:
-        # Standby if inference service unreachable
-        res = {
-            "distress_score": 0.05,
-            "top_emotions": [{"label": "routine", "score": 0.85}],
-            "distress_severity": "routine",
-            "threat_violence_flag": False,
-            "intimidation_flag": False,
-            "emergency_help_flag": False,
-            "hopelessness_flag": False,
-            "self_harm_cues": False,
-            "withdrawal_flag": False,
-            "analysis_source": "indicbertv2_offline_standby"
-        }
+        # Standby if inference service unreachable (Hugging Face API asleep)
+        # Hackathon Demo Fallback: check text against CRISIS_PATTERNS
+        text_lower = cleaned.lower()
+        has_crisis = any(re.search(p, text_lower) for p in CRISIS_PATTERNS)
+        if has_crisis:
+            res = {
+                "distress_score": 0.95,
+                "top_emotions": [{"label": "critical", "score": 0.99}],
+                "distress_severity": "acute distress",
+                "threat_violence_flag": True,
+                "intimidation_flag": True,
+                "emergency_help_flag": True,
+                "hopelessness_flag": True,
+                "self_harm_cues": "suicide" in text_lower or "die" in text_lower,
+                "withdrawal_flag": False,
+                "analysis_source": "regex_crisis_fallback"
+            }
+        else:
+            res = {
+                "distress_score": 0.05,
+                "top_emotions": [{"label": "routine", "score": 0.85}],
+                "distress_severity": "routine",
+                "threat_violence_flag": False,
+                "intimidation_flag": False,
+                "emergency_help_flag": False,
+                "hopelessness_flag": False,
+                "self_harm_cues": False,
+                "withdrawal_flag": False,
+                "analysis_source": "indicbertv2_offline_standby"
+            }
 
     return apply_sentiment_guardrail(text, res)
 
