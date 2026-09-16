@@ -893,7 +893,8 @@ def update_alert_location(alert_id: str, lat: float, lng: float, accuracy: float
     cursor.execute(
         """UPDATE escalation_alerts
            SET lat = ?, lng = ?, location_accuracy_meters = ?
-           WHERE id = ? OR victim_id = ?""",
+           WHERE alert_id = ? OR victim_id = ?""",
         (lat, lng, accuracy, alert_id, alert_id)
     )
     conn.commit()
+    conn.close()

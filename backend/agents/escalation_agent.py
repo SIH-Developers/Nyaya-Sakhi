@@ -234,7 +234,7 @@ def trigger_manual_sos(
         "triggered_by":              triggered_by,
     }
 
-    # ── Persist to escalation_alerts with trigger_type ───────────────────────
+    # ── Persist to escalation_alerts & victims table ───────────────────────
     try:
         from backend.database import get_connection
         import json as _json
@@ -255,9 +255,38 @@ def trigger_manual_sos(
             alert["human_in_the_loop_status"],
             channel, "manual_sos", triggered_by,
         ))
+
+        # Auto-upsert victim record so counselor dashboard GET /api/victims displays them immediately
+        cursor.execute("SELECT victim_id FROM victims WHERE victim_id = ?", (victim_id,))
+        if not cursor.fetchone():
+            short_id = victim_id[-8:] if len(victim_id) >= 8 else victim_id
+            cursor.execute("""
+                INSERT INTO victims (
+                    victim_id, name, fir_number, police_station, district, state,
+                    current_risk_score, current_risk_tier, last_interaction_at, created_at,
+                    last_channel
+                ) VALUES (?, ?, ?, 'Central Desk', 'Emergency Cell', 'Delhi', 1.0, 'Urgent', ?, ?, ?)
+            """, (
+                victim_id,
+                f"App Survivor ({short_id})",
+                f"FIR-2026/{short_id[:4]}",
+                alert["timestamp"],
+                alert["timestamp"],
+                channel
+            ))
+        else:
+            cursor.execute("""
+                UPDATE victims
+                SET current_risk_score = 1.0,
+                    current_risk_tier = 'Urgent',
+                    last_interaction_at = ?,
+                    last_channel = ?
+                WHERE victim_id = ?
+            """, (alert["timestamp"], channel, victim_id))
+
         conn.commit()
         conn.close()
-        print(f"[ManualSOS] ✅ Alert persisted: {alert_id}")
+        print(f"[ManualSOS] ✅ Alert & Victim profile persisted: {alert_id}")
     except Exception as e:
         print(f"[ManualSOS] DB persist error: {e}")
 
