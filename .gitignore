@@ -7,6 +7,7 @@
 
 # SIH Documents and PDFs
 *.pdf
+!Nyaya_Sakhi_Project_Document.pdf
 *.docx
 *.doc
 

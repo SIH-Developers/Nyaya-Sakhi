@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nyaya Sakhi — Project Document</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+  :root{--primary:#1a3a5c;--accent:#c0392b;--accent2:#2471a3;--gold:#9a7d0a;--green:#1e6b3a;--border:#cdd5df;--text:#1a1a1a;--muted:#4a5568;--light-bg:#f4f6f9;--stripe:#f0f3f7;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:#fff;color:var(--text);font-size:10pt;line-height:1.62;}
+  .page{max-width:210mm;margin:0 auto;padding:10mm 15mm 14mm;}
+  /* COVER */
+  .cover{page-break-after:always;}
+  .cover-banner{background:#1a3a5c;color:#fff;padding:20mm 18mm 16mm;}
+  .cover-emblem{font-size:38pt;margin-bottom:8px;}
+  .cover-title{font-size:21pt;font-weight:800;line-height:1.2;margin-bottom:4px;}
+  .cover-sub{font-size:11pt;font-weight:300;color:rgba(255,255,255,.80);margin-bottom:18px;}
+  .cover-badges{display:flex;flex-wrap:wrap;gap:6px;}
+  .badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff;padding:3px 9px;border-radius:20px;font-size:7.5pt;font-weight:500;}
+  .cover-info{border-left:4px solid #1a3a5c;background:#f4f6f9;padding:10mm 14mm;}
+  .cover-theme{display:inline-block;background:#1a3a5c;color:#fff;padding:3px 12px;border-radius:4px;font-size:8pt;font-weight:600;margin-bottom:10px;}
+  .cover-info p{font-size:9.5pt;line-height:1.9;color:#1a1a1a;}
+  .cover-info strong{color:#1a3a5c;}
+  /* SECTION HEADERS */
+  .section-header{margin-top:20px;margin-bottom:0;border-left:5px solid #1a3a5c;background:#e8eef6;color:#1a3a5c;padding:8px 13px;font-size:11pt;font-weight:700;border-top:1px solid #a8c0d8;border-right:1px solid #a8c0d8;border-bottom:1px solid #a8c0d8;border-radius:0 5px 0 0;display:flex;align-items:center;gap:7px;}
+  .section-body{border:1px solid var(--border);border-top:none;border-radius:0 0 5px 5px;padding:13px 15px;background:#fff;margin-bottom:6px;}
+  h2{font-size:10pt;font-weight:700;color:var(--primary);margin:13px 0 5px;padding-bottom:2px;border-bottom:2px solid #a8c0d8;display:inline-block;}
+  h3{font-size:10pt;font-weight:600;color:var(--primary);margin:9px 0 4px;}
+  p{margin-bottom:7px;}
+  /* CALLOUTS */
+  .callout{border-left:4px solid #2471a3;background:#edf4fb;padding:8px 12px;border-radius:0 4px 4px 0;margin:8px 0;font-size:9.5pt;}
+  .callout.warning{border-color:#c0392b;background:#fdf2f0;}
+  .callout.success{border-color:#1e6b3a;background:#eef8f2;}
+  .callout.gold{border-color:#9a7d0a;background:#fef9e7;}
+  .callout strong{display:block;margin-bottom:3px;font-size:8.5pt;text-transform:uppercase;letter-spacing:.4px;color:var(--primary);}
+  /* TABLES */
+  table{width:100%;border-collapse:collapse;font-size:9pt;margin:8px 0;border:1px solid var(--border);}
+  th{background:#dce6f0;color:#1a3a5c;padding:6px 9px;text-align:left;font-weight:700;font-size:8.5pt;border-bottom:2px solid #a8c0d8;}
+  td{padding:6px 9px;border-bottom:1px solid #e0e6ee;vertical-align:top;}
+  tr:nth-child(even) td{background:#f4f6f9;}
+  tr:last-child td{border-bottom:none;}
+  .highlight-row td:first-child{font-weight:600;color:var(--primary);}
+  /* QA */
+  .qa-item{margin:10px 0;border:1px solid #c0cfdf;border-radius:5px;overflow:hidden;}
+  .qa-q{background:#dce8f4;color:#1a3a5c;padding:8px 12px;font-weight:600;font-size:9.5pt;display:flex;gap:9px;align-items:flex-start;border-bottom:1px solid #b8cce0;}
+  .qa-q-num{background:#1a3a5c;color:#fff;border-radius:50%;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:8pt;font-weight:700;flex-shrink:0;margin-top:1px;}
+  .qa-a{background:#fff;padding:10px 12px;font-size:9.5pt;}
+  .qa-a p{margin-bottom:5px;}
+  .qa-a p:last-child{margin-bottom:0;}
+  /* CODE */
+  .code-ref{font-family:'JetBrains Mono',monospace;background:#f0f3f7;padding:1px 5px;border-radius:3px;font-size:8.5pt;color:#c0392b;border:1px solid #d5dde8;}
+  code{font-family:'JetBrains Mono',monospace;background:#f0f3f7;padding:1px 4px;border-radius:3px;font-size:8.5pt;color:#1a3a5c;}
+  /* FLOW */
+  .flow-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:8px 0;}
+  .flow-node{background:#1a3a5c;color:#fff;padding:5px 10px;border-radius:18px;font-size:8.5pt;font-weight:500;white-space:nowrap;}
+  .flow-node.orange{background:#a04020;}
+  .flow-node.green{background:#1e6b3a;}
+  .flow-node.blue{background:#2471a3;}
+  .flow-arrow{color:#6b7a8d;font-size:11pt;font-weight:bold;}
+  /* TIERS */
+  .tier{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:8pt;font-weight:600;}
+  .tier.routine{background:#e8f5e9;color:#1e6b3a;border:1px solid #a5d6a7;}
+  .tier.watch{background:#fff8e1;color:#7d5a00;border:1px solid #ffe082;}
+  .tier.outreach{background:#fff3e0;color:#8a4500;border:1px solid #ffcc80;}
+  .tier.urgent{background:#fdecea;color:#8b0000;border:1px solid #ef9a9a;}
+  /* FORMULA */
+  .formula-box{background:#f4f6f9;border:1px solid var(--border);border-radius:4px;padding:10px 13px;font-family:'JetBrains Mono',monospace;font-size:9pt;margin:8px 0;text-align:center;color:#1a3a5c;}
+  /* LIFECYCLE */
+  .lifecycle{display:flex;margin:10px 0;border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+  .lc-stage{flex:1;padding:7px 4px;text-align:center;font-size:8pt;font-weight:600;border-right:1px solid rgba(255,255,255,.35);}
+  .lc-stage:last-child{border-right:none;}
+  .lc-stage span{display:block;font-size:7pt;font-weight:400;opacity:.88;margin-top:2px;}
+  .lc-stage.s1{background:#2c5282;color:#fff;}
+  .lc-stage.s2{background:#2b6cb0;color:#fff;}
+  .lc-stage.s3{background:#c05621;color:#fff;}
+  .lc-stage.s4{background:#276749;color:#fff;}
+  .lc-stage.s5{background:#1e5c3f;color:#fff;}
+  /* GRIDS */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin:8px 0;}
+  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin:8px 0;}
+  .mini-card{background:#f4f6f9;border:1px solid var(--border);border-radius:4px;padding:8px 11px;font-size:9pt;}
+  .mini-card h4{font-size:8.5pt;font-weight:700;color:var(--primary);margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid var(--border);}
+  ul{padding-left:16px;margin-bottom:5px;}
+  ol{padding-left:18px;margin-bottom:5px;}
+  li{margin-bottom:3px;font-size:9.5pt;}
+  .page-break{page-break-before:always;padding-top:2mm;}
+  .footer{margin-top:22px;padding-top:9px;border-top:2px solid #1a3a5c;text-align:center;font-size:7.5pt;color:var(--muted);}
+  .footer strong{color:var(--primary);}
+  @media print{body{font-size:9.5pt;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.cover{page-break-after:always;}.page-break{page-break-before:always;}.qa-item{page-break-inside:avoid;}.section-header{page-break-after:avoid;}a{color:inherit;text-decoration:none;}}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="cover-banner">
+    <div class="cover-emblem">🕊️</div>
+    <div class="cover-title">Nyaya Sakhi</div>
+    <div class="cover-sub">AI-Powered Dynamic Mental Health Monitoring &amp; Distress Prediction System</div>
+    <div class="cover-badges">
+      <span class="badge">MoSJE • NHAA 14566</span>
+      <span class="badge">SC/ST (PoA) Act, 1989</span>
+      <span class="badge">Python 3.11 + FastAPI</span>
+      <span class="badge">LangGraph Agentic AI</span>
+      <span class="badge">React + Vite Dashboard</span>
+      <span class="badge">DPDP Act 2023 Compliant</span>
+      <span class="badge">AES-GCM-256 Encryption</span>
+      <span class="badge">39+ Automated Tests</span>
+    </div>
+  </div>
+  <div class="cover-info">
+    <div class="cover-theme">MedTech / BioTech / HealthTech &nbsp;•&nbsp; Software Category</div>
+    <p><strong>Nodal Ministry:</strong> Ministry of Social Justice and Empowerment (MoSJE), Government of India</p>
+    <p><strong>Associated Initiative:</strong> National Helpline Against Atrocities — NHAA 14566</p>
+    <p><strong>Legal Framework:</strong> Scheduled Castes and Scheduled Tribes (Prevention of Atrocities) Act, 1989</p>
+  </div>
+</div>
+
+<div class="page">
+
+<div class="section-header">📌 1. Project Overview &amp; Problem Addressed</div>
+<div class="section-body">
+  <p>Victims and witnesses under the <strong>SC/ST (Prevention of Atrocities) Act, 1989</strong>, registered through NHAA 14566 or the Integrated Portal, face prolonged psychological distress <em>after</em> complaint registration. Threats, bail of accused, judicial delays, social ostracism, and compensation uncertainty compound their trauma across every stage of the legal process.</p>
+  <div class="callout warning">
+    <strong>⚠️ The Gap</strong>
+    Existing government mechanisms focus on legal and financial support. None provide <strong>continuous, proactive psychological monitoring</strong> of victim well-being throughout the investigation → trial → rehabilitation → compensation cycle.
+  </div>
+  <p><strong>Nyaya Sakhi</strong> fills this gap with a proactive, AI-driven distress prediction system that:</p>
+  <ul>
+    <li>Continuously interacts with victims across chatbot, IVRS, SMS, WhatsApp, and Web Portal channels</li>
+    <li>Fuses voice prosody, text sentiment, behavioral signals, and legal case context into a single <strong>Dynamic Distress Score</strong></li>
+    <li>Predicts deterioration <em>before</em> a crisis emerges and automatically routes interventions</li>
+    <li>Provides dashboards at district, state, and national levels for evidence-based oversight</li>
+  </ul>
+  <h2>Owning Ministry &amp; Deployment Authority</h2>
+  <div class="callout success">
+    <strong>✅ Single Ministry Ownership</strong>
+    Nyaya Sakhi is designed exclusively for the <strong>Ministry of Social Justice and Empowerment (MoSJE)</strong> through the <strong>National Helpline Against Atrocities (NHAA 14566)</strong> and operates under the mandate of the <strong>SC/ST (Prevention of Atrocities) Act, 1989</strong>. It has no dependency on or overlap with the Ministry of Women &amp; Child Development, Mission Shakti, or One Stop Centres.
+  </div>
+</div>
+
+<div class="section-header">🎯 2. Why AI? — The Core Argument</div>
+<div class="section-body">
+  <div class="callout gold">
+    <strong>🔑 The One-Sentence Answer</strong>
+    No traditional case-management portal can detect that a victim who sent three short messages after midnight, whose accused was just granted bail, and whose speech pace has slowed by 40% — is at imminent risk of a psychological crisis. Only the <strong>longitudinal fusion of language + voice + behaviour + live legal context</strong> makes this possible.
+  </div>
+  <div class="two-col">
+    <div class="mini-card">
+      <h4>🚫 What a Normal Portal Does</h4>
+      <ul>
+        <li>Stores case records</li>
+        <li>Logs victim registration</li>
+        <li>Tracks FIR / compensation status</li>
+        <li>Requires victim to self-report crisis</li>
+        <li>Reactive — acts after a crisis</li>
+      </ul>
+    </div>
+    <div class="mini-card">
+      <h4>✅ What Nyaya Sakhi Does Instead</h4>
+      <ul>
+        <li>Proactively contacts victim on schedule</li>
+        <li>Measures distress <em>change</em> over time</li>
+        <li>Detects crisis before victim articulates it</li>
+        <li>Correlates legal events with distress spikes</li>
+        <li>Auto-dispatches counselor / IVRS call</li>
+      </ul>
+    </div>
+  </div>
+  <p>The AI necessity is established by four signals that <strong>only machine learning can combine at scale</strong>:</p>
+  <table>
+    <tr><th>Signal</th><th>What It Captures</th><th>Implementation</th></tr>
+    <tr><td>Text Sentiment</td><td>Linguistic distress markers: helplessness, fear, grief, suicidal ideation</td><td>Fine-tuned IndicBERTv2 + GoEmotions (<code>nlp_agent.py</code>)</td></tr>
+    <tr><td>Voice Prosody</td><td>Pitch variance, pause ratio, speaking rate — markers of depression &amp; agitation</td><td>Whisper ASR → Wav2Vec2 acoustic analysis (<code>speech_agent.py</code>)</td></tr>
+    <tr><td>Behavioural Patterns</td><td>Missed check-ins, response latency drift, prolonged silence</td><td>Velocity &amp; trend analysis (<code>behavior_agent.py</code>)</td></tr>
+    <tr><td>Legal Case Context</td><td>Bail status, threat reported, hearing postponed, compensation rejected</td><td>Case context risk weighting (<code>context_agent.py</code>)</td></tr>
+  </table>
+</div>
+
+<div class="section-header">🔬 3. System Architecture — How It Works</div>
+<div class="section-body">
+  <h2>Dual-Track Processing Pipeline</h2>
+  <div class="flow-row">
+    <div class="flow-node blue">Victim Message<br><small style="font-weight:300;font-size:7pt">(Voice / Text / SMS)</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Ingress Layer<br><small style="font-weight:300;font-size:7pt">Telegram / WhatsApp / Web / IVRS</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node orange">Track 1: Real-Time Reply<br><small style="font-weight:300;font-size:7pt">Groq LLM (~400ms)</small></div>
+  </div>
+  <div class="flow-row" style="padding-left:30px;">
+    <div class="flow-arrow">↘</div>
+    <div class="flow-node blue">Track 2: Agentic Triage (LangGraph)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node green">Fusion Score</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node orange">Escalation Agent</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Dashboard + Twilio Alert</div>
+  </div>
+  <h2>LangGraph Multi-Agent Architecture</h2>
+  <table>
+    <tr><th>Agent</th><th>Weight</th><th>Input</th><th>Key Output</th></tr>
+    <tr><td><strong>NLP Agent</strong></td><td>35–45%</td><td>Cleaned message text</td><td>distress_score, self_harm_cues, threat_violence_flag, hopelessness_flag</td></tr>
+    <tr><td><strong>Speech Agent</strong></td><td>0–15%</td><td>pitch_variance_hz, pause_ratio, speaking_rate_wpm</td><td>tone_distress_score, prosodic_cues, tone_label</td></tr>
+    <tr><td><strong>Behavioral Agent</strong></td><td>25%</td><td>consecutive_missed_checkins, response_latency_hours, days_since_last_checkin</td><td>behavioral_anomaly_score, disengagement_flag</td></tr>
+    <tr><td><strong>Context Agent</strong></td><td>25–30%</td><td>bail_status, threat_reported, case_stage, compensation_status</td><td>context_risk_weight, high_stress_legal_trigger, legal_triggers</td></tr>
+    <tr><td><strong>Fusion Agent</strong></td><td>—</td><td>All four agent outputs</td><td>fused_risk_score [0.0–1.0], risk_tier, explainability_reasons</td></tr>
+    <tr><td><strong>Escalation Agent</strong></td><td>—</td><td>fused_risk_score, risk_tier</td><td>Alert payload (P0–P3), Twilio dispatch, DB persistence, Dashboard push</td></tr>
+  </table>
+  <div class="formula-box">
+    Fused Score = (NLP × w₁) + (Speech × w₂) + (Behaviour × w₃) + (Context × w₄) + Synergy Penalties<br>
+    <small style="color:#555">w₁=0.35–0.45 | w₂=0–0.15 | w₃=0.25 | w₄=0.25–0.30 (speech weight redistributed when no audio)</small>
+  </div>
+  <h2>Risk Classification &amp; Escalation Routing</h2>
+  <table>
+    <tr><th>Tier</th><th>Score</th><th>Priority</th><th>System Action</th><th>Alert Reaches</th></tr>
+    <tr><td><span class="tier routine">🟢 Routine</span></td><td>0.00–0.29</td><td>P3</td><td>Silent log, next check-in scheduled</td><td>Logged only</td></tr>
+    <tr><td><span class="tier watch">🟡 Watch</span></td><td>0.30–0.49</td><td>P3-WATCH</td><td>Dashboard badge, monitoring cadence increased</td><td>District log</td></tr>
+    <tr><td><span class="tier outreach">🟠 Outreach</span></td><td>0.50–0.74</td><td>P2-HIGH</td><td>Counselor queue dispatch, follow-up within 24h</td><td>District Counselor</td></tr>
+    <tr><td><span class="tier urgent">🔴 Urgent</span></td><td>0.75–1.00</td><td>P1-CRITICAL</td><td>Auto Twilio Voice + SMS, 30-min acknowledgement window</td><td>Counselor + District Officer + National Dashboard</td></tr>
+  </table>
+  <p style="font-size:8.5pt;color:var(--muted);">A <strong>P0-EMERGENCY</strong> tier is triggered by the manual SOS panic button (victim-initiated), bypassing NLP scoring with a 5-minute deduplication window.</p>
+  <h2>Victim Case Lifecycle Coverage</h2>
+  <div class="lifecycle">
+    <div class="lc-stage s1">📋 FIR Filed<span>Initial Registration</span></div>
+    <div class="lc-stage s2">🔍 Investigation<span>Bail / Threat Flags</span></div>
+    <div class="lc-stage s3">⚖️ Trial<span>Cross-Examination</span></div>
+    <div class="lc-stage s4">🏠 Rehabilitation<span>Compensation Status</span></div>
+    <div class="lc-stage s5">✅ Compensation<span>Claim Tracking</span></div>
+  </div>
+  <p style="font-size:9pt;color:var(--muted);"><span class="code-ref">context_agent.py</span> reads <code>case_stage</code>, <code>compensation_status</code>, <code>accused_bail_status</code>, <code>threat_reported</code>, and <code>hearing_postponed</code>. A compensation rejection adds +0.20 to context risk weight.</p>
+</div>
+
+<div class="section-header">📊 4. Multi-Level Dashboard Architecture</div>
+<div class="section-body">
+  <div class="three-col">
+    <div class="mini-card">
+      <h4>🏙️ District Level</h4>
+      <ul>
+        <li>Live Triage Roster by risk tier</li>
+        <li>Victim Detail Modal + XAI radar chart</li>
+        <li>Real-time AlertsFeed</li>
+        <li>KPI Cards: active cases, high-risk count</li>
+        <li>One-click manual outreach</li>
+        <li>DPDP Compliance Panel</li>
+      </ul>
+    </div>
+    <div class="mini-card">
+      <h4>🗺️ State Nodal Officer</h4>
+      <ul>
+        <li>Cross-district distress metrics</li>
+        <li>Longitudinal trend charts</li>
+        <li>Counselor resource demand forecasting</li>
+        <li>High-risk district heatmap</li>
+        <li>Intervention effectiveness tracking</li>
+        <li>Case-type breakdown by category</li>
+      </ul>
+    </div>
+    <div class="mini-card">
+      <h4>🇮🇳 National / Ministry</h4>
+      <ul>
+        <li>Executive summary: victims, critical cases</li>
+        <li>National escalation volume trends</li>
+        <li>Policy analytics: resolution vs distress</li>
+        <li>Searchable national case directory</li>
+        <li>Scheme-wise compensation tracking</li>
+        <li>Evidence base for MoSJE policymakers</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout">
+    <strong>📌 State Nodal Officer Layer</strong>
+    Aggregates district-level data, surfaces inter-district comparison, and provides resource allocation recommendations — the intermediary between district counselor dashboards and the national ministry view.
+  </div>
+</div>
+
+<div class="section-header">🌐 5. Omnichannel Interaction Mechanisms</div>
+<div class="section-body">
+  <table>
+    <tr><th>Channel</th><th>Ingress Mechanism</th><th>Periodic Outreach?</th><th>Voice Analysis?</th></tr>
+    <tr><td>📱 Telegram</td><td>Long-polling bot (<code>@nhaa_14566_sih_bot</code>), voice notes (OGG→WAV)</td><td>✅ Scheduled check-in messages</td><td>✅ Whisper ASR + prosody</td></tr>
+    <tr><td>💬 WhatsApp</td><td>Twilio webhook <code>/webhook/whatsapp-inbound</code></td><td>✅ Twilio message dispatch</td><td>❌ Text only</td></tr>
+    <tr><td>📲 SMS</td><td>Twilio fallback when WhatsApp delivery fails</td><td>✅ SMS outreach</td><td>❌ Text only</td></tr>
+    <tr><td>📞 IVRS</td><td>Twilio Voice IVR, automated outbound call for URGENT tier</td><td>✅ Emergency auto-call</td><td>✅ Prosody via IVR metadata</td></tr>
+    <tr><td>💻 Web Chat</td><td>Floating widget (<code>/api/chat/web</code>), cold-start distress detection</td><td>❌ Passive (victim-initiated)</td><td>❌ Text only</td></tr>
+    <tr><td>🔐 Victim Portal</td><td>Email OTP auth via Brevo (<code>/api/portal/*</code>)</td><td>❌ Self-service only</td><td>❌ Text only</td></tr>
+  </table>
+</div>
+
+<div class="section-header">🔒 6. Security, Privacy &amp; DPDP Act 2023</div>
+<div class="section-body">
+  <div class="two-col">
+    <div>
+      <h3>Encryption &amp; Storage</h3>
+      <ul>
+        <li>AES-GCM-256 field-level encryption on all victim messages, phone numbers, and PII before disk write (<span class="code-ref">privacy.py</span>)</li>
+        <li>SQLite with encrypted sensitive fields — no plaintext PII at rest</li>
+        <li>Automated 730-day data retention policy</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Access Control</h3>
+      <ul>
+        <li>Officer-gated purge endpoint (<code>POST /api/officer/purge</code>) via <code>hmac.compare_digest</code> constant-time comparison</li>
+        <li>OTP rate-limited to 3 attempts/hour per email</li>
+        <li>Victim Portal uses allowlist response model — raw risk scores never exposed</li>
+      </ul>
+    </div>
+  </div>
+  <h3>Consent Architecture</h3>
+  <p>Every channel records <code>consent_flag</code> and <code>consent_timestamp</code>. If consent is withheld, standard data processing is restricted. A life-safety override applies only for P1-CRITICAL and P0-EMERGENCY tiers.</p>
+</div>
+
+<div class="page-break"></div>
+<div class="section-header">🔍 7. Explainable AI &amp; Accurate Technical Claims</div>
+<div class="section-body">
+  <div class="callout warning">
+    <strong>⚠️ Accurate AI Claim — No Micro-Expression Analysis</strong>
+    Nyaya Sakhi does <strong>not</strong> perform video-based facial micro-expression analysis. All acoustic analysis is prosody-based: pitch variance (Hz), pause ratio (%), and speaking rate (WPM) — extracted from voice note audio only.
+  </div>
+  <h2>What the System Actually Measures</h2>
+  <table>
+    <tr><th>Claimed Capability</th><th>Accurate Technical Description</th><th>Code Reference</th></tr>
+    <tr class="highlight-row"><td>Emotion AI</td><td>28-class emotion classification on text using fine-tuned IndicBERTv2</td><td><code>nlp_agent.py:58</code></td></tr>
+    <tr class="highlight-row"><td>Voice Stress Analysis</td><td>Acoustic prosody: pitch_variance &lt;10 Hz → flat/withdrawn; pause_ratio &gt;0.35 → psychomotor slowing; pitch &gt;55 Hz + energy &gt;0.12 → agitation</td><td><code>speech_agent.py:28–47</code></td></tr>
+    <tr class="highlight-row"><td>Sentiment Analysis</td><td>Zero-shot MNLI + GoEmotions multilabel scoring; regex crisis-pattern fallback when inference API offline</td><td><code>nlp_agent.py:25–44</code></td></tr>
+    <tr class="highlight-row"><td>Predictive Risk</td><td>Behavioral velocity: missed check-ins ≥3 → +0.50; latency ratio ≥3× baseline → +0.30; 7+ days silence → +0.35</td><td><code>behavior_agent.py:18–40</code></td></tr>
+    <tr class="highlight-row"><td>XAI / Explainability</td><td>Every fusion output carries <code>explainability_reasons</code> list — per-agent sub-scores, legal triggers, prosody cues rendered as radar chart</td><td><code>fusion_agent.py:35–76</code></td></tr>
+    <tr class="highlight-row"><td>Synergy Detection</td><td>Synergy multiplier (×1.35) applied when bail_granted + disengagement_flag + nlp_score ≥ 0.4 occur simultaneously</td><td><code>fusion_agent.py:73–75</code></td></tr>
+  </table>
+  <h2>Dynamic Distress Score — Correct Framing</h2>
+  <div class="callout gold">
+    <strong>📌 How to Describe This to a Judge</strong>
+    <em>"The score is an AI-derived risk indicator for triage prioritisation — not a clinical diagnosis, not a DSM-5 severity rating, and not a medically validated psychological measurement. It tells a counsellor 'this person needs attention now' compared to others. All decisions remain with the human counsellor."</em>
+  </div>
+  <p>Thresholds configurable in <code>backend/config.py</code>: URGENT ≥ 0.75, OUTREACH ≥ 0.50, WATCH ≥ 0.30. Every escalation alert contains <code>human_in_the_loop_status: "Awaiting Counselor Review"</code> until a counsellor explicitly acknowledges.</p>
+</div>
+
+<div class="section-header">🌐 8. Multilingual &amp; Inclusivity</div>
+<div class="section-body">
+  <ul>
+    <li><strong>IndicBERTv2</strong> natively supports 24 Indian languages via multilingual pre-training — fine-tuned model (<code>Robbiinn/nyaya-sakhi-crisis-indicbert</code>) inherits this cross-lingual capability.</li>
+    <li>Primary conversational support: <strong>Hindi and English</strong> via Groq LLM multilingual system prompts.</li>
+    <li>IVRS outreach scripts are configurable per language; Twilio supports regional TTS voices.</li>
+    <li>Fine-tuning datasets: DASS-21 distress corpus, GoEmotions, and Dreaddit — cleaned for atrocity-context patterns.</li>
+    <li>Architecture supports plug-in language adapters for regional expansion (Tamil, Telugu, Bengali, Marathi, Odia).</li>
+  </ul>
+</div>
+
+<div class="page-break"></div>
+<div class="section-header">❓ 9. Judge Q&amp;A — Anticipated Questions &amp; Accurate Answers</div>
+<div class="section-body" style="padding:10px 12px;">
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">1</div>Which ministry owns this system, and why is it MoSJE and not the Ministry of Women &amp; Child Development?</div>
+    <div class="qa-a">
+      <p>Built exclusively for the <strong>Ministry of Social Justice and Empowerment (MoSJE)</strong> under the <strong>SC/ST (Prevention of Atrocities) Act, 1989</strong>. Beneficiaries are victims registered through <strong>NHAA 14566</strong> — the national helpline managed by MoSJE specifically for SC/ST atrocity cases.</p>
+      <p>The Ministry of Women &amp; Child Development operates Mission Shakti and One Stop Centres — a separate mandate. There is no functional overlap. Nyaya Sakhi does not reference or deploy through WCD infrastructure.</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">2</div>What exactly does your AI analyse in voice messages? Do you do facial expression analysis?</div>
+    <div class="qa-a">
+      <p><strong>No facial expression analysis.</strong> The system analyses <strong>acoustic prosody</strong> from voice recordings — measurable properties of the audio waveform:</p>
+      <ul>
+        <li><strong>Pitch variance (Hz)</strong>: Below 10 Hz → flat, withdrawn affect; above 55 Hz with high vocal energy → agitation or panic.</li>
+        <li><strong>Pause ratio (%)</strong>: Above 35% → psychomotor slowing associated with severe distress.</li>
+        <li><strong>Speaking rate (WPM)</strong>: Below 90 WPM alongside high pause ratio → psychomotor slowing.</li>
+      </ul>
+      <p>Extracted from Whisper ASR followed by Wav2Vec2 acoustic feature analysis — all from <em>audio</em>, not video. See <span class="code-ref">speech_agent.py:28–47</span>.</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">3</div>Is your 0–100% Distress Score clinically validated? Can it be used as a psychiatric diagnosis?</div>
+    <div class="qa-a">
+      <p><strong>No, and we are explicit about this.</strong> The Dynamic Distress Score is an <strong>AI-derived triage indicator</strong> — not a clinical diagnosis. It answers: <em>"Who needs a counsellor's attention most urgently right now?"</em></p>
+      <p>Not a DSM-5 severity rating or PHQ-9 equivalent. Every alert includes mandatory <code>human_in_the_loop_status: "Awaiting Counselor Review"</code>. The AI surfaces priority; the licensed counsellor makes all clinical decisions.</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">4</div>Why does this need AI? Why can't a normal case management portal do the same thing?</div>
+    <div class="qa-a">
+      <p>A traditional portal stores and displays case data. It cannot:</p>
+      <ul>
+        <li><strong>Detect change over time</strong> — Behavioral Agent tracks response latency drift (usually 2h, now 24h) and consecutive missed check-ins.</li>
+        <li><strong>Interpret language</strong> — NLP on 24 Indian languages to detect hopelessness, suicidal ideation, or intimidation from natural conversation text.</li>
+        <li><strong>Read vocal signals</strong> — pitch flatness and speaking rate slowdown are invisible to a case manager reviewing a text record.</li>
+        <li><strong>Synthesise all signals simultaneously</strong> — the synergy multiplier (×1.35 when bail granted + disengagement + high NLP distress co-occur) is a pattern no human can monitor at scale.</li>
+        <li><strong>Act proactively</strong> — automatically dispatch a Twilio IVR emergency call without waiting for the victim to reach out.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">5</div>How does your system handle a victim who says "I am fine" but is actually in distress?</div>
+    <div class="qa-a">
+      <p>Three complementary safeguards:</p>
+      <ol>
+        <li><strong>Sentiment Guardrail (<span class="code-ref">nlp_agent.py:29–45</span>)</strong>: Suppresses false positives for genuinely positive text, but does <em>not</em> suppress when crisis-pattern words co-occur. "I am fine but the accused threatened me" still triggers <code>threat_violence_flag = True</code>.</li>
+        <li><strong>Voice Prosody Override</strong>: Flat pitch (&lt;10 Hz) or prolonged pauses (&gt;35%) in the voice note contribute a speech distress score independently of the text content.</li>
+        <li><strong>Behavioral Context</strong>: 3 missed check-ins + message at 3 AM = high anomaly score regardless of what the text says.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">6</div>Does your system support Hindi and regional languages?</div>
+    <div class="qa-a">
+      <p>Yes. The NLP model is fine-tuned <strong>IndicBERTv2</strong> (<code>Robbiinn/nyaya-sakhi-crisis-indicbert</code>), which natively supports 24 Indian languages through multilingual pre-training. The model produces distress scores directly from Hindi, Bengali, Tamil, and other regional language text.</p>
+      <p>The Groq LLM counselor companion uses multilingual system prompts and responds in Hindi or English based on victim preference. IVRS scripts support regional TTS delivery via Twilio.</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">7</div>What happens when the AI model inference service is offline?</div>
+    <div class="qa-a">
+      <p>Explicit offline fallback in <span class="code-ref">nlp_agent.py:109–138</span>. When the IndicBERT API is unreachable:</p>
+      <ul>
+        <li>Falls back to a regex-based crisis pattern scanner (kill, suicide, threat, rape, danger, harm, attack).</li>
+        <li>If crisis patterns detected: <code>distress_score = 0.95</code>, all critical flags set.</li>
+        <li>If no crisis patterns: <code>distress_score = 0.05</code> and <code>analysis_source = "indicbertv2_offline_standby"</code> recorded — counsellor dashboard shows fallback mode indicator.</li>
+      </ul>
+      <p>The system always provides a triage signal, even without the ML model.</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">8</div>How do you protect victim privacy? What if data is leaked?</div>
+    <div class="qa-a">
+      <ul>
+        <li><strong>AES-GCM-256 encryption</strong> on all sensitive fields before writing to the database — <span class="code-ref">privacy.py</span>.</li>
+        <li><strong>Consent architecture</strong>: every channel records <code>consent_flag</code> and <code>consent_timestamp</code>.</li>
+        <li><strong>PII masking in NLP pipeline</strong>: <span class="code-ref">clean_text()</span> masks phone numbers (<code>[PHONE]</code>) and emails (<code>[EMAIL]</code>) before sending to the ML model.</li>
+        <li><strong>Officer-gated purge</strong>: <code>POST /api/officer/purge</code> uses <code>hmac.compare_digest</code> constant-time comparison.</li>
+        <li><strong>Victim Portal allowlist</strong>: raw distress scores are never exposed to the victim-facing client.</li>
+        <li><strong>730-day automated retention</strong>: compliant with DPDP Act 2023.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">9</div>What if the AI gives a wrong prediction?</div>
+    <div class="qa-a">
+      <ul>
+        <li><strong>Sentiment Guardrail</strong>: Genuine positive messages suppress false distress scoring before reaching the counsellor queue.</li>
+        <li><strong>XAI Explanation</strong>: Every alert includes a human-readable <code>clinical_reasons</code> list — counsellor sees exactly why the score was elevated and can rapidly dismiss if reasons are not compelling.</li>
+        <li><strong>Risk Tiers as Filter</strong>: Only OUTREACH (≥0.50) and URGENT (≥0.75) trigger active counsellor notification. ROUTINE and WATCH are passive only.</li>
+        <li><strong>Human-in-the-Loop Mandatory</strong>: The system cannot take clinical action autonomously.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">10</div>Does your system cover victims through the entire judicial process?</div>
+    <div class="qa-a">
+      <p>Yes. <span class="code-ref">context_agent.py</span> reads these lifecycle fields for every victim interaction:</p>
+      <ul>
+        <li><code>case_stage</code>: Trial / Cross-Examination stages add +0.20 to context risk weight.</li>
+        <li><code>accused_bail_status</code>: "Granted" adds +0.45 — the highest safety vulnerability penalty.</li>
+        <li><code>threat_reported</code>: Adds +0.50 when active threat is logged.</li>
+        <li><code>hearing_postponed</code>: Institutional delay adds +0.15.</li>
+        <li><code>compensation_status</code>: "Rejected" adds +0.20 — models financial and psychological distress of a denied claim.</li>
+      </ul>
+      <p>All five fields are first-class columns in the <span class="code-ref">victims</span> database table.</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">11</div>What is the difference between the Groq LLM (Track 1) and the LangGraph agents (Track 2)?</div>
+    <div class="qa-a">
+      <ul>
+        <li><strong>Track 1 — Groq LLM</strong>: Victim-facing conversational response — warm, empathetic, multilingual text in ~400ms. Provides emotional support, surfaces NHAA 14566 helpline. Does <em>not</em> make risk assessments.</li>
+        <li><strong>Track 2 — LangGraph Multi-Agent Pipeline</strong>: Runs silently in the background. 4 specialist agents analyse the message, outputs are fused into a risk score, XAI explanation generated, escalation agent decides on alerts.</li>
+      </ul>
+      <p>The victim always receives a human-feeling response (Track 1) while the system simultaneously makes a risk decision (Track 2) without introducing clinical language into the victim-facing interaction.</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">12</div>How do you ensure victims are not re-traumatised by the chatbot?</div>
+    <div class="qa-a">
+      <p>The Groq LLM counselor persona (<span class="code-ref">counselor_persona.py</span>) operates under hard-coded non-clinical guardrails: never identifies itself as a doctor; never predicts court outcomes or bail decisions; always surfaces NHAA 14566 helpline and emergency number 112; responses are warm, validating, and non-alarmist. Verified by 39+ automated tests in <span class="code-ref">test_counselor_persona.py</span>.</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">13</div>What are the innovation components — what is genuinely new here?</div>
+    <div class="qa-a">
+      <ol>
+        <li><strong>Multi-signal temporal fusion</strong>: No existing government victim support system fuses text sentiment + voice prosody + engagement velocity + live legal case context into a single calibrated risk score.</li>
+        <li><strong>Synergy Multiplier</strong>: Detection of concurrent risk co-occurrence (bail granted + disengagement + high NLP distress simultaneously) — not present in standalone NLP or voice systems.</li>
+        <li><strong>Proactive omnichannel check-ins</strong>: The system contacts victims — they do not need to initiate. Most AI helplines are purely reactive.</li>
+        <li><strong>Longitudinal distress tracking</strong>: Score evolves over time; a rising trend is detected even if each individual score is moderate.</li>
+        <li><strong>XAI-first architecture</strong>: Explainability built in from day one — every alert includes a <code>clinical_reasons</code> list built from each agent's contribution.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">14</div>Can you demo this system live?</div>
+    <div class="qa-a">
+      <p>Yes. One command: <code>python backend/run_project.py</code> — starts FastAPI backend, React dashboard, and Telegram bot. Demo scenarios: send a distress message to <strong>@nhaa_14566_sih_bot</strong> → see triage result with XAI radar chart; send a voice note → see pitch variance, pause ratio, and tone label; press SOS panic button → observe P0-EMERGENCY alert and Twilio voice call dispatch; use the Live Channel Simulator to simulate any channel without a live phone.</p>
+      <p>Full test suite: <code>python -m pytest tests/ -q</code> — 39+ tests covering compliance, guardrails, escalation thresholds, and end-to-end flow.</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">15</div>What is the SOS panic button and is it different from AI-detected escalation?</div>
+    <div class="qa-a">
+      <ul>
+        <li><strong>AI-Detected Escalation</strong>: LangGraph pipeline infers risk from language, voice, and behaviour — runs on every inbound message automatically.</li>
+        <li><strong>Manual SOS Panic Button</strong>: Victim-initiated from web portal or Telegram. Skips all NLP scoring — goes directly to <strong>P0-EMERGENCY</strong> priority. Triggers Twilio Voice calls to pre-configured SOS recipients. 5-minute deduplication window. Logged as <code>manual_sos</code> trigger type.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">16</div>How does the system handle a victim who stops responding entirely?</div>
+    <div class="qa-a">
+      <ul>
+        <li><strong>7+ days since last check-in</strong>: Adds +0.35 to behavioral anomaly score, sets <code>disengagement_flag = True</code>.</li>
+        <li><strong>3+ consecutive missed check-ins</strong>: Adds +0.50 — alone can push the score into the OUTREACH tier.</li>
+        <li><strong>Synergy with legal context</strong>: 7+ days silence + bail just granted → synergy multiplier (×1.35) → likely URGENT tier → automated IVRS call triggered.</li>
+      </ul>
+      <p>The most at-risk victims are often the least likely to call. Nyaya Sakhi detects the <em>absence</em> of engagement as a distress signal — the core capability most helplines lack.</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">17</div>What interventions does the system recommend, and does it execute them?</div>
+    <div class="qa-a">
+      <p>Context-aware recommendations:</p>
+      <ul>
+        <li>High fear/grief + bail granted → Counselling session + witness protection alert</li>
+        <li>Voice tremor + night messaging → Urgent counsellor callback + medical referral</li>
+        <li>Compensation status "Rejected" → Legal aid assignment + financial assistance scheme</li>
+        <li>Suicidal ideation keywords → Immediate IVRS emergency call + 24×7 counsellor escalation</li>
+      </ul>
+      <p>The system <strong>automatically executes</strong> the communication layer (Twilio IVR + SMS) for OUTREACH and URGENT tiers. Clinical intervention decisions remain with the human counsellor.</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">18</div>How is the distress score explained to the counsellor?</div>
+    <div class="qa-a">
+      <p>Every alert carries: <code>clinical_reasons</code> list with plain-language strings ("🚨 Explicit self-harm markers detected", "⚖️ Accused Released on Bail", "🎙️ Vocal Tremor / Acute Agitation", "📉 4 consecutive missed check-ins", "⚡ Synergistic Risk Escalation"); <code>weights_used</code> showing actual weights applied; and a <strong>Radar Chart</strong> in the Victim Detail Modal showing NLP, Speech, Behavioral, and Context sub-scores visually.</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">19</div>This is a SQLite prototype — how does it scale to national deployment?</div>
+    <div class="qa-a">
+      <ul>
+        <li>Database layer abstracted through <span class="code-ref">database.py</span> — parameterised SQL; migration to PostgreSQL is a connection string change.</li>
+        <li>FastAPI backend is stateless and horizontally scalable behind a load balancer.</li>
+        <li>LangGraph agents are isolated functional units — containerisable as separate microservices.</li>
+        <li><span class="code-ref">render.yaml</span> cloud deployment blueprint is included in the repository.</li>
+        <li>National deployment: managed PostgreSQL (AWS RDS / NIC cloud), GPU-hosted ML inference, Government-approved IVRS provider.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q"><div class="qa-q-num">20</div>Your system has many features. What is the single most important thing Nyaya Sakhi does?</div>
+    <div class="qa-a">
+      <div class="callout gold" style="margin-top:4px;">
+        <strong>📌 Core Value Proposition</strong>
+        Nyaya Sakhi detects that a victim who has gone silent for a week, whose accused was just granted bail, and whose last voice message showed flat pitch and slow speech — is at imminent crisis risk. It then automatically calls them. No existing government system does this without the victim initiating contact.
+      </div>
+      <p>Everything else — multilingual NLP, XAI radar charts, DPDP compliance, dashboards — supports this one capability: <strong>proactive, early detection of psychological deterioration before a crisis, across hundreds of SC/ST atrocity victims simultaneously, with automatic intervention routing.</strong></p>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p><strong>Nyaya Sakhi</strong> — AI-Powered Dynamic Mental Health Monitoring &amp; Distress Prediction System</p>
+  <p>Ministry of Social Justice and Empowerment (MoSJE) &nbsp;•&nbsp; National Helpline Against Atrocities (NHAA 14566) &nbsp;•&nbsp; SC/ST (PoA) Act, 1989</p>
+  <p style="margin-top:3px;font-style:italic;">Bridging Justice, Technology, and Compassion for Every Survivor</p>
+</div>
+
+</div>
+</body>
+</html>

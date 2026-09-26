@@ -1,4 +1,4 @@
-# 🕊️ Nyaya Sakhi — AI-Powered Multi-Modal Distress Prediction & Escalation System
+# 🕊️ Nyaya Sakhi — AI-Powered Dynamic Mental Health Monitoring & Distress Prediction System
 
 ### **Ministry of Social Justice and Empowerment (MoSJE) • National Helpline Against Atrocities (NHAA 14566)**
 
@@ -18,31 +18,76 @@
 
 ## 📌 Table of Contents
 1. [Executive Summary & Problem Statement](#-executive-summary--problem-statement)
-2. [End-to-End System Architecture](#-end-to-end-system-architecture)
-3. [The Dual-Track Omnichannel Pipeline](#-the-dual-track-omnichannel-pipeline)
-4. [Multi-Modal Agentic Reasoning Architecture (LangGraph)](#-multi-modal-agentic-reasoning-architecture-langgraph)
-5. [Risk Classification Matrix & Thresholds](#-risk-classification-matrix--thresholds)
-6. [Ingress Channels & Interfaces](#-ingress-channels--interfaces)
-7. [Security, Privacy & DPDP Act 2023 Compliance](#-security-privacy--dpdp-act-2023-compliance)
-8. [Repository Layout](#-repository-layout)
-9. [Quick Start & Installation](#-quick-start--installation)
-10. [Environment Configuration (.env)](#-environment-configuration-env)
-11. [Automated Test Suite & Verification](#-automated-test-suite--verification)
+2. [Innovation Components](#-innovation-components)
+3. [Priority Use Cases & Beneficiaries](#-priority-use-cases--beneficiaries)
+4. [End-to-End System Architecture](#-end-to-end-system-architecture)
+5. [The Dual-Track Omnichannel Pipeline](#-the-dual-track-omnichannel-pipeline)
+6. [Multi-Modal Agentic Reasoning Architecture (LangGraph)](#-multi-modal-agentic-reasoning-architecture-langgraph)
+7. [Dynamic Distress Score & Longitudinal Trend Analysis](#-dynamic-distress-score--longitudinal-trend-analysis)
+8. [Risk Classification Matrix & Thresholds](#-risk-classification-matrix--thresholds)
+9. [Automated Intervention Recommendation Engine](#-automated-intervention-recommendation-engine)
+10. [Ingress Channels & Interfaces](#-ingress-channels--interfaces)
+11. [Multi-Level Monitoring Dashboards](#-multi-level-monitoring-dashboards)
+12. [Explainable AI & Transparency](#-explainable-ai--transparency)
+13. [Multilingual Conversational AI](#-multilingual-conversational-ai)
+14. [Security, Privacy & DPDP Act 2023 Compliance](#-security-privacy--dpdp-act-2023-compliance)
+15. [Repository Layout](#-repository-layout)
+16. [Quick Start & Installation](#-quick-start--installation)
+17. [Environment Configuration (.env)](#-environment-configuration-env)
+18. [Automated Test Suite & Verification](#-automated-test-suite--verification)
+19. [Expected Outcomes](#-expected-outcomes)
 
 ---
 
 ## 🌟 Executive Summary & Problem Statement
 
-Victims and witnesses under the **Scheduled Castes and Scheduled Tribes (Prevention of Atrocities) Act, 1989** often experience extreme emotional distress, trauma, social boycotts, and retaliatory intimidation—especially when accused perpetrators are granted bail or during prolonged judicial proceedings.
+Victims and witnesses under the **Scheduled Castes and Scheduled Tribes (Prevention of Atrocities) Act, 1989** frequently experience prolonged psychological distress after complaint registration. Threats, intimidation, repeated court appearances, delays in investigation and trial, social ostracism, economic hardship, and rehabilitation challenges compound their trauma.
 
-Traditional helplines are **passive and reactive**, requiring traumatized victims to articulate high-level crisis requests verbally.
+Existing mechanisms focus primarily on **legal and financial support** and do **not** provide continuous monitoring of victim well-being. Traditional helplines are **passive and reactive**, requiring traumatized victims to articulate high-level crisis requests on their own.
 
-**Nyaya Sakhi** is a proactive, multi-modal, agentic AI early-warning system integrated with the **National Helpline Against Atrocities (NHAA 14566)**. It provides:
-1. **Omnichannel Ingress**: Continuous interaction via Telegram Voice/Text, Twilio WhatsApp/SMS/IVR, Web Chat, and a Self-Service Patient Portal.
-2. **Dual-Track Processing**: Real-time conversational warmth powered by high-speed Groq LLMs while simultaneously running background multi-modal distress triage.
-3. **Multi-Modal Sensor Fusion**: Combines NLP emotion/suicidal ideation detection, acoustic speech emotion recognition, temporal behavioral cadence, and legal case context.
-4. **Proactive Automated Escalation**: Instant counselor alerts and automated Twilio IVR outreach for victims in high/critical distress tiers.
-5. **DPDP Act 2023 Compliance**: AES-GCM-256 encrypted storage, explicit consent tracking, zero PII leaks, and automated officer-authenticated data retention/purge pipelines.
+**Nyaya Sakhi** is a **proactive, multi-modal, agentic AI early-warning system** integrated with the **National Helpline Against Atrocities (NHAA 14566)**. It continuously monitors and predicts psychological distress among victims and complainants throughout the investigation, trial, rehabilitation, and compensation process:
+
+1. **Omnichannel Periodic Interactions**: Continuous engagement via Telegram Voice/Text, Twilio WhatsApp/SMS/IVRS, Web Chat Portal, and a Victim Self-Service Portal.
+2. **Multi-Modal AI Analysis**: Real-time analysis of voice, text, behavioural responses, and engagement patterns using NLP, Sentiment Analysis, and Emotion AI.
+3. **Dynamic Distress Score**: A fused, continuously updated psychological risk score with full longitudinal trend analysis.
+4. **Predictive Escalation Detection**: Early warning system that predicts deterioration *before* a crisis situation emerges.
+5. **Automated Alert Triggering**: Instant notifications to counsellors, district authorities, and designated officials when predefined risk thresholds are crossed.
+6. **Intervention Recommendation Engine**: Contextual recommendations for counselling, medical treatment, witness protection, relocation, financial assistance, legal aid, and rehabilitation.
+7. **Multi-Level Dashboards**: Monitoring dashboards at district, state, and national levels for tracking vulnerable victims and high-risk cases.
+8. **DPDP Act 2023 Compliance**: AES-GCM-256 encrypted storage, explicit consent tracking, zero PII leaks, and officer-authenticated data retention/purge pipelines.
+
+---
+
+## 🔬 Innovation Components
+
+Nyaya Sakhi integrates cutting-edge AI/ML components to deliver a state-of-the-art distress monitoring system:
+
+| Innovation Component | Implementation in Nyaya Sakhi |
+| :--- | :--- |
+| **Emotion AI** | `Wav2Vec2` acoustic emotion recognition + `RoBERTa GoEmotions` 28-class text emotion classification |
+| **Voice Stress Analytics** | Whisper ASR transcription followed by Wav2Vec2 for pitch variance, vocal tremor, and high-arousal distress signal extraction |
+| **Sentiment Analysis** | Distress-specific zero-shot MNLI classification + GoEmotions multilabel sentiment scoring on every inbound text turn |
+| **Predictive Risk Modelling** | LangGraph multi-agent fusion with weighted risk formula: `Score = Σ(wᵢ · sᵢ) + Penalties`; behavioral velocity tracking for trend prediction |
+| **Multilingual Conversational AI** | IndicBERT / RoBERTa fine-tuned on Hindi/English/regional distress corpora; Groq LLM companion with multilingual prompt support |
+| **Explainable AI (XAI)** | Per-agent contribution breakdown rendered as radar charts in the Counselor Dashboard; every triage decision carries a human-readable reason payload |
+| **Automated Case Prioritisation** | 4-tier risk classification (Routine → Watch → Outreach → Urgent) with automatic counselor queue insertion and case severity tagging |
+| **Real-Time Risk Alerts** | Instant escalation to the AlertsFeed Dashboard, automated Twilio emergency IVR voice call outreach, and SMS notification for critical cases |
+
+---
+
+## 🎯 Priority Use Cases & Beneficiaries
+
+Nyaya Sakhi is purpose-built to serve the following high-priority victim groups under the **Scheduled Castes and Scheduled Tribes (Prevention of Atrocities) Act, 1989**:
+
+| Priority Category | Monitoring Focus |
+| :--- | :--- |
+| **Victims of rape and gang rape** | Acute trauma response, PTSD indicators, social isolation signals, withdrawal behavior patterns |
+| **Victims of murder, grievous hurt, and arson** | Grief monitoring, intimidation detection, dependency support gap identification |
+| **Witnesses facing intimidation or threats** | Elevated fear/threat lexicon detection, urgent protection alert triggering, safe-channel communication |
+| **Families affected by caste-based violence** | Multi-member distress propagation tracking, financial hardship correlations, group vulnerability scoring |
+
+### Beneficiaries
+All individuals receiving **relief, compensation, rehabilitation, and protection** under provisions of the SC/ST (Prevention of Atrocities) Act, 1989, registered through NHAA (14566), the Integrated Portal, chatbot, mobile application, IVRS, or other approved communication channels.
 
 ---
 
@@ -54,13 +99,14 @@ flowchart TB
         TG["📱 Telegram Bot<br/>(Voice Notes & Text)"]
         WA["💬 Twilio WhatsApp / SMS<br/>(Inbound Webhooks)"]
         WEB["💻 Web Chat Assistant<br/>(Floating Widget)"]
-        PORTAL["🔐 Patient Portal<br/>(Email OTP Auth)"]
+        PORTAL["🔐 Victim Self-Service Portal<br/>(Email OTP Auth)"]
+        IVRS["📞 IVRS / Helpline<br/>(Twilio Voice IVR)"]
     end
 
     subgraph DUAL_TRACK["⚡ Dual-Track Asynchronous Pipeline"]
         direction TB
         subgraph TRACK1["Track 1: Real-Time Companion (Low Latency)"]
-            GROQ["🤖 Groq LLM Counselor Persona<br/>(openai/gpt-oss-20b / qwen3.6-27b)<br/>• Conversational Memory<br/>• Non-clinical Guardrails<br/>• Helplines 112 / 14566"]
+            GROQ["🤖 Groq LLM Counselor Persona<br/>(Multilingual • Non-clinical Guardrails)<br/>• Helplines 112 / 14566<br/>• Hindi / English / Regional"]
         end
 
         subgraph TRACK2["Track 2: Background Multi-Modal Triage (LangGraph)"]
@@ -68,7 +114,7 @@ flowchart TB
             AG_SPEECH["🎙️ Speech Agent<br/>(Whisper ASR + Wav2Vec2)"]
             AG_BEH["⏱️ Behavioral Agent<br/>(Velocity & Trend Analysis)"]
             AG_CTX["⚖️ Legal Context Agent<br/>(Bail Status, FIR, Delay)"]
-            AG_FUSION["🎛️ Fusion Agent<br/>(Multi-Factor Weighted Risk)"]
+            AG_FUSION["🎛️ Fusion Agent<br/>(Multi-Factor Weighted Risk + XAI)"]
             AG_ESC["🚨 Escalation Agent<br/>(Priority Routing & Twilio Trigger)"]
 
             AG_NLP --> AG_FUSION
@@ -79,13 +125,23 @@ flowchart TB
         end
     end
 
+    subgraph INTERVENTION["💊 Intervention Recommendation Engine"]
+        INT_COUNSEL["🧑‍⚕️ Counselling Referral"]
+        INT_LEGAL["⚖️ Legal Aid Assignment"]
+        INT_PROTECT["🛡️ Witness Protection Alert"]
+        INT_REHAB["🏠 Relocation / Rehabilitation"]
+        INT_FIN["💰 Financial Assistance Flag"]
+        INT_MED["🏥 Medical Treatment Referral"]
+    end
+
     subgraph STORAGE["🔒 Encrypted Data & Security Layer (DPDP 2023)"]
         DB[("🗄️ SQLite Database<br/>• AES-GCM-256 Encryption<br/>• 730-Day Retention Window<br/>• Officer-Gated Purge")]
     end
 
-    subgraph OUTCOMES["🎯 Automated Action & Response"]
-        CALLS["📞 Twilio Voice / SMS<br/>(Automated Outreach Call)"]
-        DASH["📊 Counselor & Officer Dashboard<br/>(React + Vite Web UI)"]
+    subgraph DASHBOARDS["📊 Multi-Level Monitoring Dashboards"]
+        DIST["🏙️ District Dashboard"]
+        STATE["🗺️ State Dashboard"]
+        NATL["🇮🇳 National Overview"]
         ROSTER["📋 High-Risk Triage Roster<br/>(Real-Time Alert Feed)"]
     end
 
@@ -93,10 +149,10 @@ flowchart TB
     INGRESS -->|Async State Triage| TRACK2
     TRACK1 -->|Instant Warm Reply| INGRESS
     TRACK2 --> STORAGE
-    TRACK2 --> CALLS
-    STORAGE --> DASH
+    TRACK2 --> INTERVENTION
     AG_ESC --> ROSTER
-    AG_ESC --> DASH
+    STORAGE --> DASHBOARDS
+    AG_ESC --> DASHBOARDS
 ```
 
 ---
@@ -140,36 +196,38 @@ sequenceDiagram
 
 ## 🧠 Multi-Modal Agentic Reasoning Architecture (LangGraph)
 
-The core triage engine is structured as a directed acyclic state graph built with **LangGraph**:
+The core triage engine is a directed acyclic state graph built with **LangGraph**. Each node is a specialized AI agent contributing to the final fused distress prediction:
 
 ```mermaid
 graph TD
     START([Inbound Payload]) --> INGEST[Ingest & Decrypt Node]
     INGEST --> SPLIT{Input Modality}
     
-    SPLIT -->|Audio/Voice| SPEECH[🎙️ Speech Agent<br/>ASR: Whisper-v3<br/>Emotion: Wav2Vec2]
-    SPLIT -->|Text| NLP[🧠 NLP Agent<br/>RoBERTa GoEmotions<br/>Distress Zero-Shot MNLI]
+    SPLIT -->|Audio/Voice| SPEECH["🎙️ Speech Agent<br/>ASR: Whisper-v3<br/>Emotion: Wav2Vec2<br/>Voice Stress Analytics"]
+    SPLIT -->|Text| NLP["🧠 NLP Agent<br/>RoBERTa GoEmotions<br/>Distress Zero-Shot MNLI<br/>Sentiment Analysis"]
     
-    INGEST --> BEH[⏱️ Behavioral Agent<br/>Turn Cadence & Velocity<br/>Distress Slope Δt]
-    INGEST --> CTX[⚖️ Legal Context Agent<br/>FIR Stage & Threat Level<br/>Accused Bail Multiplier]
+    INGEST --> BEH["⏱️ Behavioral Agent<br/>Turn Cadence & Velocity<br/>Distress Slope Δt<br/>Night-time Messaging Flags"]
+    INGEST --> CTX["⚖️ Legal Context Agent<br/>FIR Stage & Threat Level<br/>Accused Bail Multiplier<br/>Case Type Vulnerability"]
     
-    SPEECH --> FUSION[🎛️ Fusion Agent]
+    SPEECH --> FUSION["🎛️ Fusion Agent<br/>Weighted Risk Synthesis"]
     NLP --> FUSION
     BEH --> FUSION
     CTX --> FUSION
     
-    FUSION --> EVAL{Fused Risk Score}
+    FUSION --> XAI["🔍 XAI Explanation Generator<br/>Per-Agent Contribution<br/>Human-Readable Rationale"]
+    XAI --> EVAL{Fused Risk Score}
     
-    EVAL -->|< 0.30| ROUTINE[Routine Tier<br/>Standard Logged Turn]
-    EVAL -->|0.30 - 0.49| WATCH[Watch Tier<br/>Passive Frequency Flag]
-    EVAL -->|0.50 - 0.74| OUTREACH[Outreach Tier<br/>Counselor Queue Dispatch]
-    EVAL -->|≥ 0.75| URGENT[Urgent Tier<br/>Immediate IVR Call + SOS Alert]
+    EVAL -->|"< 0.30"| ROUTINE["Routine Tier<br/>Standard Logged Turn"]
+    EVAL -->|"0.30 - 0.49"| WATCH["Watch Tier<br/>Passive Frequency Flag"]
+    EVAL -->|"0.50 - 0.74"| OUTREACH["Outreach Tier<br/>Counselor Queue Dispatch"]
+    EVAL -->|"≥ 0.75"| URGENT["Urgent Tier<br/>Immediate IVR Call + SOS Alert"]
     
     ROUTINE --> ESCALATION[🚨 Escalation Agent]
     WATCH --> ESCALATION
     OUTREACH --> ESCALATION
     URGENT --> ESCALATION
     
+    ESCALATION --> INTERVENTION["💊 Intervention Recommender<br/>Counselling / Legal Aid /<br/>Witness Protection / Rehab"]
     ESCALATION --> DB_WRITE[(Encrypted DB Log)]
     ESCALATION --> END([Dashboard & SMS Notification])
 ```
@@ -178,52 +236,142 @@ graph TD
 | Agent | Primary Role | Weight | Key Metrics / Features |
 | :--- | :--- | :---: | :--- |
 | **NLP Agent** | Text emotion & distress evaluation | `35%` | Fear, grief, sadness, helplessness, suicide keyword flags |
-| **Speech Agent** | Acoustic vocal emotion extraction | `25%` | Pitch variance, speech rate, vocal tremor, high-arousal distress |
-| **Legal Context Agent** | SC/ST atrocity case vulnerability | `25%` | Accused bail status (granted/denied), threat reported, compensation delay |
+| **Speech Agent** | Acoustic vocal emotion extraction (Voice Stress) | `25%` | Pitch variance, speech rate, vocal tremor, high-arousal distress |
+| **Legal Context Agent** | SC/ST atrocity case vulnerability | `25%` | Accused bail status (granted/denied), threat reported, compensation delay, case type |
 | **Behavioral Agent** | Interaction velocity & pattern analysis | `15%` | Message frequency surges, night-time messaging, escalation velocity |
 | **Fusion Agent** | Mathematical weighted synthesis | — | Normalized formula: $\text{Score} = \sum w_i \cdot s_i + \text{Penalties}$ |
+| **XAI Explanation Generator** | Explainable AI output | — | Per-agent score breakdown, confidence intervals, decision rationale |
 | **Escalation Agent** | Priority routing & automated outreach | — | Counselor alert generation, Twilio IVR outreach, SMS notification |
+
+---
+
+## 📈 Dynamic Distress Score & Longitudinal Trend Analysis
+
+Nyaya Sakhi computes a **Dynamic Distress Score** that evolves continuously with each interaction. The system maintains a **longitudinal distress history** for every registered victim:
+
+- **Turn-Level Scoring**: A new fused risk score is computed on every inbound message, capturing real-time emotional state.
+- **Trend Velocity (Δ)**: The Behavioral Agent tracks the *rate of change* in distress scores across time windows (hourly, daily, weekly) to detect deterioration *before* it reaches crisis level.
+- **Night-Time Messaging Flags**: Unusual interaction times (2–5 AM) are weighted as behavioral distress signals indicating insomnia and psychological agitation.
+- **Escalation Cadence Tracking**: Sudden increases in message frequency after periods of silence are flagged as acute distress surges.
+- **Distress Timeline**: The Counselor Dashboard displays a full longitudinal distress timeline per victim, enabling officers to correlate score spikes with external legal events (bail hearings, court dates).
+
+```
+Distress Timeline Example:
+Week 1  ██░░░░░░░░ 0.22 (Routine)
+Week 2  ████░░░░░░ 0.38 (Watch)    ← Bail granted to accused
+Week 3  ██████░░░░ 0.61 (Outreach) ← Hearing date approaching
+Week 4  █████████░ 0.87 (URGENT)   ← Threat reported → Auto-IVR triggered
+```
 
 ---
 
 ## 🎯 Risk Classification Matrix & Thresholds
 
-| Risk Tier | Score Range | System Action & Triage Strategy | Counselor UI Indicator |
-| :---: | :---: | :--- | :---: |
-| **Routine** | `0.00 – 0.29` | Silent logging, scheduled periodic check-ins, normal companion tone. | 🟢 Green Badge |
-| **Watch** | `0.30 – 0.49` | Increased monitoring cadence, empathetic legal aid information. | 🟡 Yellow Badge |
-| **Counselor Outreach** | `0.50 – 0.74` | Added to Counselor Priority Queue; human counselor follow-up scheduled. | 🟠 Orange Badge |
-| **Urgent** | `0.75 – 1.00` | Automated Twilio emergency voice call outreach, instantaneous SOS escalation. | 🔴 Red Pulsing Badge |
+| Risk Tier | Score Range | System Action & Triage Strategy | Alert To | UI Indicator |
+| :---: | :---: | :--- | :--- | :---: |
+| **Routine** | `0.00 – 0.29` | Silent logging, scheduled periodic check-ins, normal companion tone. | Logged only | 🟢 Green Badge |
+| **Watch** | `0.30 – 0.49` | Increased monitoring cadence, empathetic legal aid information. | District log | 🟡 Yellow Badge |
+| **Counselor Outreach** | `0.50 – 0.74` | Added to Counselor Priority Queue; human counselor follow-up scheduled. | District Counselor | 🟠 Orange Badge |
+| **Urgent** | `0.75 – 1.00` | Automated Twilio emergency voice call outreach, instantaneous SOS escalation to district authorities and designated officials. | Counselor + District Officer + National Dashboard | 🔴 Red Pulsing Badge |
+
+---
+
+## 💊 Automated Intervention Recommendation Engine
+
+Upon computing the distress score, Nyaya Sakhi's **Intervention Recommender** generates context-aware action recommendations:
+
+| Distress Signal Detected | Recommended Intervention |
+| :--- | :--- |
+| High fear/grief NLP score + bail granted | Counselling session scheduling + witness protection alert |
+| Voice tremor + night-time messaging | Urgent counselor callback + medical mental health referral |
+| Legal delay + high behavioral cadence | Legal aid assignment + case status update notification |
+| Social isolation linguistic markers | Relocation support inquiry + community rehabilitation outreach |
+| Financial hardship indicators | Financial assistance scheme enrollment + case worker assignment |
+| Suicidal ideation keyword flags | Immediate IVRS emergency call + 24x7 counselor escalation |
+
+Recommendations are surfaced directly on the **Counselor Dashboard** in the Victim Detail Modal, enabling one-click action dispatching.
 
 ---
 
 ## 💻 Ingress Channels & Interfaces
 
-### 1. 🛡️ Counselor & Officer Web Dashboard (React + Vite)
-- **Live Triage Roster**: Real-time sorted table of victims by risk tier with multi-modal explainability radar.
-- **Victim Detail Modal**: Complete historical interaction timeline, case legal context, acoustic tremor metrics, and one-click manual outreach.
-- **Live Channel Simulator**: Interactive test bench to simulate Telegram voice notes, WhatsApp text, and phone calls.
-- **Patients Directory**: Searchable, filterable database of registered atrocity victims across districts.
-- **DPDP Compliance Panel**: Officer-authenticated data purge triggers and audit logs.
+### 1. 📱 Telegram Voice & Text Support Bot (`@nhaa_14566_sih_bot`)
+- **Voice Ingress**: Native voice notes automatically converted to OGG/WAV, transcribed with Whisper, and analyzed for acoustic emotion and vocal stress.
+- **Periodic Outreach**: The bot sends scheduled check-in messages to registered victims at configurable intervals.
+- **Conversational Companion**: Uses Groq LLM with contextual memory of the last 6 turns for warm, empathetic interaction.
+- **Non-Clinical Guardrails**: Validates responses provide comfort without making medical claims or court verdict predictions.
 
-### 2. 📱 Telegram Voice & Text Support Bot (`@nhaa_14566_sih_bot`)
-- **Voice Ingress**: Native voice notes automatically converted to OGG/WAV, transcribed with Whisper, and analyzed for acoustic emotion.
-- **Conversational Companion**: Uses Groq LLM (`openai/gpt-oss-20b` / `qwen3.6-27b`) with contextual memory of the last 6 turns.
-- **Non-Clinical Guardrails**: Validates that responses provide comfort without claiming to be a licensed medical doctor or making specific court verdict predictions.
-
-### 3. 💬 Twilio WhatsApp & SMS Webhooks (`/webhook/whatsapp-inbound`)
+### 2. 💬 Twilio WhatsApp & SMS Webhooks (`/webhook/whatsapp-inbound`)
 - Inbound WhatsApp and SMS routing with automated TwiML response generation.
 - Dynamic fallback from WhatsApp to SMS when delivery fails.
 - Strict deduplication window preventing duplicate trigger storms.
 
-### 4. 🔐 Patient Self-Service Portal (`/api/portal/*`)
+### 3. 📞 IVRS / Voice Helpline (`/webhook/ivrs`)
+- Automated Twilio Voice IVR call outreach for `URGENT` tier victims.
+- Calming IVR scripts with helpline 112 / 14566 routing.
+- Emergency escalation triggers via automated outbound calls to victims in crisis.
+
+### 4. 🔐 Victim Self-Service Portal (`/api/portal/*`)
 - Secure victim login via 6-digit email OTP delivered through **Brevo**.
 - Rate-limited link code enumeration and authentication guards.
-- Restricted allowlist response model preventing risk scores from leaking to public client responses.
+- Victims can view their interaction history and distress trend without exposing raw risk scores.
 
 ### 5. 💬 Floating Web Chat Widget (`/api/chat/web`)
 - Embedded widget for government portals providing instant information on NHAA 14566 schemes and legal compensation.
 - Cold-start distress detection with immediate emergency helpline banners.
+- Integrates with the **RAG Legal Knowledge Base** for accurate scheme information.
+
+---
+
+## 📊 Multi-Level Monitoring Dashboards
+
+Nyaya Sakhi provides monitoring dashboards at **District, State, and National levels**, giving administrators and policymakers real-time visibility into victim well-being:
+
+### 🏙️ District Level
+- **Live Triage Roster**: Real-time sorted table of all district victims by risk tier with multi-modal explainability radar.
+- **Victim Detail Modal**: Complete historical interaction timeline, case legal context, acoustic tremor metrics, XAI explanations, and one-click manual outreach.
+- **Counselor Alert Feed**: Incoming high-priority escalation notifications with case details.
+- **KPI Cards**: Active cases, high-risk count, alerts dispatched today, counselor queue depth.
+
+### 🗺️ State Level
+- **District Aggregation View**: Cross-district distress heatmap and comparative risk metrics.
+- **Trend Charts**: State-level longitudinal trend of escalation frequency over weeks/months.
+- **Resource Allocation Signals**: Counselor and welfare resource demand forecasting based on active high-risk caseload.
+
+### 🇮🇳 National Level
+- **Executive Summary Dashboard**: National overview of total monitored victims, critical cases, and escalation volume.
+- **Evidence-Based Analytics**: Policy-relevant metrics — case resolution timelines vs. distress score correlation, intervention effectiveness tracking.
+- **Searchable Patients Directory**: Filterable national database of atrocity cases with case-type, district, and risk-tier filters.
+
+### 🛡️ Officer Compliance Panel
+- **DPDP Compliance Controls**: Officer-authenticated data purge triggers and full audit logs.
+- **Data Retention Dashboard**: Overview of records approaching 730-day retention limit.
+
+---
+
+## 🔍 Explainable AI & Transparency
+
+Every triage decision in Nyaya Sakhi is fully explainable. The system does **not operate as a black box**:
+
+1. **Per-Agent Score Breakdown**: Each agent (NLP, Speech, Behavioral, Legal Context) contributes a transparent sub-score visible to counselors.
+2. **Multi-Modal Radar Chart**: The Counselor Dashboard renders a radar chart for every victim interaction, visually representing how each modality contributed to the final risk score.
+3. **Human-Readable Decision Rationale**: Every escalation alert includes a plain-language explanation (e.g., *"High fear lexicon (0.82) combined with bail-granted status (×1.4 multiplier) and 3 AM messaging pattern triggered URGENT tier"*).
+4. **Confidence Intervals**: The Fusion Agent reports confidence ranges alongside final scores, flagging low-confidence predictions for human review.
+5. **Audit Trail**: All AI decisions are logged with full agent payloads, enabling post-hoc review and model accountability.
+
+---
+
+## 🌐 Multilingual Conversational AI
+
+Nyaya Sakhi is designed to serve victims across India's linguistic diversity:
+
+- **Hindi & English**: Primary support via Groq LLM with multilingual system prompts.
+- **Regional Language NLP**: IndicBERT fine-tuned on distress corpora encompassing Hindi, English, and regional language variants for emotion and distress classification.
+- **Training Datasets**: Fine-tuned on `DASS-21 Distress Corpus`, `GoEmotions`, and `Dreaddit` datasets cleaned for atrocity-context distress patterns.
+- **IVRS Multilingual Scripts**: Twilio IVR outreach scripts are configurable for regional language delivery.
+- **Future Expansion**: Architecture supports plug-in language adapters for Tamil, Telugu, Bengali, Marathi, and Odia.
+
+**Fine-tuning pipeline**: `fine_tuning/nyaya_sakhi_indicbert_finetune.py` with cleaned datasets in `fine_tuning/`.
 
 ---
 
@@ -250,7 +398,7 @@ Nyaya Sakhi is engineered in accordance with the **Digital Personal Data Protect
 ## 📁 Repository Layout
 
 ```
-SIH-26/
+Nyaya-Sakhi/
 ├── backend/                        # Complete Python Backend Package
 │   ├── __init__.py
 │   ├── api.py                      # FastAPI REST Endpoints & Webhooks
@@ -390,7 +538,7 @@ python -m backend.telegram_bot
 | `TWILIO_AUTH_TOKEN` | Optional | Twilio authorization token | `...` |
 | `TWILIO_FROM_PHONE` | Optional | Twilio registered phone number | `+1234567890` |
 | `OFFICER_API_KEY` | Yes | Secret key required to access data purge APIs | `nhaa-officer-2024` |
-| `SECRET_KEY` | Yes | AES-GCM-256 encryption master key | `sih-26094-aes-key` |
+| `SECRET_KEY` | Yes | AES-GCM-256 encryption master key | `your-32-byte-secret-key` |
 | `HF_TOKEN` | Optional | HuggingFace Token for remote ML models | `hf_...` |
 
 ---
@@ -420,12 +568,26 @@ python -m pytest tests/ -q
 
 ---
 
-## 👥 Contributors & Acknowledgements
+## 🏆 Expected Outcomes
 
-Developed for **Smart India Hackathon (SIH)** under the problem statement **SIH 26094** by Team Nyaya Sakhi.
+Nyaya Sakhi is designed to deliver the following measurable outcomes:
+
+| Outcome | How Nyaya Sakhi Achieves It |
+| :--- | :--- |
+| **Continuous monitoring of victim well-being** | Omnichannel periodic interactions + turn-level dynamic distress scoring across all registered victims |
+| **Early detection & prevention of mental health crises** | Behavioral velocity tracking + predictive risk modelling to detect deterioration before crisis threshold |
+| **Timely deployment of counselling & rehabilitation services** | Automated counselor queue insertion at Outreach tier + one-click intervention dispatch from Dashboard |
+| **Strengthened victim confidence in justice delivery** | Empathetic multilingual AI companion available 24×7 across WhatsApp, Telegram, Web, and IVRS |
+| **Evidence-based decision-making for policymakers** | National/State dashboards with longitudinal trend analytics, intervention effectiveness metrics, and aggregated risk reports |
+| **Improved coordination among welfare, counselling & law-enforcement** | Unified alert system routing escalations simultaneously to counselors, district authorities, and designated officials |
+
+---
+
+## 👥 Contributors & Acknowledgements
 
 * **Nodal Ministry**: Ministry of Social Justice and Empowerment (MoSJE), Government of India
 * **Associated Initiative**: National Helpline Against Atrocities (NHAA 14566)
+* **Legal Framework**: Scheduled Castes and Scheduled Tribes (Prevention of Atrocities) Act, 1989
 
 ---
 *Nyaya Sakhi — Bridging Justice, Technology, and Compassion for Every Survivor.*
