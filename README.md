@@ -1,4 +1,4 @@
-# 🕊️ Nyaya Sakhi — AI-Powered Dynamic Mental Health Monitoring & Distress Prediction System
+# Nyaya Sakhi — AI-Powered Dynamic Mental Health Monitoring & Distress Prediction System
 
 ### **Ministry of Social Justice and Empowerment (MoSJE) • National Helpline Against Atrocities (NHAA 14566)**
 
@@ -16,30 +16,30 @@
 
 ---
 
-## 📌 Table of Contents
-1. [Executive Summary & Problem Statement](#-executive-summary--problem-statement)
-2. [Innovation Components](#-innovation-components)
-3. [Priority Use Cases & Beneficiaries](#-priority-use-cases--beneficiaries)
-4. [End-to-End System Architecture](#-end-to-end-system-architecture)
-5. [The Dual-Track Omnichannel Pipeline](#-the-dual-track-omnichannel-pipeline)
-6. [Multi-Modal Agentic Reasoning Architecture (LangGraph)](#-multi-modal-agentic-reasoning-architecture-langgraph)
-7. [Dynamic Distress Score & Longitudinal Trend Analysis](#-dynamic-distress-score--longitudinal-trend-analysis)
-8. [Risk Classification Matrix & Thresholds](#-risk-classification-matrix--thresholds)
-9. [Automated Intervention Recommendation Engine](#-automated-intervention-recommendation-engine)
-10. [Ingress Channels & Interfaces](#-ingress-channels--interfaces)
-11. [Multi-Level Monitoring Dashboards](#-multi-level-monitoring-dashboards)
-12. [Explainable AI & Transparency](#-explainable-ai--transparency)
-13. [Multilingual Conversational AI](#-multilingual-conversational-ai)
-14. [Security, Privacy & DPDP Act 2023 Compliance](#-security-privacy--dpdp-act-2023-compliance)
-15. [Repository Layout](#-repository-layout)
-16. [Quick Start & Installation](#-quick-start--installation)
-17. [Environment Configuration (.env)](#-environment-configuration-env)
-18. [Automated Test Suite & Verification](#-automated-test-suite--verification)
-19. [Expected Outcomes](#-expected-outcomes)
+## Table of Contents
+1. [Executive Summary & Problem Statement](#executive-summary--problem-statement)
+2. [Innovation Components](#innovation-components)
+3. [Priority Use Cases & Beneficiaries](#priority-use-cases--beneficiaries)
+4. [End-to-End System Architecture](#end-to-end-system-architecture)
+5. [The Dual-Track Omnichannel Pipeline](#the-dual-track-omnichannel-pipeline)
+6. [Multi-Modal Agentic Reasoning Architecture (LangGraph)](#multi-modal-agentic-reasoning-architecture-langgraph)
+7. [Dynamic Distress Score & Longitudinal Trend Analysis](#dynamic-distress-score--longitudinal-trend-analysis)
+8. [Risk Classification Matrix & Thresholds](#risk-classification-matrix--thresholds)
+9. [Automated Intervention Recommendation Engine](#automated-intervention-recommendation-engine)
+10. [Ingress Channels & Interfaces](#ingress-channels--interfaces)
+11. [Multi-Level Monitoring Dashboards](#multi-level-monitoring-dashboards)
+12. [Explainable AI & Transparency](#explainable-ai--transparency)
+13. [Multilingual Conversational AI](#multilingual-conversational-ai)
+14. [Security, Privacy & DPDP Act 2023 Compliance](#security-privacy--dpdp-act-2023-compliance)
+15. [Repository Layout](#repository-layout)
+16. [Quick Start & Installation](#quick-start--installation)
+17. [Environment Configuration (.env)](#environment-configuration-env)
+18. [Automated Test Suite & Verification](#automated-test-suite--verification)
+19. [Expected Outcomes](#expected-outcomes)
 
 ---
 
-## 🌟 Executive Summary & Problem Statement
+## Executive Summary & Problem Statement
 
 Victims and witnesses under the **Scheduled Castes and Scheduled Tribes (Prevention of Atrocities) Act, 1989** frequently experience prolonged psychological distress after complaint registration. Threats, intimidation, repeated court appearances, delays in investigation and trial, social ostracism, economic hardship, and rehabilitation challenges compound their trauma.
 
@@ -58,7 +58,7 @@ Existing mechanisms focus primarily on **legal and financial support** and do **
 
 ---
 
-## 🔬 Innovation Components
+## Innovation Components
 
 Nyaya Sakhi integrates cutting-edge AI/ML components to deliver a state-of-the-art distress monitoring system:
 
@@ -75,7 +75,7 @@ Nyaya Sakhi integrates cutting-edge AI/ML components to deliver a state-of-the-a
 
 ---
 
-## 🎯 Priority Use Cases & Beneficiaries
+## Priority Use Cases & Beneficiaries
 
 Nyaya Sakhi is purpose-built to serve the following high-priority victim groups under the **Scheduled Castes and Scheduled Tribes (Prevention of Atrocities) Act, 1989**:
 
@@ -91,31 +91,31 @@ All individuals receiving **relief, compensation, rehabilitation, and protection
 
 ---
 
-## 🏗️ End-to-End System Architecture
+## End-to-End System Architecture
 
 ```mermaid
 flowchart TB
-    subgraph INGRESS["🌐 Omnichannel Ingress Layer"]
-        TG["📱 Telegram Bot<br/>(Voice Notes & Text)"]
-        WA["💬 Twilio WhatsApp / SMS<br/>(Inbound Webhooks)"]
-        WEB["💻 Web Chat Assistant<br/>(Floating Widget)"]
-        PORTAL["🔐 Victim Self-Service Portal<br/>(Email OTP Auth)"]
-        IVRS["📞 IVRS / Helpline<br/>(Twilio Voice IVR)"]
+    subgraph INGRESS[" Omnichannel Ingress Layer"]
+        TG[" Telegram Bot<br/>(Voice Notes & Text)"]
+        WA[" Twilio WhatsApp / SMS<br/>(Inbound Webhooks)"]
+        WEB[" Web Chat Assistant<br/>(Floating Widget)"]
+        PORTAL[" Victim Self-Service Portal<br/>(Email OTP Auth)"]
+        IVRS[" IVRS / Helpline<br/>(Twilio Voice IVR)"]
     end
 
-    subgraph DUAL_TRACK["⚡ Dual-Track Asynchronous Pipeline"]
+    subgraph DUAL_TRACK[" Dual-Track Asynchronous Pipeline"]
         direction TB
         subgraph TRACK1["Track 1: Real-Time Companion (Low Latency)"]
-            GROQ["🤖 Groq LLM Counselor Persona<br/>(Multilingual • Non-clinical Guardrails)<br/>• Helplines 112 / 14566<br/>• Hindi / English / Regional"]
+            GROQ[" Groq LLM Counselor Persona<br/>(Multilingual • Non-clinical Guardrails)<br/>• Helplines 112 / 14566<br/>• Hindi / English / Regional"]
         end
 
         subgraph TRACK2["Track 2: Background Multi-Modal Triage (LangGraph)"]
-            AG_NLP["🧠 NLP Agent<br/>(RoBERTa GoEmotions + MNLI)"]
-            AG_SPEECH["🎙️ Speech Agent<br/>(Whisper ASR + Wav2Vec2)"]
-            AG_BEH["⏱️ Behavioral Agent<br/>(Velocity & Trend Analysis)"]
-            AG_CTX["⚖️ Legal Context Agent<br/>(Bail Status, FIR, Delay)"]
-            AG_FUSION["🎛️ Fusion Agent<br/>(Multi-Factor Weighted Risk + XAI)"]
-            AG_ESC["🚨 Escalation Agent<br/>(Priority Routing & Twilio Trigger)"]
+            AG_NLP[" NLP Agent<br/>(RoBERTa GoEmotions + MNLI)"]
+            AG_SPEECH[" Speech Agent<br/>(Whisper ASR + Wav2Vec2)"]
+            AG_BEH[" Behavioral Agent<br/>(Velocity & Trend Analysis)"]
+            AG_CTX[" Legal Context Agent<br/>(Bail Status, FIR, Delay)"]
+            AG_FUSION[" Fusion Agent<br/>(Multi-Factor Weighted Risk + XAI)"]
+            AG_ESC[" Escalation Agent<br/>(Priority Routing & Twilio Trigger)"]
 
             AG_NLP --> AG_FUSION
             AG_SPEECH --> AG_FUSION
@@ -125,24 +125,24 @@ flowchart TB
         end
     end
 
-    subgraph INTERVENTION["💊 Intervention Recommendation Engine"]
-        INT_COUNSEL["🧑‍⚕️ Counselling Referral"]
-        INT_LEGAL["⚖️ Legal Aid Assignment"]
-        INT_PROTECT["🛡️ Witness Protection Alert"]
-        INT_REHAB["🏠 Relocation / Rehabilitation"]
-        INT_FIN["💰 Financial Assistance Flag"]
-        INT_MED["🏥 Medical Treatment Referral"]
+    subgraph INTERVENTION[" Intervention Recommendation Engine"]
+        INT_COUNSEL[" Counselling Referral"]
+        INT_LEGAL[" Legal Aid Assignment"]
+        INT_PROTECT[" Witness Protection Alert"]
+        INT_REHAB[" Relocation / Rehabilitation"]
+        INT_FIN[" Financial Assistance Flag"]
+        INT_MED[" Medical Treatment Referral"]
     end
 
-    subgraph STORAGE["🔒 Encrypted Data & Security Layer (DPDP 2023)"]
-        DB[("🗄️ SQLite Database<br/>• AES-GCM-256 Encryption<br/>• 730-Day Retention Window<br/>• Officer-Gated Purge")]
+    subgraph STORAGE[" Encrypted Data & Security Layer (DPDP 2023)"]
+        DB[(" SQLite Database<br/>• AES-GCM-256 Encryption<br/>• 730-Day Retention Window<br/>• Officer-Gated Purge")]
     end
 
-    subgraph DASHBOARDS["📊 Multi-Level Monitoring Dashboards"]
-        DIST["🏙️ District Dashboard"]
-        STATE["🗺️ State Dashboard"]
-        NATL["🇮🇳 National Overview"]
-        ROSTER["📋 High-Risk Triage Roster<br/>(Real-Time Alert Feed)"]
+    subgraph DASHBOARDS[" Multi-Level Monitoring Dashboards"]
+        DIST[" District Dashboard"]
+        STATE[" State Dashboard"]
+        NATL[" National Overview"]
+        ROSTER[" High-Risk Triage Roster<br/>(Real-Time Alert Feed)"]
     end
 
     INGRESS -->|Immediate User Response| TRACK1
@@ -157,20 +157,20 @@ flowchart TB
 
 ---
 
-## ⚡ The Dual-Track Omnichannel Pipeline
+## The Dual-Track Omnichannel Pipeline
 
 Every inbound victim communication is processed along two parallel, asynchronous tracks:
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Victim as 👤 Atrocity Survivor
-    participant Bot as 📱 Telegram / WhatsApp / Web Ingress
-    participant Companion as 🤖 Groq LLM Counselor (Track 1)
-    participant Graph as 🕸️ LangGraph Multi-Modal Engine (Track 2)
-    participant DB as 🗄️ AES-Encrypted Database
-    participant Officer as 🛡️ Counselor / Atrocity Officer
-    participant Twilio as 📞 Twilio Voice Call
+    actor Victim as  Atrocity Survivor
+    participant Bot as  Telegram / WhatsApp / Web Ingress
+    participant Companion as  Groq LLM Counselor (Track 1)
+    participant Graph as  LangGraph Multi-Modal Engine (Track 2)
+    participant DB as  AES-Encrypted Database
+    participant Officer as  Counselor / Atrocity Officer
+    participant Twilio as  Twilio Voice Call
 
     Victim->>Bot: Sends voice note or text ("Accused is outside my house threatening me")
     
@@ -194,7 +194,7 @@ sequenceDiagram
 
 ---
 
-## 🧠 Multi-Modal Agentic Reasoning Architecture (LangGraph)
+## Multi-Modal Agentic Reasoning Architecture (LangGraph)
 
 The core triage engine is a directed acyclic state graph built with **LangGraph**. Each node is a specialized AI agent contributing to the final fused distress prediction:
 
@@ -203,18 +203,18 @@ graph TD
     START([Inbound Payload]) --> INGEST[Ingest & Decrypt Node]
     INGEST --> SPLIT{Input Modality}
     
-    SPLIT -->|Audio/Voice| SPEECH["🎙️ Speech Agent<br/>ASR: Whisper-v3<br/>Emotion: Wav2Vec2<br/>Voice Stress Analytics"]
-    SPLIT -->|Text| NLP["🧠 NLP Agent<br/>RoBERTa GoEmotions<br/>Distress Zero-Shot MNLI<br/>Sentiment Analysis"]
+    SPLIT -->|Audio/Voice| SPEECH[" Speech Agent<br/>ASR: Whisper-v3<br/>Emotion: Wav2Vec2<br/>Voice Stress Analytics"]
+    SPLIT -->|Text| NLP[" NLP Agent<br/>RoBERTa GoEmotions<br/>Distress Zero-Shot MNLI<br/>Sentiment Analysis"]
     
-    INGEST --> BEH["⏱️ Behavioral Agent<br/>Turn Cadence & Velocity<br/>Distress Slope Δt<br/>Night-time Messaging Flags"]
-    INGEST --> CTX["⚖️ Legal Context Agent<br/>FIR Stage & Threat Level<br/>Accused Bail Multiplier<br/>Case Type Vulnerability"]
+    INGEST --> BEH[" Behavioral Agent<br/>Turn Cadence & Velocity<br/>Distress Slope Δt<br/>Night-time Messaging Flags"]
+    INGEST --> CTX[" Legal Context Agent<br/>FIR Stage & Threat Level<br/>Accused Bail Multiplier<br/>Case Type Vulnerability"]
     
-    SPEECH --> FUSION["🎛️ Fusion Agent<br/>Weighted Risk Synthesis"]
+    SPEECH --> FUSION[" Fusion Agent<br/>Weighted Risk Synthesis"]
     NLP --> FUSION
     BEH --> FUSION
     CTX --> FUSION
     
-    FUSION --> XAI["🔍 XAI Explanation Generator<br/>Per-Agent Contribution<br/>Human-Readable Rationale"]
+    FUSION --> XAI[" XAI Explanation Generator<br/>Per-Agent Contribution<br/>Human-Readable Rationale"]
     XAI --> EVAL{Fused Risk Score}
     
     EVAL -->|"< 0.30"| ROUTINE["Routine Tier<br/>Standard Logged Turn"]
@@ -222,17 +222,17 @@ graph TD
     EVAL -->|"0.50 - 0.74"| OUTREACH["Outreach Tier<br/>Counselor Queue Dispatch"]
     EVAL -->|"≥ 0.75"| URGENT["Urgent Tier<br/>Immediate IVR Call + SOS Alert"]
     
-    ROUTINE --> ESCALATION[🚨 Escalation Agent]
+    ROUTINE --> ESCALATION[ Escalation Agent]
     WATCH --> ESCALATION
     OUTREACH --> ESCALATION
     URGENT --> ESCALATION
     
-    ESCALATION --> INTERVENTION["💊 Intervention Recommender<br/>Counselling / Legal Aid /<br/>Witness Protection / Rehab"]
+    ESCALATION --> INTERVENTION[" Intervention Recommender<br/>Counselling / Legal Aid /<br/>Witness Protection / Rehab"]
     ESCALATION --> DB_WRITE[(Encrypted DB Log)]
     ESCALATION --> END([Dashboard & SMS Notification])
 ```
 
-### 🔬 Agent Specification & Multi-Factor Weighting
+### Agent Specification & Multi-Factor Weighting
 | Agent | Primary Role | Weight | Key Metrics / Features |
 | :--- | :--- | :---: | :--- |
 | **NLP Agent** | Text emotion & distress evaluation | `35%` | Fear, grief, sadness, helplessness, suicide keyword flags |
@@ -245,7 +245,7 @@ graph TD
 
 ---
 
-## 📈 Dynamic Distress Score & Longitudinal Trend Analysis
+## Dynamic Distress Score & Longitudinal Trend Analysis
 
 Nyaya Sakhi computes a **Dynamic Distress Score** that evolves continuously with each interaction. The system maintains a **longitudinal distress history** for every registered victim:
 
@@ -257,26 +257,26 @@ Nyaya Sakhi computes a **Dynamic Distress Score** that evolves continuously with
 
 ```
 Distress Timeline Example:
-Week 1  ██░░░░░░░░ 0.22 (Routine)
-Week 2  ████░░░░░░ 0.38 (Watch)    ← Bail granted to accused
-Week 3  ██████░░░░ 0.61 (Outreach) ← Hearing date approaching
-Week 4  █████████░ 0.87 (URGENT)   ← Threat reported → Auto-IVR triggered
+Week 1   0.22 (Routine)
+Week 2   0.38 (Watch)    ← Bail granted to accused
+Week 3   0.61 (Outreach) ← Hearing date approaching
+Week 4   0.87 (URGENT)   ← Threat reported → Auto-IVR triggered
 ```
 
 ---
 
-## 🎯 Risk Classification Matrix & Thresholds
+## Risk Classification Matrix & Thresholds
 
 | Risk Tier | Score Range | System Action & Triage Strategy | Alert To | UI Indicator |
 | :---: | :---: | :--- | :--- | :---: |
-| **Routine** | `0.00 – 0.29` | Silent logging, scheduled periodic check-ins, normal companion tone. | Logged only | 🟢 Green Badge |
-| **Watch** | `0.30 – 0.49` | Increased monitoring cadence, empathetic legal aid information. | District log | 🟡 Yellow Badge |
-| **Counselor Outreach** | `0.50 – 0.74` | Added to Counselor Priority Queue; human counselor follow-up scheduled. | District Counselor | 🟠 Orange Badge |
-| **Urgent** | `0.75 – 1.00` | Automated Twilio emergency voice call outreach, instantaneous SOS escalation to district authorities and designated officials. | Counselor + District Officer + National Dashboard | 🔴 Red Pulsing Badge |
+| **Routine** | `0.00 – 0.29` | Silent logging, scheduled periodic check-ins, normal companion tone. | Logged only |  Green Badge |
+| **Watch** | `0.30 – 0.49` | Increased monitoring cadence, empathetic legal aid information. | District log |  Yellow Badge |
+| **Counselor Outreach** | `0.50 – 0.74` | Added to Counselor Priority Queue; human counselor follow-up scheduled. | District Counselor |  Orange Badge |
+| **Urgent** | `0.75 – 1.00` | Automated Twilio emergency voice call outreach, instantaneous SOS escalation to district authorities and designated officials. | Counselor + District Officer + National Dashboard |  Red Pulsing Badge |
 
 ---
 
-## 💊 Automated Intervention Recommendation Engine
+## Automated Intervention Recommendation Engine
 
 Upon computing the distress score, Nyaya Sakhi's **Intervention Recommender** generates context-aware action recommendations:
 
@@ -293,63 +293,63 @@ Recommendations are surfaced directly on the **Counselor Dashboard** in the Vict
 
 ---
 
-## 💻 Ingress Channels & Interfaces
+## Ingress Channels & Interfaces
 
-### 1. 📱 Telegram Voice & Text Support Bot (`@nhaa_14566_sih_bot`)
+### 1. Telegram Voice & Text Support Bot (`@nhaa_14566_sih_bot`)
 - **Voice Ingress**: Native voice notes automatically converted to OGG/WAV, transcribed with Whisper, and analyzed for acoustic emotion and vocal stress.
 - **Periodic Outreach**: The bot sends scheduled check-in messages to registered victims at configurable intervals.
 - **Conversational Companion**: Uses Groq LLM with contextual memory of the last 6 turns for warm, empathetic interaction.
 - **Non-Clinical Guardrails**: Validates responses provide comfort without making medical claims or court verdict predictions.
 
-### 2. 💬 Twilio WhatsApp & SMS Webhooks (`/webhook/whatsapp-inbound`)
+### 2. Twilio WhatsApp & SMS Webhooks (`/webhook/whatsapp-inbound`)
 - Inbound WhatsApp and SMS routing with automated TwiML response generation.
 - Dynamic fallback from WhatsApp to SMS when delivery fails.
 - Strict deduplication window preventing duplicate trigger storms.
 
-### 3. 📞 IVRS / Voice Helpline (`/webhook/ivrs`)
+### 3. IVRS / Voice Helpline (`/webhook/ivrs`)
 - Automated Twilio Voice IVR call outreach for `URGENT` tier victims.
 - Calming IVR scripts with helpline 112 / 14566 routing.
 - Emergency escalation triggers via automated outbound calls to victims in crisis.
 
-### 4. 🔐 Victim Self-Service Portal (`/api/portal/*`)
+### 4. Victim Self-Service Portal (`/api/portal/*`)
 - Secure victim login via 6-digit email OTP delivered through **Brevo**.
 - Rate-limited link code enumeration and authentication guards.
 - Victims can view their interaction history and distress trend without exposing raw risk scores.
 
-### 5. 💬 Floating Web Chat Widget (`/api/chat/web`)
+### 5. Floating Web Chat Widget (`/api/chat/web`)
 - Embedded widget for government portals providing instant information on NHAA 14566 schemes and legal compensation.
 - Cold-start distress detection with immediate emergency helpline banners.
 - Integrates with the **RAG Legal Knowledge Base** for accurate scheme information.
 
 ---
 
-## 📊 Multi-Level Monitoring Dashboards
+## Multi-Level Monitoring Dashboards
 
 Nyaya Sakhi provides monitoring dashboards at **District, State, and National levels**, giving administrators and policymakers real-time visibility into victim well-being:
 
-### 🏙️ District Level
+### District Level
 - **Live Triage Roster**: Real-time sorted table of all district victims by risk tier with multi-modal explainability radar.
 - **Victim Detail Modal**: Complete historical interaction timeline, case legal context, acoustic tremor metrics, XAI explanations, and one-click manual outreach.
 - **Counselor Alert Feed**: Incoming high-priority escalation notifications with case details.
 - **KPI Cards**: Active cases, high-risk count, alerts dispatched today, counselor queue depth.
 
-### 🗺️ State Level
+### State Level
 - **District Aggregation View**: Cross-district distress heatmap and comparative risk metrics.
 - **Trend Charts**: State-level longitudinal trend of escalation frequency over weeks/months.
 - **Resource Allocation Signals**: Counselor and welfare resource demand forecasting based on active high-risk caseload.
 
-### 🇮🇳 National Level
+### National Level
 - **Executive Summary Dashboard**: National overview of total monitored victims, critical cases, and escalation volume.
 - **Evidence-Based Analytics**: Policy-relevant metrics — case resolution timelines vs. distress score correlation, intervention effectiveness tracking.
 - **Searchable Patients Directory**: Filterable national database of atrocity cases with case-type, district, and risk-tier filters.
 
-### 🛡️ Officer Compliance Panel
+### Officer Compliance Panel
 - **DPDP Compliance Controls**: Officer-authenticated data purge triggers and full audit logs.
 - **Data Retention Dashboard**: Overview of records approaching 730-day retention limit.
 
 ---
 
-## 🔍 Explainable AI & Transparency
+## Explainable AI & Transparency
 
 Every triage decision in Nyaya Sakhi is fully explainable. The system does **not operate as a black box**:
 
@@ -361,7 +361,7 @@ Every triage decision in Nyaya Sakhi is fully explainable. The system does **not
 
 ---
 
-## 🌐 Multilingual Conversational AI
+## Multilingual Conversational AI
 
 Nyaya Sakhi is designed to serve victims across India's linguistic diversity:
 
@@ -375,7 +375,7 @@ Nyaya Sakhi is designed to serve victims across India's linguistic diversity:
 
 ---
 
-## 🔒 Security, Privacy & DPDP Act 2023 Compliance
+## Security, Privacy & DPDP Act 2023 Compliance
 
 Nyaya Sakhi is engineered in accordance with the **Digital Personal Data Protection (DPDP) Act, 2023**:
 
@@ -395,81 +395,81 @@ Nyaya Sakhi is engineered in accordance with the **Digital Personal Data Protect
 
 ---
 
-## 📁 Repository Layout
+## Repository Layout
 
 ```
 Nyaya-Sakhi/
-├── backend/                        # Complete Python Backend Package
-│   ├── __init__.py
-│   ├── api.py                      # FastAPI REST Endpoints & Webhooks
-│   ├── config.py                   # Model Configs, Thresholds, Risk Vocabulary
-│   ├── database.py                 # SQLite Data Access Layer & Schema
-│   ├── graph.py                    # LangGraph State Graph Workflow Engine
-│   ├── privacy.py                  # AES-GCM-256 Cryptographic Utilities
-│   ├── email_channel.py            # Brevo Transactional Email OTP Service
-│   ├── twilio_channel.py           # Twilio Voice, WhatsApp & SMS Dispatcher
-│   ├── telegram_bot.py             # Telegram Long-Polling Bot Service
-│   ├── seed_data.py                # Initial SC/ST District & Victim Fixtures
-│   ├── run_project.py              # Parallel Multi-Process Launcher
-│   ├── agents/                     # LangGraph Multi-Modal Reasoning Nodes
-│   │   ├── nlp_agent.py            # RoBERTa + GoEmotions Zero-Shot Classifier
-│   │   ├── speech_agent.py         # Whisper ASR + Wav2Vec2 Acoustic Emotion
-│   │   ├── behavior_agent.py       # Message Frequency & Velocity Trend Node
-│   │   ├── context_agent.py        # Case Legal Context & Bail Vulnerability
-│   │   ├── fusion_agent.py         # Multi-Factor Weighted Risk Score Fusion
-│   │   └── escalation_agent.py     # Priority Triage & Emergency Action Routing
-│   ├── services/                   # High-Level Integration Services
-│   │   ├── counselor_persona.py    # Groq LLM Empathetic Companion (Track 1)
-│   │   ├── rag_chatbot.py          # NHAA Legal Knowledge Base RAG Assistant
-│   │   └── twilio_service.py       # Voice IVR & Alert Dispatcher Service
-│   └── core/
-│       └── state.py                # LangGraph DistressState Schema
-├── frontend/                       # React + Vite Counselor Dashboard
-│   ├── index.html
-│   ├── package.json
-│   ├── vite.config.js
-│   └── src/
-│       ├── App.jsx                 # Dashboard Root with Tab Navigation
-│       ├── index.css               # Modern Glassmorphic Dark-Mode Design System
-│       └── components/
-│           ├── KPICards.jsx        # Real-Time Overview Metrics & Active Cases
-│           ├── TriageRoster.jsx    # High-Risk Victim Triage Queue Table
-│           ├── PatientsDirectory.jsx # Searchable Directory of Atrocity Cases
-│           ├── VictimDetailModal.jsx# Deep Multi-Modal Inspection & Audit Log
-│           ├── LiveSimulator.jsx   # Interactive Channel Test & Voice Simulator
-│           ├── PatientPortal.jsx   # Secure Victim Self-Service Portal
-│           ├── ChatWidget.jsx      # Calming Web Chat Assistant
-│           ├── AlertsFeed.jsx      # Real-Time High-Priority Escalation Feed
-│           ├── Sidebar.jsx         # Navigation Sidebar with Channel Filters
-│           ├── TopHeader.jsx       # Header with Live Status & System Badges
-│           └── SettingsProfile.jsx # Officer Settings & Compliance Controls
-├── tests/                          # Comprehensive Pytest Verification Suite
-│   ├── test_compliance.py          # DPDP Act Consent, Purge & Retention Tests
-│   ├── test_counselor_persona.py   # Groq LLM Guardrails & Helplines Tests
-│   ├── test_patient_portal.py      # OTP Verification & Allowlist Security Tests
-│   ├── test_telegram_branching.py  # Telegram Multi-Turn Flow & Memory Tests
-│   ├── test_twilio_service.py      # Twilio WhatsApp, SMS & Fallback Tests
-│   ├── test_webhook_local.py       # Twilio Inbound Webhook Parsing Tests
-│   ├── test_web_chat.py            # Floating Web Chat Distress Triage Tests
-│   ├── test_channel_badges.py      # Channel Ingress Badging & Filtering Tests
-│   ├── test_escalation_agent.py    # Escalation Tiers & Threshold Routing Tests
-│   ├── test_e2e_smoke.py           # End-to-End Critical Severity Flow Tests
-│   └── test_rag_chatbot.py         # Legal RAG Knowledge Base Retrieval Tests
-├── fine_tuning/                    # Fine-Tuning Scripts & Cleaned Datasets
-│   ├── nyaya_sakhi_indicbert_finetune.py # IndicBERT / RoBERTa Training Script
-│   ├── dass_synthetic_text.csv     # DASS-21 Distress Training Corpus
-│   ├── goemotions_cleaned.csv      # GoEmotions Multilabel Emotion Data
-│   └── dreaddit_cleaned.csv        # Stress & Atrocity Distress Dataset
-├── build.sh                        # Production Build & Seeding Script
-├── render.yaml                     # Cloud Deployment Blueprint (Render.com)
-├── requirements.txt                # Python Backend Dependencies
-├── .env.example                    # Environment Variables Template
-└── README.md                       # This File
+ backend/                        # Complete Python Backend Package
+    __init__.py
+    api.py                      # FastAPI REST Endpoints & Webhooks
+    config.py                   # Model Configs, Thresholds, Risk Vocabulary
+    database.py                 # SQLite Data Access Layer & Schema
+    graph.py                    # LangGraph State Graph Workflow Engine
+    privacy.py                  # AES-GCM-256 Cryptographic Utilities
+    email_channel.py            # Brevo Transactional Email OTP Service
+    twilio_channel.py           # Twilio Voice, WhatsApp & SMS Dispatcher
+    telegram_bot.py             # Telegram Long-Polling Bot Service
+    seed_data.py                # Initial SC/ST District & Victim Fixtures
+    run_project.py              # Parallel Multi-Process Launcher
+    agents/                     # LangGraph Multi-Modal Reasoning Nodes
+       nlp_agent.py            # RoBERTa + GoEmotions Zero-Shot Classifier
+       speech_agent.py         # Whisper ASR + Wav2Vec2 Acoustic Emotion
+       behavior_agent.py       # Message Frequency & Velocity Trend Node
+       context_agent.py        # Case Legal Context & Bail Vulnerability
+       fusion_agent.py         # Multi-Factor Weighted Risk Score Fusion
+       escalation_agent.py     # Priority Triage & Emergency Action Routing
+    services/                   # High-Level Integration Services
+       counselor_persona.py    # Groq LLM Empathetic Companion (Track 1)
+       rag_chatbot.py          # NHAA Legal Knowledge Base RAG Assistant
+       twilio_service.py       # Voice IVR & Alert Dispatcher Service
+    core/
+        state.py                # LangGraph DistressState Schema
+ frontend/                       # React + Vite Counselor Dashboard
+    index.html
+    package.json
+    vite.config.js
+    src/
+        App.jsx                 # Dashboard Root with Tab Navigation
+        index.css               # Modern Glassmorphic Dark-Mode Design System
+        components/
+            KPICards.jsx        # Real-Time Overview Metrics & Active Cases
+            TriageRoster.jsx    # High-Risk Victim Triage Queue Table
+            PatientsDirectory.jsx # Searchable Directory of Atrocity Cases
+            VictimDetailModal.jsx# Deep Multi-Modal Inspection & Audit Log
+            LiveSimulator.jsx   # Interactive Channel Test & Voice Simulator
+            PatientPortal.jsx   # Secure Victim Self-Service Portal
+            ChatWidget.jsx      # Calming Web Chat Assistant
+            AlertsFeed.jsx      # Real-Time High-Priority Escalation Feed
+            Sidebar.jsx         # Navigation Sidebar with Channel Filters
+            TopHeader.jsx       # Header with Live Status & System Badges
+            SettingsProfile.jsx # Officer Settings & Compliance Controls
+ tests/                          # Comprehensive Pytest Verification Suite
+    test_compliance.py          # DPDP Act Consent, Purge & Retention Tests
+    test_counselor_persona.py   # Groq LLM Guardrails & Helplines Tests
+    test_patient_portal.py      # OTP Verification & Allowlist Security Tests
+    test_telegram_branching.py  # Telegram Multi-Turn Flow & Memory Tests
+    test_twilio_service.py      # Twilio WhatsApp, SMS & Fallback Tests
+    test_webhook_local.py       # Twilio Inbound Webhook Parsing Tests
+    test_web_chat.py            # Floating Web Chat Distress Triage Tests
+    test_channel_badges.py      # Channel Ingress Badging & Filtering Tests
+    test_escalation_agent.py    # Escalation Tiers & Threshold Routing Tests
+    test_e2e_smoke.py           # End-to-End Critical Severity Flow Tests
+    test_rag_chatbot.py         # Legal RAG Knowledge Base Retrieval Tests
+ fine_tuning/                    # Fine-Tuning Scripts & Cleaned Datasets
+    nyaya_sakhi_indicbert_finetune.py # IndicBERT / RoBERTa Training Script
+    dass_synthetic_text.csv     # DASS-21 Distress Training Corpus
+    goemotions_cleaned.csv      # GoEmotions Multilabel Emotion Data
+    dreaddit_cleaned.csv        # Stress & Atrocity Distress Dataset
+ build.sh                        # Production Build & Seeding Script
+ render.yaml                     # Cloud Deployment Blueprint (Render.com)
+ requirements.txt                # Python Backend Dependencies
+ .env.example                    # Environment Variables Template
+ README.md                       # This File
 ```
 
 ---
 
-## 🚀 Quick Start & Installation
+## Quick Start & Installation
 
 ### Prerequisites
 - **Python**: `3.11` or higher
@@ -487,7 +487,7 @@ Copy `.env.example` to `.env` and fill in your API credentials:
 ```bash
 cp .env.example .env
 ```
-*(See the [Environment Configuration](#-environment-configuration-env) section below for key descriptions).*
+*(See the [Environment Configuration](#environment-configuration-env) section below for key descriptions).*
 
 ### Step 3: Launch the Entire System (1 Command)
 Run the master parallel launcher to start the FastAPI backend, React dashboard, and Telegram bot concurrently:
@@ -496,9 +496,9 @@ Run the master parallel launcher to start the FastAPI backend, React dashboard, 
 python backend/run_project.py
 ```
 
-- 🌐 **Counselor Dashboard:** [http://localhost:5173](http://localhost:5173)
-- 🔌 **FastAPI REST API Docs:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- 📱 **Telegram Voice & Text Bot:** [@nhaa_14566_sih_bot](https://t.me/nhaa_14566_sih_bot)
+-  **Counselor Dashboard:** [http://localhost:5173](http://localhost:5173)
+-  **FastAPI REST API Docs:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+-  **Telegram Voice & Text Bot:** [@nhaa_14566_sih_bot](https://t.me/nhaa_14566_sih_bot)
 
 ---
 
@@ -525,7 +525,7 @@ python -m backend.telegram_bot
 
 ---
 
-## 🔑 Environment Configuration (.env)
+## Environment Configuration (.env)
 
 | Variable | Required | Description | Example / Default |
 | :--- | :---: | :--- | :--- |
@@ -543,7 +543,7 @@ python -m backend.telegram_bot
 
 ---
 
-## 🧪 Automated Test Suite & Verification
+## Automated Test Suite & Verification
 
 The repository includes a comprehensive, multi-layer automated test suite containing **39+ test cases** across security, agent reasoning, voice parsing, LLM guardrails, and compliance:
 
@@ -568,7 +568,7 @@ python -m pytest tests/ -q
 
 ---
 
-## 🏆 Expected Outcomes
+## Expected Outcomes
 
 Nyaya Sakhi is designed to deliver the following measurable outcomes:
 
@@ -583,7 +583,7 @@ Nyaya Sakhi is designed to deliver the following measurable outcomes:
 
 ---
 
-## 👥 Contributors & Acknowledgements
+## Contributors & Acknowledgements
 
 * **Nodal Ministry**: Ministry of Social Justice and Empowerment (MoSJE), Government of India
 * **Associated Initiative**: National Helpline Against Atrocities (NHAA 14566)
